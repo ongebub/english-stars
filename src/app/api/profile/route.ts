@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { display_name, role, parent_id, avatar_emoji } = body;
+    const { display_name, role, avatar_emoji } = body;
 
     if (!display_name || !role) {
       return NextResponse.json(
@@ -33,37 +33,49 @@ export async function POST(request: Request) {
       );
     }
 
-    // For parent profiles, the id is the user's auth id.
-    // For child profiles, we generate a new id (let Supabase handle it).
-    const profileData: Record<string, unknown> = {
-      display_name,
-      role,
-      avatar_emoji: avatar_emoji || null,
-    };
-
     if (role === 'parent') {
-      profileData.id = user.id;
-      profileData.parent_id = null;
+      // Parent profile: insert directly with the user's auth id
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .insert({
+          id: user.id,
+          display_name,
+          role: 'parent',
+          avatar_emoji: avatar_emoji || '🧒',
+          parent_id: null,
+        } as never)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Parent profile creation error:', error);
+        const msg = error.code === '23505'
+          ? 'Profile already exists. โปรไฟล์มีอยู่แล้ว'
+          : 'Could not create profile. ไม่สามารถสร้างโปรไฟล์ได้';
+        return NextResponse.json({ error: msg }, { status: 400 });
+      }
+
+      return NextResponse.json({ profile }, { status: 201 });
     } else {
-      // Child profile: parent_id must be the current user
-      profileData.parent_id = parent_id || user.id;
-    }
-
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .insert(profileData)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Profile creation error:', error);
-      return NextResponse.json(
-        { error: 'Could not create profile. ไม่สามารถสร้างโปรไฟล์ได้' },
-        { status: 500 }
+      // Child profile: use the server-side RPC function
+      const { data: profile, error } = await supabase.rpc(
+        'create_child_profile',
+        {
+          p_display_name: display_name,
+          p_avatar_emoji: avatar_emoji || '🧒',
+        }
       );
-    }
 
-    return NextResponse.json({ profile }, { status: 201 });
+      if (error) {
+        console.error('Child profile creation error:', error);
+        return NextResponse.json(
+          { error: 'Could not add child profile. ไม่สามารถเพิ่มโปรไฟล์เด็กได้' },
+          { status: 400 }
+        );
+      }
+
+      return NextResponse.json({ profile }, { status: 201 });
+    }
   } catch (err) {
     console.error('Profile API error:', err);
     return NextResponse.json(

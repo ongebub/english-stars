@@ -157,6 +157,8 @@ export default function QuizEngine({
   }, []);
 
   /* ── Save attempt to Supabase when results phase begins ── */
+  const [saveError, setSaveError] = useState(false);
+
   useEffect(() => {
     if (phase !== "results" || saved) return;
 
@@ -169,19 +171,25 @@ export default function QuizEngine({
 
         if (!user) return;
 
-        await supabase.from("quiz_attempts").insert({
+        const { error } = await supabase.from("quiz_attempts").insert({
           child_id: user.id,
           subject_id: subjectId,
-          questions_shown: selectedQuestions.length,
+          questions_shown: selectedQuestions.map((q) => q.id),
           answers: answers as unknown as AnswerRecord[],
           score: score,
           total: QUIZ_SIZE,
           completed_at: new Date().toISOString(),
         } as never);
 
-        setSaved(true);
-      } catch {
-        // Silently fail -- user may not be signed in
+        if (error) {
+          console.error("Failed to save quiz attempt:", error);
+          setSaveError(true);
+        } else {
+          setSaved(true);
+        }
+      } catch (err) {
+        console.error("Failed to save quiz attempt:", err);
+        setSaveError(true);
       }
     }
 
@@ -430,6 +438,13 @@ export default function QuizEngine({
               <span className="font-sarabun">ทำแบบทดสอบเสร็จแล้ว!</span>
             </span>
           </div>
+
+          {/* Save error notice */}
+          {saveError && (
+            <p className="mt-4 rounded-lg bg-coral/20 px-4 py-2 text-center text-sm text-text-mid">
+              Score could not be saved · ไม่สามารถบันทึกคะแนนได้
+            </p>
+          )}
 
           {/* Action buttons */}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">

@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
       const userId = session.metadata?.supabase_user_id;
       if (userId && session.subscription) {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string) as unknown as { current_period_end: number };
-        await supabase.from("subscriptions").upsert({
+        const { error } = await supabase.from("subscriptions").upsert({
           user_id: userId,
           stripe_customer_id: session.customer as string,
           status: "active",
@@ -54,6 +54,7 @@ export async function POST(req: NextRequest) {
           current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         });
+        if (error) console.error("Failed to upsert subscription:", error);
       }
       break;
     }
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
       const subData = event.data.object as unknown as { customer: string; status: string; current_period_end: number };
       const customerId = subData.customer;
       const status = subData.status === "active" ? "active" : subData.status === "past_due" ? "past_due" : "canceled";
-      await supabase
+      const { error: updateError } = await supabase
         .from("subscriptions")
         .update({
           status,
@@ -69,18 +70,20 @@ export async function POST(req: NextRequest) {
           updated_at: new Date().toISOString(),
         })
         .eq("stripe_customer_id", customerId);
+      if (updateError) console.error("Failed to update subscription:", updateError);
       break;
     }
     case "customer.subscription.deleted": {
       const subData2 = event.data.object as unknown as { customer: string };
       const customerId = subData2.customer;
-      await supabase
+      const { error: cancelError } = await supabase
         .from("subscriptions")
         .update({
           status: "canceled",
           updated_at: new Date().toISOString(),
         })
         .eq("stripe_customer_id", customerId);
+      if (cancelError) console.error("Failed to cancel subscription:", cancelError);
       break;
     }
   }
