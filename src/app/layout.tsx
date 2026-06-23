@@ -1,0 +1,21 @@
+import type { Metadata } from "next";
+import "./globals.css";
+
+export const metadata: Metadata = {
+  title: "English Stars 🦉 · เรียนภาษาอังกฤษสนุกๆ",
+  description: "Prepare your child for English school entrance exams. Fun flashcards, e-books, quizzes and more for Thai children aged 4-10.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body className="font-nunito antialiased">
+        {children}
+      </body>
+    </html>
+  );
+}
