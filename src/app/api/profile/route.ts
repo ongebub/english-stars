@@ -69,7 +69,7 @@ export async function POST(request: Request) {
       if (error) {
         console.error('Child profile creation error:', error);
         return NextResponse.json(
-          { error: 'Could not add child profile. ไม่สามารถเพิ่มโปรไฟล์เด็กได้' },
+          { error: error.message || 'Could not add child profile. ไม่สามารถเพิ่มโปรไฟล์เด็กได้' },
           { status: 400 }
         );
       }

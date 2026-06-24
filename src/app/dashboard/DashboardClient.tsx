@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type { Profile } from '@/lib/types';
@@ -8,13 +8,11 @@ import type { Profile } from '@/lib/types';
 const AVATAR_EMOJIS = ['🧒', '👧', '👦', '🧒🏻', '👧🏽', '👦🏾', '🦸', '🧑‍🎓', '🐻', '🐰', '🦊', '🐼'];
 
 interface DashboardClientProps {
-  userId: string;
   profile: Profile | null;
   childProfiles: Profile[];
 }
 
 export default function DashboardClient({
-  userId,
   profile,
   childProfiles: initialChildren,
 }: DashboardClientProps) {
@@ -32,6 +30,7 @@ export default function DashboardClient({
   const [addingChild, setAddingChild] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+  const addingChildRef = useRef(false);
 
   async function handleCreateProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +63,8 @@ export default function DashboardClient({
 
   async function handleAddChild(e: React.FormEvent) {
     e.preventDefault();
+    if (addingChildRef.current) return;
+    addingChildRef.current = true;
     setError(null);
     setAddingChild(true);
 
@@ -74,19 +75,18 @@ export default function DashboardClient({
         body: JSON.stringify({
           display_name: childName,
           role: 'child',
-          parent_id: userId,
           avatar_emoji: childEmoji,
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        const data = await res.json();
         setError(data.error || 'Could not add child. กรุณาลองใหม่');
         return;
       }
 
-      const { profile: newChild } = await res.json();
-      setChildren((prev) => [...prev, newChild]);
+      setChildren((prev) => [...prev, data.profile]);
       setChildName('');
       setChildEmoji('🧒');
       setShowAddChild(false);
@@ -94,6 +94,7 @@ export default function DashboardClient({
       setError('Something went wrong. กรุณาลองใหม่');
     } finally {
       setAddingChild(false);
+      addingChildRef.current = false;
     }
   }
 
