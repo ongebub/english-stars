@@ -117,6 +117,22 @@ export interface SchoolCode {
   expires_at: string;
 }
 
+export type TrophyType =
+  | "first_steps"
+  | "perfect_score"
+  | "on_fire"
+  | "subject_master"
+  | "sharp_shooter"
+  | "ollies_star";
+
+export interface Trophy {
+  id: string;
+  child_id: string;
+  trophy_type: TrophyType;
+  subject_id: string | null;
+  earned_at: string;
+}
+
 // ── Supabase Database type ───────────────────
 
 export interface Database {

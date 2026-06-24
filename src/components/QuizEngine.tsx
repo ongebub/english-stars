@@ -99,6 +99,8 @@ export default function QuizEngine({
 
   /* ── Results save flag ── */
   const [saved, setSaved] = useState(false);
+  const [trophiesAwarded, setTrophiesAwarded] = useState<string[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   /* ── Current question shortcut ── */
   const currentQuestion = selectedQuestions[currentIndex] ?? null;
@@ -156,6 +158,15 @@ export default function QuizEngine({
     };
   }, []);
 
+  /* ── Play question audio ── */
+  const playAudio = useCallback((url: string | null) => {
+    if (!url) return;
+    if (audioRef.current) audioRef.current.pause();
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    audio.play().catch(() => {});
+  }, []);
+
   /* ── Save attempt to Supabase when results phase begins ── */
   const [saveError, setSaveError] = useState(false);
 
@@ -186,6 +197,26 @@ export default function QuizEngine({
           setSaveError(true);
         } else {
           setSaved(true);
+
+          // Check and award trophies
+          try {
+            const res = await fetch("/api/trophies", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                child_id: user.id,
+                subject_id: subjectId,
+                score,
+                total: QUIZ_SIZE,
+              }),
+            });
+            const data = await res.json();
+            if (data.awarded?.length > 0) {
+              setTrophiesAwarded(data.awarded);
+            }
+          } catch {
+            // Trophy check failed silently
+          }
         }
       } catch (err) {
         console.error("Failed to save quiz attempt:", err);
@@ -308,6 +339,19 @@ export default function QuizEngine({
             <p className="font-sarabun mt-1 text-center text-base text-text-mid">
               {currentQuestion.prompt_th}
             </p>
+          )}
+
+          {/* Audio button */}
+          {currentQuestion.audio_url && (
+            <div className="mt-3 flex justify-center">
+              <button
+                onClick={() => playAudio(currentQuestion.audio_url)}
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-leaf text-white text-lg hover:bg-leaf-dark active:scale-95 transition-all"
+                aria-label="Play question audio"
+              >
+                🔊
+              </button>
+            </div>
           )}
         </div>
 
@@ -438,6 +482,27 @@ export default function QuizEngine({
               <span className="font-sarabun">ทำแบบทดสอบเสร็จแล้ว!</span>
             </span>
           </div>
+
+          {/* Newly awarded trophies */}
+          {trophiesAwarded.length > 0 && (
+            <div className="mt-4 rounded-xl bg-sun/30 p-4 animate-popIn">
+              <p className="font-nunito text-center text-sm font-bold text-text-dark mb-2">
+                New Trophy! / รางวัลใหม่!
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {trophiesAwarded.map((t) => (
+                  <span key={t} className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-sm font-bold text-text-dark shadow">
+                    {t === "first_steps" && "🏆 First Steps"}
+                    {t === "perfect_score" && "🌟 Perfect Score"}
+                    {t === "on_fire" && "🔥 On Fire"}
+                    {t === "subject_master" && "📚 Subject Master"}
+                    {t === "sharp_shooter" && "🎯 Sharp Shooter"}
+                    {t === "ollies_star" && "🦉 Ollie's Star"}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Save error notice */}
           {saveError && (
