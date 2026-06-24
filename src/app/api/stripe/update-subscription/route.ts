@@ -4,8 +4,12 @@ import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
-const BASE_PRICE = 75000;
-const PER_CHILD_PRICE = 25000;
+function calculateFamilyPrice(childCount: number): number {
+  if (childCount <= 1) return 75000;
+  if (childCount === 2) return 100000;
+  if (childCount === 3) return 125000;
+  return 150000; // 4+ cap
+}
 
 export async function POST() {
   try {
@@ -19,10 +23,9 @@ export async function POST() {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Get current subscription
     const { data: subscription } = await supabase
       .from("subscriptions")
-      .select("stripe_customer_id, child_count")
+      .select("stripe_customer_id, child_count, plan_type")
       .eq("user_id", user.id)
       .eq("status", "active")
       .single();
@@ -31,7 +34,11 @@ export async function POST() {
       return NextResponse.json({ error: "No active subscription" }, { status: 400 });
     }
 
-    // Count current children
+    // Only auto-update for family plans
+    if (subscription.plan_type !== "family") {
+      return NextResponse.json({ error: "Auto-update only for family plans" }, { status: 400 });
+    }
+
     const { count: childCount } = await supabase
       .from("profiles")
       .select("id", { count: "exact", head: true })
@@ -39,10 +46,8 @@ export async function POST() {
       .eq("role", "child");
 
     const newChildCount = Math.max(childCount || 0, 1);
-    const extraChildren = newChildCount - 1;
-    const newPrice = BASE_PRICE + (extraChildren * PER_CHILD_PRICE);
+    const newPrice = calculateFamilyPrice(newChildCount);
 
-    // Find the active Stripe subscription
     const subscriptions = await stripe.subscriptions.list({
       customer: subscription.stripe_customer_id,
       status: "active",
@@ -56,7 +61,6 @@ export async function POST() {
     const stripeSub = subscriptions.data[0];
     const itemId = stripeSub.items.data[0].id;
 
-    // Update the subscription with new price
     await stripe.subscriptions.update(stripeSub.id, {
       items: [
         {
@@ -69,13 +73,10 @@ export async function POST() {
           },
         },
       ],
-      metadata: {
-        child_count: String(newChildCount),
-      },
+      metadata: { child_count: String(newChildCount) },
       proration_behavior: "create_prorations",
     });
 
-    // Update local DB
     await supabase
       .from("subscriptions")
       .update({

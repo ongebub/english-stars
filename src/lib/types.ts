@@ -91,16 +91,30 @@ export interface QuizAttempt {
 export type SubscriptionStatus = "active" | "inactive" | "past_due" | "canceled";
 export type SubscriptionPlan = "monthly" | "annual";
 
+export type PlanType = "family" | "school";
+
 export interface Subscription {
   user_id: string;
   stripe_customer_id: string | null;
   opn_customer_id: string | null;
   status: SubscriptionStatus;
   plan: SubscriptionPlan;
+  plan_type: PlanType;
   current_period_end: string;
   child_count: number;
+  max_students: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface SchoolCode {
+  id: string;
+  user_id: string;
+  code: string;
+  school_name: string;
+  max_students: number;
+  created_at: string;
+  expires_at: string;
 }
 
 // ── Supabase Database type ───────────────────

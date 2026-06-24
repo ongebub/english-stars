@@ -18,6 +18,12 @@ export default function LandingPage() {
             className="inline-block bg-sun text-text-dark font-extrabold text-lg px-8 py-4 rounded-xl hover:bg-sun-dark transition-colors shadow-lg">
             เริ่มเลย / Start Now ⭐
           </Link>
+          <div className="mt-4">
+            <Link href="/join"
+              className="inline-block text-white/90 font-bold text-sm hover:text-white hover:underline transition-colors">
+              🏫 Join a class / เข้าร่วมชั้นเรียน →
+            </Link>
+          </div>
         </div>
       </header>
 

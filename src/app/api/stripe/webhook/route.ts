@@ -15,6 +15,15 @@ function getSupabase() {
   );
 }
 
+function generateJoinCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
@@ -44,19 +53,45 @@ export async function POST(req: NextRequest) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.supabase_user_id;
+      const planType = session.metadata?.plan_type || "family";
       const childCount = parseInt(session.metadata?.child_count || "1", 10);
+      const schoolName = session.metadata?.school_name || "";
+
       if (userId && session.subscription) {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string) as unknown as { current_period_end: number };
+
+        const maxStudents = planType === "school" ? childCount : 4;
+
         const { error } = await supabase.from("subscriptions").upsert({
           user_id: userId,
           stripe_customer_id: session.customer as string,
           status: "active",
           plan: "monthly",
+          plan_type: planType,
           child_count: childCount,
+          max_students: maxStudents,
           current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         });
         if (error) console.error("Failed to upsert subscription:", error);
+
+        // Generate school join code if school plan
+        if (planType === "school" && schoolName) {
+          let code = generateJoinCode();
+          let attempts = 0;
+          // Ensure unique code
+          while (attempts < 10) {
+            const { error: codeError } = await supabase.from("school_codes").insert({
+              user_id: userId,
+              code,
+              school_name: schoolName,
+              max_students: maxStudents,
+            });
+            if (!codeError) break;
+            code = generateJoinCode();
+            attempts++;
+          }
+        }
       }
       break;
     }

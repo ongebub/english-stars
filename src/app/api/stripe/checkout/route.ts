@@ -4,8 +4,17 @@ import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
-const BASE_PRICE = 75000; // 750 THB in satang
-const PER_CHILD_PRICE = 25000; // 250 THB in satang
+function calculateFamilyPrice(childCount: number): number {
+  if (childCount <= 1) return 75000;
+  if (childCount === 2) return 100000;
+  if (childCount === 3) return 125000;
+  return 150000; // 4+ children capped
+}
+
+function calculateSchoolPrice(studentCount: number): number {
+  if (studentCount <= 35) return studentCount * 25000;
+  return studentCount * 20000; // 36+ gets lower rate on ALL
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,30 +28,52 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    // Parse optional child_count from request body
-    let requestedChildCount = 1;
+    let planType = "family";
+    let childCount = 1;
+    let schoolName = "";
+
     try {
       const body = await req.json();
-      if (body.child_count && typeof body.child_count === "number" && body.child_count >= 1) {
-        requestedChildCount = body.child_count;
+      if (body.plan_type === "school") planType = "school";
+      if (typeof body.child_count === "number" && body.child_count >= 1) {
+        childCount = body.child_count;
       }
+      if (typeof body.student_count === "number" && body.student_count >= 5) {
+        childCount = body.student_count;
+      }
+      if (body.school_name) schoolName = body.school_name;
     } catch {
-      // No body or invalid JSON - use default
+      // No body - defaults
     }
 
-    // Count actual children for this parent
-    const { count: actualChildCount } = await supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("parent_id", user.id)
-      .eq("role", "child");
+    // For family plans, ensure child_count reflects actual children
+    if (planType === "family") {
+      const { count } = await supabase
+        .from("profiles")
+        .select("id", { count: "exact", head: true })
+        .eq("parent_id", user.id)
+        .eq("role", "child");
+      childCount = Math.max(childCount, count || 0, 1);
+    }
 
-    // Use the greater of requested or actual child count (minimum 1)
-    const childCount = Math.max(requestedChildCount, actualChildCount || 0, 1);
-    const extraChildren = childCount - 1;
-    const totalPrice = BASE_PRICE + (extraChildren * PER_CHILD_PRICE);
+    // Validate school plan minimum
+    if (planType === "school" && childCount < 5) {
+      return NextResponse.json({ error: "School plan requires minimum 5 students" }, { status: 400 });
+    }
 
-    // Check if user already has a Stripe customer ID
+    const totalPrice = planType === "family"
+      ? calculateFamilyPrice(childCount)
+      : calculateSchoolPrice(childCount);
+
+    const productName = planType === "family"
+      ? "English Stars Family Plan"
+      : "English Stars School Plan";
+
+    const description = planType === "family"
+      ? `Family plan – ${childCount} child${childCount > 1 ? "ren" : ""}`
+      : `School plan – ${childCount} students${schoolName ? ` (${schoolName})` : ""}`;
+
+    // Get or create Stripe customer
     const { data: subscription } = await supabase
       .from("subscriptions")
       .select("stripe_customer_id")
@@ -67,21 +98,20 @@ export async function POST(req: NextRequest) {
         {
           price_data: {
             currency: "thb",
-            product_data: {
-              name: "English Stars Monthly",
-              description: `Monthly subscription – ${childCount} child${childCount > 1 ? "ren" : ""} (฿750 base + ฿250 × ${extraChildren} extra)`,
-            },
+            product_data: { name: productName, description },
             unit_amount: totalPrice,
             recurring: { interval: "month" },
           },
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/learn?subscribed=true`,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${planType === "school" ? "school" : "learn"}?subscribed=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/subscribe`,
       metadata: {
         supabase_user_id: user.id,
+        plan_type: planType,
         child_count: String(childCount),
+        school_name: schoolName,
       },
     });
 

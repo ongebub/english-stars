@@ -7,32 +7,37 @@ import type { Profile } from '@/lib/types';
 
 const AVATAR_EMOJIS = ['🧒', '👧', '👦', '🧒🏻', '👧🏽', '👦🏾', '🦸', '🧑‍🎓', '🐻', '🐰', '🦊', '🐼'];
 
-const BASE_PRICE = 750;
-const PER_CHILD_PRICE = 250;
-
-function calculateMonthlyTotal(childCount: number) {
-  const extra = Math.max(childCount - 1, 0);
-  return BASE_PRICE + extra * PER_CHILD_PRICE;
+function familyPrice(children: number): number {
+  if (children <= 1) return 750;
+  if (children === 2) return 1000;
+  if (children === 3) return 1250;
+  return 1500;
 }
 
 interface DashboardClientProps {
   profile: Profile | null;
   childProfiles: Profile[];
   isSubscribed: boolean;
+  planType: 'family' | 'school';
   childCount: number;
+  schoolCode: string | null;
+  schoolName: string | null;
 }
 
 export default function DashboardClient({
   profile,
   childProfiles: initialChildren,
   isSubscribed,
+  planType,
   childCount: initialChildCount,
+  schoolCode,
+  schoolName,
 }: DashboardClientProps) {
   const router = useRouter();
   const [children, setChildren] = useState<Profile[]>(initialChildren);
   const [childCount, setChildCount] = useState(initialChildCount);
 
-  // Create-profile state (shown when no profile exists)
+  // Create-profile state
   const [displayName, setDisplayName] = useState('');
   const [creatingProfile, setCreatingProfile] = useState(false);
 
@@ -43,31 +48,27 @@ export default function DashboardClient({
   const [addingChild, setAddingChild] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
   const addingChildRef = useRef(false);
 
-  const monthlyTotal = calculateMonthlyTotal(childCount);
+  const monthlyTotal = familyPrice(childCount);
+  const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
 
   async function handleCreateProfile(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setCreatingProfile(true);
-
     try {
       const res = await fetch('/api/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          display_name: displayName,
-          role: 'parent',
-        }),
+        body: JSON.stringify({ display_name: displayName, role: 'parent' }),
       });
-
       if (!res.ok) {
         const data = await res.json();
         setError(data.error || 'Could not create profile. กรุณาลองใหม่');
         return;
       }
-
       router.refresh();
     } catch {
       setError('Something went wrong. กรุณาลองใหม่');
@@ -93,30 +94,24 @@ export default function DashboardClient({
           avatar_emoji: childEmoji,
         }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || 'Could not add child. กรุณาลองใหม่');
         return;
       }
-
       setChildren((prev) => [...prev, data.profile]);
       setChildName('');
       setChildEmoji('🧒');
       setShowAddChild(false);
 
-      // Update subscription price if subscribed
-      if (isSubscribed) {
+      if (isSubscribed && planType === 'family') {
         try {
           const updateRes = await fetch('/api/stripe/update-subscription', { method: 'POST' });
           const updateData = await updateRes.json();
           if (updateRes.ok && updateData.child_count) {
             setChildCount(updateData.child_count);
           }
-        } catch {
-          // Subscription update failed silently - will sync on next billing
-        }
+        } catch { /* will sync on next billing */ }
       }
     } catch {
       setError('Something went wrong. กรุณาลองใหม่');
@@ -126,7 +121,14 @@ export default function DashboardClient({
     }
   }
 
-  // ─── No profile yet: show create-profile form ───
+  function copySchoolCode() {
+    if (!schoolCode) return;
+    navigator.clipboard.writeText(schoolCode);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  }
+
+  // ─── No profile: create-profile form ───
   if (!profile) {
     return (
       <div className="max-w-md mx-auto mt-8">
@@ -135,45 +137,29 @@ export default function DashboardClient({
             Welcome! / ยินดีต้อนรับ!
           </h1>
           <p className="text-text-mid font-sarabun mb-6">
-            Let&apos;s set up your parent profile first.
-            <br />
-            มาตั้งค่าโปรไฟล์ผู้ปกครองกันก่อน
+            Let&apos;s set up your profile first.<br />มาตั้งค่าโปรไฟล์กันก่อน
           </p>
-
           <form onSubmit={handleCreateProfile} className="space-y-4">
             <div>
-              <label
-                htmlFor="displayName"
-                className="block text-sm font-bold text-text-dark mb-1"
-              >
+              <label htmlFor="displayName" className="block text-sm font-bold text-text-dark mb-1">
                 <span className="font-nunito">Your Name</span>{' '}
                 <span className="font-sarabun text-text-mid">ชื่อของคุณ</span>
               </label>
               <input
-                id="displayName"
-                type="text"
-                required
-                value={displayName}
+                id="displayName" type="text" required value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 placeholder="e.g. Mom / แม่"
                 className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 min-h-[48px] text-text-dark
                            focus:border-sky-dark focus:outline-none focus:ring-2 focus:ring-sky-dark/30"
               />
             </div>
-
             {error && (
-              <div className="bg-coral/20 border-2 border-coral rounded-xl p-3 text-sm text-text-dark">
-                {error}
-              </div>
+              <div className="bg-coral/20 border-2 border-coral rounded-xl p-3 text-sm text-text-dark">{error}</div>
             )}
-
-            <button
-              type="submit"
-              disabled={creatingProfile}
+            <button type="submit" disabled={creatingProfile}
               className="w-full rounded-xl py-4 min-h-[48px] font-bold text-white text-lg
                          bg-gradient-to-r from-sky-dark to-leaf hover:from-sky-dark/90 hover:to-leaf/90
-                         shadow-md disabled:opacity-50 transition-all"
-            >
+                         shadow-md disabled:opacity-50 transition-all">
               {creatingProfile ? 'Creating... / กำลังสร้าง...' : 'Create Profile / สร้างโปรไฟล์'}
             </button>
           </form>
@@ -195,193 +181,191 @@ export default function DashboardClient({
         </p>
       </div>
 
-      {/* Subscription info */}
-      {isSubscribed && (
+      {/* School plan: show school code + link to school dashboard */}
+      {isSubscribed && planType === 'school' && schoolCode && (
+        <div className="bg-sky-dark/10 border-2 border-sky-dark/30 rounded-xl p-5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <p className="text-sm font-bold text-text-mid font-nunito">School Join Code</p>
+              <p className="text-3xl font-black text-sky-dark tracking-[0.15em] font-mono">{schoolCode}</p>
+              {schoolName && <p className="text-sm text-text-mid font-sarabun">{schoolName}</p>}
+            </div>
+            <div className="flex flex-col gap-2">
+              <button onClick={copySchoolCode}
+                className="bg-sky-dark text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-sky-dark/90 min-h-[40px]">
+                {codeCopied ? 'Copied! ✓' : 'Copy Code'}
+              </button>
+              <button
+                onClick={() => navigator.clipboard.writeText(`${siteUrl}/join?code=${schoolCode}`)}
+                className="bg-leaf text-white font-bold px-4 py-2 rounded-xl text-sm hover:bg-leaf-dark min-h-[40px]">
+                Share Link
+              </button>
+            </div>
+          </div>
+          <Link href="/school"
+            className="mt-3 block text-center bg-sky-dark text-white font-bold py-3 rounded-xl hover:bg-sky-dark/90 transition-colors">
+            <span className="font-nunito">Open School Dashboard</span>{' '}
+            <span className="font-sarabun">แดชบอร์ดโรงเรียน</span> →
+          </Link>
+        </div>
+      )}
+
+      {/* Family plan: show pricing */}
+      {isSubscribed && planType === 'family' && (
         <div className="bg-sky-dark/10 border-2 border-sky-dark/30 rounded-xl p-4">
           <p className="font-nunito font-bold text-text-dark text-sm">
-            Monthly plan: ฿{BASE_PRICE} + (฿{PER_CHILD_PRICE} &times; {Math.max(childCount - 1, 0)} extra) = ฿{monthlyTotal}/month
+            Family plan: ฿{monthlyTotal.toLocaleString()}/month ({childCount} child{childCount > 1 ? 'ren' : ''})
           </p>
           <p className="font-sarabun text-text-mid text-sm">
-            แพ็คเกจรายเดือน: ฿{monthlyTotal} บาท/เดือน ({childCount} {childCount === 1 ? 'child' : 'children'})
+            แพ็คเกจครอบครัว: ฿{monthlyTotal.toLocaleString()} บาท/เดือน
           </p>
         </div>
       )}
 
       {/* Quick links */}
       <div className="flex flex-wrap gap-4">
-        <Link
-          href="/learn"
+        <Link href="/learn"
           className="flex-1 min-w-[140px] rounded-xl bg-gradient-to-br from-leaf to-leaf-dark p-5 min-h-[48px]
-                     text-white font-bold text-center shadow-md hover:shadow-lg transition-shadow"
-        >
+                     text-white font-bold text-center shadow-md hover:shadow-lg transition-shadow">
           <span className="text-2xl block mb-1">📚</span>
-          <span className="font-nunito">Start Learning</span>
-          <br />
+          <span className="font-nunito">Start Learning</span><br />
           <span className="font-sarabun text-sm opacity-90">เริ่มเรียนรู้</span>
         </Link>
-        <Link
-          href="/gradebook"
+        <Link href="/gradebook"
           className="flex-1 min-w-[140px] rounded-xl bg-gradient-to-br from-coral to-coral-dark p-5 min-h-[48px]
-                     text-white font-bold text-center shadow-md hover:shadow-lg transition-shadow"
-        >
+                     text-white font-bold text-center shadow-md hover:shadow-lg transition-shadow">
           <span className="text-2xl block mb-1">📊</span>
-          <span className="font-nunito">Gradebook</span>
-          <br />
+          <span className="font-nunito">Gradebook</span><br />
           <span className="font-sarabun text-sm opacity-90">สมุดเกรด</span>
         </Link>
       </div>
 
-      {/* Children section */}
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-text-dark font-nunito">
-            Children <span className="font-sarabun text-text-mid font-normal text-base">บุตรหลาน</span>
-          </h2>
-          <button
-            onClick={() => setShowAddChild(!showAddChild)}
-            className="rounded-xl px-4 py-2 min-h-[48px] font-bold text-white
-                       bg-sky-dark hover:bg-sky-dark/90 shadow-md transition-all"
-          >
-            <span className="font-nunito">{showAddChild ? 'Cancel' : '+ Add Child'}</span>
-            <br />
-            <span className="font-sarabun text-sm">{showAddChild ? 'ยกเลิก' : '+ เพิ่มบุตร'}</span>
-          </button>
-        </div>
+      {/* Children section (family plan) */}
+      {planType === 'family' && (
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-text-dark font-nunito">
+              Children <span className="font-sarabun text-text-mid font-normal text-base">บุตรหลาน</span>
+            </h2>
+            <button onClick={() => setShowAddChild(!showAddChild)}
+              className="rounded-xl px-4 py-2 min-h-[48px] font-bold text-white
+                         bg-sky-dark hover:bg-sky-dark/90 shadow-md transition-all">
+              <span className="font-nunito">{showAddChild ? 'Cancel' : '+ Add Child'}</span><br />
+              <span className="font-sarabun text-sm">{showAddChild ? 'ยกเลิก' : '+ เพิ่มบุตร'}</span>
+            </button>
+          </div>
 
-        {/* Add child form */}
-        {showAddChild && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border-2 border-sun">
-            {/* Pricing notice */}
-            {isSubscribed && children.length >= 1 && (
-              <div className="bg-sun/20 border-2 border-sun rounded-xl p-3 mb-4 text-sm">
-                <p className="font-nunito font-bold text-text-dark">
-                  Adding a child costs an extra ฿{PER_CHILD_PRICE}/month.
-                </p>
-                <p className="font-sarabun text-text-mid">
-                  เพิ่มเด็ก 1 คน คิดค่าบริการเพิ่ม {PER_CHILD_PRICE} บาท/เดือน
-                </p>
-                <p className="font-nunito text-text-dark mt-1">
-                  New total: ฿{calculateMonthlyTotal(children.length + 1)}/month
-                </p>
-              </div>
-            )}
+          {showAddChild && (
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border-2 border-sun">
+              {isSubscribed && children.length >= 1 && children.length < 4 && (
+                <div className="bg-sun/20 border-2 border-sun rounded-xl p-3 mb-4 text-sm">
+                  <p className="font-nunito font-bold text-text-dark">
+                    Adding a child will update your plan pricing.
+                  </p>
+                  <p className="font-sarabun text-text-mid">
+                    เพิ่มเด็กจะอัปเดตราคาแพ็คเกจ
+                  </p>
+                  <p className="font-nunito text-text-dark mt-1">
+                    New total: ฿{familyPrice(children.length + 1).toLocaleString()}/month
+                  </p>
+                </div>
+              )}
+              {isSubscribed && children.length >= 4 && (
+                <div className="bg-leaf/20 border-2 border-leaf rounded-xl p-3 mb-4 text-sm">
+                  <p className="font-nunito font-bold text-text-dark">
+                    No extra charge! Your plan covers 4+ children.
+                  </p>
+                  <p className="font-sarabun text-text-mid">ไม่มีค่าใช้จ่ายเพิ่ม!</p>
+                </div>
+              )}
 
-            <form onSubmit={handleAddChild} className="space-y-4">
-              <div>
-                <label
-                  htmlFor="childName"
-                  className="block text-sm font-bold text-text-dark mb-1"
-                >
-                  <span className="font-nunito">Child&apos;s Name</span>{' '}
-                  <span className="font-sarabun text-text-mid">ชื่อเด็ก</span>
-                </label>
-                <input
-                  id="childName"
-                  type="text"
-                  required
-                  value={childName}
-                  onChange={(e) => setChildName(e.target.value)}
-                  placeholder="e.g. Nong Ploy / น้องพลอย"
-                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 min-h-[48px] text-text-dark
-                             focus:border-sky-dark focus:outline-none focus:ring-2 focus:ring-sky-dark/30"
-                />
-              </div>
-
-              {/* Emoji picker */}
-              <div>
-                <p className="text-sm font-bold text-text-dark mb-2">
-                  <span className="font-nunito">Choose Avatar</span>{' '}
-                  <span className="font-sarabun text-text-mid">เลือกอวตาร</span>
-                </p>
-                <div className="grid grid-cols-6 gap-2">
-                  {AVATAR_EMOJIS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick={() => setChildEmoji(emoji)}
-                      className={`text-3xl p-2 rounded-xl min-h-[48px] min-w-[48px] transition-all
-                        ${
+              <form onSubmit={handleAddChild} className="space-y-4">
+                <div>
+                  <label htmlFor="childName" className="block text-sm font-bold text-text-dark mb-1">
+                    <span className="font-nunito">Child&apos;s Name</span>{' '}
+                    <span className="font-sarabun text-text-mid">ชื่อเด็ก</span>
+                  </label>
+                  <input id="childName" type="text" required value={childName}
+                    onChange={(e) => setChildName(e.target.value)}
+                    placeholder="e.g. Nong Ploy / น้องพลอย"
+                    className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 min-h-[48px] text-text-dark
+                               focus:border-sky-dark focus:outline-none focus:ring-2 focus:ring-sky-dark/30"
+                  />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-text-dark mb-2">
+                    <span className="font-nunito">Choose Avatar</span>{' '}
+                    <span className="font-sarabun text-text-mid">เลือกอวตาร</span>
+                  </p>
+                  <div className="grid grid-cols-6 gap-2">
+                    {AVATAR_EMOJIS.map((emoji) => (
+                      <button key={emoji} type="button" onClick={() => setChildEmoji(emoji)}
+                        className={`text-3xl p-2 rounded-xl min-h-[48px] min-w-[48px] transition-all ${
                           childEmoji === emoji
                             ? 'bg-sun border-2 border-sun-dark scale-110 shadow-md'
                             : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
-                        }`}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
+                        }`}>
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+                <button type="submit" disabled={addingChild}
+                  className="w-full rounded-xl py-3 min-h-[48px] font-bold text-white
+                             bg-gradient-to-r from-sky-dark to-leaf hover:from-sky-dark/90 hover:to-leaf/90
+                             shadow-md disabled:opacity-50 transition-all">
+                  {addingChild ? (
+                    <span className="inline-flex items-center gap-2">
+                      <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                      </svg>
+                      Adding... / กำลังเพิ่ม...
+                    </span>
+                  ) : 'Add Child / เพิ่มบุตร'}
+                </button>
+              </form>
+            </div>
+          )}
 
-              <button
-                type="submit"
-                disabled={addingChild}
-                className="w-full rounded-xl py-3 min-h-[48px] font-bold text-white
-                           bg-gradient-to-r from-sky-dark to-leaf hover:from-sky-dark/90 hover:to-leaf/90
-                           shadow-md disabled:opacity-50 transition-all"
-              >
-                {addingChild ? (
-                  <span className="inline-flex items-center gap-2">
-                    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
-                    </svg>
-                    Adding... / กำลังเพิ่ม...
-                  </span>
-                ) : 'Add Child / เพิ่มบุตร'}
-              </button>
-            </form>
-          </div>
-        )}
+          {error && (
+            <div className="bg-coral/20 border-2 border-coral rounded-xl p-4 text-sm text-text-dark mb-4">{error}</div>
+          )}
 
-        {/* Error message */}
-        {error && (
-          <div className="bg-coral/20 border-2 border-coral rounded-xl p-4 text-sm text-text-dark mb-4">
-            {error}
-          </div>
-        )}
-
-        {/* Children cards */}
-        {children.length === 0 ? (
-          <div className="bg-white rounded-xl shadow p-8 text-center">
-            <p className="text-4xl mb-3">👶</p>
-            <p className="text-text-dark font-nunito font-bold">No children added yet</p>
-            <p className="text-text-mid font-sarabun">ยังไม่มีบุตรหลาน กดปุ่มด้านบนเพื่อเพิ่ม</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {children.map((child) => (
-              <div
-                key={child.id}
-                className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center
-                           hover:shadow-lg transition-shadow border-2 border-transparent hover:border-sky-dark/20"
-              >
-                <span className="text-5xl mb-3">{child.avatar_emoji || '🧒'}</span>
-                <h3 className="text-lg font-bold text-text-dark font-nunito">
-                  {child.display_name}
-                </h3>
-                <div className="flex gap-2 mt-4 w-full">
-                  <Link
-                    href="/learn"
-                    className="flex-1 rounded-xl py-2 min-h-[48px] text-center font-bold text-white
-                               bg-leaf hover:bg-leaf-dark transition-colors text-sm flex flex-col justify-center"
-                  >
-                    <span className="font-nunito">Learn</span>
-                    <span className="font-sarabun text-xs opacity-90">เรียนรู้</span>
-                  </Link>
-                  <Link
-                    href="/gradebook"
-                    className="flex-1 rounded-xl py-2 min-h-[48px] text-center font-bold text-white
-                               bg-coral hover:bg-coral-dark transition-colors text-sm flex flex-col justify-center"
-                  >
-                    <span className="font-nunito">Grades</span>
-                    <span className="font-sarabun text-xs opacity-90">เกรด</span>
-                  </Link>
+          {children.length === 0 ? (
+            <div className="bg-white rounded-xl shadow p-8 text-center">
+              <p className="text-4xl mb-3">👶</p>
+              <p className="text-text-dark font-nunito font-bold">No children added yet</p>
+              <p className="text-text-mid font-sarabun">ยังไม่มีบุตรหลาน กดปุ่มด้านบนเพื่อเพิ่ม</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {children.map((child) => (
+                <div key={child.id}
+                  className="bg-white rounded-xl shadow-md p-6 flex flex-col items-center
+                             hover:shadow-lg transition-shadow border-2 border-transparent hover:border-sky-dark/20">
+                  <span className="text-5xl mb-3">{child.avatar_emoji || '🧒'}</span>
+                  <h3 className="text-lg font-bold text-text-dark font-nunito">{child.display_name}</h3>
+                  <div className="flex gap-2 mt-4 w-full">
+                    <Link href="/learn"
+                      className="flex-1 rounded-xl py-2 min-h-[48px] text-center font-bold text-white
+                                 bg-leaf hover:bg-leaf-dark transition-colors text-sm flex flex-col justify-center">
+                      <span className="font-nunito">Learn</span>
+                      <span className="font-sarabun text-xs opacity-90">เรียนรู้</span>
+                    </Link>
+                    <Link href="/gradebook"
+                      className="flex-1 rounded-xl py-2 min-h-[48px] text-center font-bold text-white
+                                 bg-coral hover:bg-coral-dark transition-colors text-sm flex flex-col justify-center">
+                      <span className="font-nunito">Grades</span>
+                      <span className="font-sarabun text-xs opacity-90">เกรด</span>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

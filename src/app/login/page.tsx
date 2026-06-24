@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
@@ -205,8 +206,16 @@ export default function LoginPage() {
           </form>
         </div>
 
+        {/* Join class link */}
+        <div className="text-center mt-6">
+          <Link href="/join"
+            className="inline-flex items-center gap-2 text-sky-dark font-bold text-sm hover:underline">
+            🏫 Join a class / เข้าร่วมชั้นเรียน →
+          </Link>
+        </div>
+
         {/* Footer */}
-        <p className="text-center text-sm text-text-mid mt-6 font-sarabun">
+        <p className="text-center text-sm text-text-mid mt-4 font-sarabun">
           English Stars - Learn English the fun way!
           <br />
           เรียนภาษาอังกฤษอย่างสนุกสนาน!
