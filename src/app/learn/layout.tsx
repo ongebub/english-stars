@@ -6,7 +6,7 @@ export default function LearnLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen" style={{ backgroundColor: "#F5F7FA" }}>
       {/* ── Sticky top nav ── */}
       <nav className="sticky top-0 z-30 bg-sky-dark px-4 py-3 shadow-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
