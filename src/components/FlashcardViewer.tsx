@@ -45,6 +45,12 @@ export function FlashcardViewer({
     "left"
   );
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isSlow, setIsSlow] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("flashcard-speed") !== "normal";
+    }
+    return true;
+  });
 
   // The actual index into the flashcards array
   const cardIndex = shuffledOrder[currentIndex];
@@ -109,6 +115,18 @@ export function FlashcardViewer({
     }
   }, [isShuffled, flashcards]);
 
+  /* ── Speed toggle ── */
+  const toggleSpeed = useCallback(() => {
+    setIsSlow((prev) => {
+      const next = !prev;
+      localStorage.setItem("flashcard-speed", next ? "slow" : "normal");
+      if (audioRef.current) {
+        audioRef.current.playbackRate = next ? 0.75 : 1;
+      }
+      return next;
+    });
+  }, []);
+
   /* ── Audio ── */
   const playAudio = useCallback(() => {
     if (!card.audio_url) return;
@@ -116,11 +134,12 @@ export function FlashcardViewer({
       audioRef.current.pause();
     }
     const audio = new Audio(card.audio_url);
+    audio.playbackRate = isSlow ? 0.75 : 1;
     audioRef.current = audio;
     audio.play().catch(() => {
       /* ignore autoplay blocks */
     });
-  }, [card.audio_url]);
+  }, [card.audio_url, isSlow]);
 
   /* ── Transition class ── */
   const transitionClass = isTransitioning
@@ -184,6 +203,36 @@ export function FlashcardViewer({
             🔊
           </button>
         </div>
+
+        {/* Speed toggle */}
+        {card.audio_url && (
+          <div className="mt-2 flex items-center justify-center gap-1">
+            <button
+              onClick={toggleSpeed}
+              aria-label={isSlow ? "Switch to normal speed" : "Switch to slow speed"}
+              className={`flex h-9 items-center gap-1 rounded-full px-3 text-sm font-bold transition-all ${
+                isSlow
+                  ? "bg-[#0288D1] text-white shadow-md"
+                  : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+              }`}
+            >
+              <span className="text-base">🐢</span>
+              <span className="font-nunito">Slow</span>
+            </button>
+            <button
+              onClick={toggleSpeed}
+              aria-label={isSlow ? "Switch to normal speed" : "Switch to slow speed"}
+              className={`flex h-9 items-center gap-1 rounded-full px-3 text-sm font-bold transition-all ${
+                !isSlow
+                  ? "bg-[#0288D1] text-white shadow-md"
+                  : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+              }`}
+            >
+              <span className="text-base">🐇</span>
+              <span className="font-nunito">Normal</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Navigation controls */}
