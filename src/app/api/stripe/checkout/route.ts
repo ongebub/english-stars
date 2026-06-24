@@ -1,10 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
-export async function POST() {
+const BASE_PRICE = 75000; // 750 THB in satang
+const PER_CHILD_PRICE = 25000; // 250 THB in satang
+
+export async function POST(req: NextRequest) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
       apiVersion: "2026-05-27.dahlia" as const,
@@ -15,6 +18,29 @@ export async function POST() {
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // Parse optional child_count from request body
+    let requestedChildCount = 1;
+    try {
+      const body = await req.json();
+      if (body.child_count && typeof body.child_count === "number" && body.child_count >= 1) {
+        requestedChildCount = body.child_count;
+      }
+    } catch {
+      // No body or invalid JSON - use default
+    }
+
+    // Count actual children for this parent
+    const { count: actualChildCount } = await supabase
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("parent_id", user.id)
+      .eq("role", "child");
+
+    // Use the greater of requested or actual child count (minimum 1)
+    const childCount = Math.max(requestedChildCount, actualChildCount || 0, 1);
+    const extraChildren = childCount - 1;
+    const totalPrice = BASE_PRICE + (extraChildren * PER_CHILD_PRICE);
 
     // Check if user already has a Stripe customer ID
     const { data: subscription } = await supabase
@@ -43,9 +69,9 @@ export async function POST() {
             currency: "thb",
             product_data: {
               name: "English Stars Monthly",
-              description: "Monthly subscription to English Stars learning platform",
+              description: `Monthly subscription – ${childCount} child${childCount > 1 ? "ren" : ""} (฿750 base + ฿250 × ${extraChildren} extra)`,
             },
-            unit_amount: 75000, // 750 THB in satang
+            unit_amount: totalPrice,
             recurring: { interval: "month" },
           },
           quantity: 1,
@@ -53,7 +79,10 @@ export async function POST() {
       ],
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/learn?subscribed=true`,
       cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/subscribe`,
-      metadata: { supabase_user_id: user.id },
+      metadata: {
+        supabase_user_id: user.id,
+        child_count: String(childCount),
+      },
     });
 
     return NextResponse.json({ url: session.url });

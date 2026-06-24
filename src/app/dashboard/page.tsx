@@ -29,10 +29,22 @@ export default async function DashboardPage() {
     .eq('parent_id', user.id)
     .order('created_at', { ascending: true });
 
+  // Fetch subscription
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('status, child_count')
+    .eq('user_id', user.id)
+    .single();
+
+  const isSubscribed = subscription?.status === 'active';
+  const childCount = subscription?.child_count ?? Math.max((children ?? []).length, 1);
+
   return (
     <DashboardClient
       profile={profile ?? null}
       childProfiles={children ?? []}
+      isSubscribed={isSubscribed}
+      childCount={childCount}
     />
   );
 }

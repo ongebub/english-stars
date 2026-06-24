@@ -7,17 +7,30 @@ import type { Profile } from '@/lib/types';
 
 const AVATAR_EMOJIS = ['🧒', '👧', '👦', '🧒🏻', '👧🏽', '👦🏾', '🦸', '🧑‍🎓', '🐻', '🐰', '🦊', '🐼'];
 
+const BASE_PRICE = 750;
+const PER_CHILD_PRICE = 250;
+
+function calculateMonthlyTotal(childCount: number) {
+  const extra = Math.max(childCount - 1, 0);
+  return BASE_PRICE + extra * PER_CHILD_PRICE;
+}
+
 interface DashboardClientProps {
   profile: Profile | null;
   childProfiles: Profile[];
+  isSubscribed: boolean;
+  childCount: number;
 }
 
 export default function DashboardClient({
   profile,
   childProfiles: initialChildren,
+  isSubscribed,
+  childCount: initialChildCount,
 }: DashboardClientProps) {
   const router = useRouter();
   const [children, setChildren] = useState<Profile[]>(initialChildren);
+  const [childCount, setChildCount] = useState(initialChildCount);
 
   // Create-profile state (shown when no profile exists)
   const [displayName, setDisplayName] = useState('');
@@ -31,6 +44,8 @@ export default function DashboardClient({
 
   const [error, setError] = useState<string | null>(null);
   const addingChildRef = useRef(false);
+
+  const monthlyTotal = calculateMonthlyTotal(childCount);
 
   async function handleCreateProfile(e: React.FormEvent) {
     e.preventDefault();
@@ -90,6 +105,19 @@ export default function DashboardClient({
       setChildName('');
       setChildEmoji('🧒');
       setShowAddChild(false);
+
+      // Update subscription price if subscribed
+      if (isSubscribed) {
+        try {
+          const updateRes = await fetch('/api/stripe/update-subscription', { method: 'POST' });
+          const updateData = await updateRes.json();
+          if (updateRes.ok && updateData.child_count) {
+            setChildCount(updateData.child_count);
+          }
+        } catch {
+          // Subscription update failed silently - will sync on next billing
+        }
+      }
     } catch {
       setError('Something went wrong. กรุณาลองใหม่');
     } finally {
@@ -167,6 +195,18 @@ export default function DashboardClient({
         </p>
       </div>
 
+      {/* Subscription info */}
+      {isSubscribed && (
+        <div className="bg-sky-dark/10 border-2 border-sky-dark/30 rounded-xl p-4">
+          <p className="font-nunito font-bold text-text-dark text-sm">
+            Monthly plan: ฿{BASE_PRICE} + (฿{PER_CHILD_PRICE} &times; {Math.max(childCount - 1, 0)} extra) = ฿{monthlyTotal}/month
+          </p>
+          <p className="font-sarabun text-text-mid text-sm">
+            แพ็คเกจรายเดือน: ฿{monthlyTotal} บาท/เดือน ({childCount} {childCount === 1 ? 'child' : 'children'})
+          </p>
+        </div>
+      )}
+
       {/* Quick links */}
       <div className="flex flex-wrap gap-4">
         <Link
@@ -211,6 +251,21 @@ export default function DashboardClient({
         {/* Add child form */}
         {showAddChild && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border-2 border-sun">
+            {/* Pricing notice */}
+            {isSubscribed && children.length >= 1 && (
+              <div className="bg-sun/20 border-2 border-sun rounded-xl p-3 mb-4 text-sm">
+                <p className="font-nunito font-bold text-text-dark">
+                  Adding a child costs an extra ฿{PER_CHILD_PRICE}/month.
+                </p>
+                <p className="font-sarabun text-text-mid">
+                  เพิ่มเด็ก 1 คน คิดค่าบริการเพิ่ม {PER_CHILD_PRICE} บาท/เดือน
+                </p>
+                <p className="font-nunito text-text-dark mt-1">
+                  New total: ฿{calculateMonthlyTotal(children.length + 1)}/month
+                </p>
+              </div>
+            )}
+
             <form onSubmit={handleAddChild} className="space-y-4">
               <div>
                 <label

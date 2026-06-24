@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
       const userId = session.metadata?.supabase_user_id;
+      const childCount = parseInt(session.metadata?.child_count || "1", 10);
       if (userId && session.subscription) {
         const sub = await stripe.subscriptions.retrieve(session.subscription as string) as unknown as { current_period_end: number };
         const { error } = await supabase.from("subscriptions").upsert({
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
           stripe_customer_id: session.customer as string,
           status: "active",
           plan: "monthly",
+          child_count: childCount,
           current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
           updated_at: new Date().toISOString(),
         });

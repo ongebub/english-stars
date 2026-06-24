@@ -98,6 +98,7 @@ export interface Subscription {
   status: SubscriptionStatus;
   plan: SubscriptionPlan;
   current_period_end: string;
+  child_count: number;
   created_at: string;
   updated_at: string;
 }
