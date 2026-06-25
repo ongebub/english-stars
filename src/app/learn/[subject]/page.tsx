@@ -35,6 +35,11 @@ export default async function SubjectPage({
   let flashcardTotal = 0;
   let flashcardsComplete = false;
 
+  // Ebook stats
+  let ebookLastPage = 0;
+  let ebookTotalPages = 0;
+  let ebookComplete = false;
+
   // Medal
   let quizMedal: string | null = null;
 
@@ -76,6 +81,28 @@ export default async function SubjectPage({
 
       flashcardViewed = viewed || 0;
       flashcardsComplete = flashcardViewed >= flashcardTotal;
+    }
+
+    // Ebook progress
+    const { count: ebookPages } = await supabase
+      .from("ebook_pages")
+      .select("id", { count: "exact", head: true })
+      .eq("subject_id", subject.id);
+
+    ebookTotalPages = ebookPages || 0;
+
+    if (ebookTotalPages > 0) {
+      const { data: ebookProgress } = await supabase
+        .from("ebook_progress")
+        .select("last_page, completed")
+        .eq("child_id", user.id)
+        .eq("subject_id", subject.id)
+        .single();
+
+      if (ebookProgress) {
+        ebookLastPage = ebookProgress.last_page || 0;
+        ebookComplete = ebookProgress.completed || false;
+      }
     }
   }
 
@@ -138,6 +165,19 @@ export default async function SubjectPage({
             <span className="font-sarabun text-center text-sm text-text-mid">
               {mod.titleTh}
             </span>
+
+            {/* Ebook progress */}
+            {mod.path === "ebook" && ebookTotalPages > 0 && (
+              <span className="mt-1 text-xs text-text-mid">
+                {ebookComplete ? (
+                  <span className="text-leaf font-bold">📗 Complete! / อ่านจบแล้ว!</span>
+                ) : ebookLastPage > 0 ? (
+                  <>Page {ebookLastPage} of {ebookTotalPages}</>
+                ) : (
+                  <>Start Reading / เริ่มอ่าน</>
+                )}
+              </span>
+            )}
 
             {/* Flashcard progress */}
             {mod.path === "flashcards" && flashcardTotal > 0 && (

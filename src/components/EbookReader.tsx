@@ -1,43 +1,73 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
 import type { EbookPage } from "@/lib/types";
 
 interface EbookReaderProps {
   pages: EbookPage[];
   subjectTitle: string;
+  subjectId: string;
 }
 
 const PASTEL_COLORS = [
-  "bg-sun/40",
-  "bg-leaf/30",
-  "bg-coral/30",
-  "bg-sky-dark/20",
+  "bg-sun/40", "bg-leaf/30", "bg-coral/30", "bg-sky-dark/20",
 ];
 
-export function EbookReader({ pages, subjectTitle }: EbookReaderProps) {
+export function EbookReader({ pages, subjectTitle, subjectId }: EbookReaderProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [isFading, setIsFading] = useState(false);
+  const [showComplete, setShowComplete] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const savedRef = useRef(false);
 
   const page = pages[currentPage];
   const totalPages = pages.length;
   const isFirstPage = currentPage === 0;
   const isLastPage = currentPage === totalPages - 1;
 
+  // Save progress to DB on page change
+  useEffect(() => {
+    async function saveProgress() {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const isComplete = currentPage >= totalPages - 1;
+
+        await supabase.from("ebook_progress").upsert(
+          {
+            child_id: user.id,
+            subject_id: subjectId,
+            last_page: currentPage + 1,
+            completed: isComplete,
+            ...(isComplete ? { completed_at: new Date().toISOString() } : {}),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "child_id,subject_id" }
+        );
+
+        if (isComplete && !savedRef.current) {
+          savedRef.current = true;
+          setShowComplete(true);
+        }
+      } catch {
+        // Silent fail
+      }
+    }
+    saveProgress();
+  }, [currentPage, totalPages, subjectId]);
+
   const goToPage = useCallback(
     (index: number) => {
       if (index < 0 || index >= totalPages) return;
-
-      // Stop any playing audio
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.currentTime = 0;
       }
-
-      // Fade transition
       setIsFading(true);
       setTimeout(() => {
         setCurrentPage(index);
@@ -68,9 +98,8 @@ export function EbookReader({ pages, subjectTitle }: EbookReaderProps) {
           setTimeout(() => setIsFading(false), 200);
           return prev + 1;
         });
-      }, 5000);
+      }, 6000);
     }
-
     return () => {
       if (autoPlayRef.current) {
         clearInterval(autoPlayRef.current);
@@ -79,29 +108,21 @@ export function EbookReader({ pages, subjectTitle }: EbookReaderProps) {
     };
   }, [isAutoPlaying, totalPages]);
 
-  // Stop auto-play at last page
   useEffect(() => {
-    if (isLastPage && isAutoPlaying) {
-      setIsAutoPlaying(false);
-    }
+    if (isLastPage && isAutoPlaying) setIsAutoPlaying(false);
   }, [isLastPage, isAutoPlaying]);
 
   const playAudio = () => {
     if (!page.audio_url) return;
-
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-
     const audio = new Audio(page.audio_url);
     audioRef.current = audio;
-    audio.play().catch(() => {
-      // Audio play failed (e.g. no user interaction yet)
-    });
+    audio.play().catch(() => {});
   };
 
-  // Cleanup audio on unmount
   useEffect(() => {
     return () => {
       if (audioRef.current) {
@@ -112,10 +133,39 @@ export function EbookReader({ pages, subjectTitle }: EbookReaderProps) {
   }, []);
 
   const pastelBg = PASTEL_COLORS[currentPage % PASTEL_COLORS.length];
+  // Access emoji via type assertion since the column was added after initial types
+  const pageEmoji = (page as EbookPage & { emoji?: string }).emoji;
+
+  // Completion screen
+  if (showComplete) {
+    return (
+      <div className="w-full max-w-[420px] mx-auto">
+        <div className="rounded-xl bg-white shadow-lg overflow-hidden p-8 text-center">
+          <div className="text-7xl mb-4 animate-bounce">🦉</div>
+          <h2 className="font-nunito text-2xl font-black text-text-dark">
+            You finished the book!
+          </h2>
+          <p className="font-sarabun text-lg text-text-mid mt-1">
+            เก่งมาก! 🎉
+          </p>
+          <div className="mt-4 flex gap-1 justify-center text-4xl">
+            <span>⭐</span><span>⭐</span><span>⭐</span>
+          </div>
+          <div className="mt-6 flex flex-col gap-3">
+            <button
+              onClick={() => { setShowComplete(false); goToPage(0); savedRef.current = false; }}
+              className="w-full rounded-xl py-3 font-bold text-white bg-leaf hover:bg-leaf-dark min-h-[48px]"
+            >
+              Read Again / <span className="font-sarabun">อ่านอีกครั้ง</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-[420px] mx-auto">
-      {/* Book container */}
       <div className="rounded-xl bg-white shadow-lg overflow-hidden">
         {/* Title bar */}
         <div className="bg-sky-dark px-5 py-3">
@@ -124,27 +174,18 @@ export function EbookReader({ pages, subjectTitle }: EbookReaderProps) {
           </h2>
         </div>
 
-        {/* Page content area */}
-        <div
-          className={`transition-opacity duration-200 ${
-            isFading ? "opacity-0" : "opacity-100"
-          }`}
-        >
+        {/* Page content */}
+        <div className={`transition-opacity duration-200 ${isFading ? "opacity-0" : "opacity-100"}`}>
           {/* Image area */}
           <div className="px-4 pt-4">
             {page.image_url ? (
               <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-cream">
-                <img
-                  src={page.image_url}
-                  alt={`Page ${page.page_number}`}
-                  className="w-full h-full object-contain"
-                />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={page.image_url} alt={`Page ${page.page_number}`} className="w-full h-full object-contain" />
               </div>
             ) : (
-              <div
-                className={`flex items-center justify-center w-full aspect-[4/3] rounded-xl ${pastelBg}`}
-              >
-                <span className="text-7xl">📖</span>
+              <div className={`flex items-center justify-center w-full aspect-[4/3] rounded-xl ${pastelBg}`}>
+                <span className="text-7xl">{pageEmoji || "📖"}</span>
               </div>
             )}
           </div>
@@ -173,67 +214,56 @@ export function EbookReader({ pages, subjectTitle }: EbookReaderProps) {
           </button>
         </div>
 
-        {/* Divider */}
         <div className="mx-5 border-t border-gray-100" />
 
         {/* Navigation */}
         <div className="flex items-center justify-between px-5 py-4">
-          {/* Previous button */}
           <button
-            onClick={goPrev}
-            disabled={isFirstPage}
+            onClick={goPrev} disabled={isFirstPage} aria-label="Previous page"
             className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl transition-colors ${
-              isFirstPage
-                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                : "bg-sky-dark/10 text-sky-dark hover:bg-sky-dark/20 active:bg-sky-dark/30"
+              isFirstPage ? "bg-gray-100 text-gray-300 cursor-not-allowed" : "bg-sky-dark/10 text-sky-dark hover:bg-sky-dark/20"
             }`}
-            aria-label="Previous page"
           >
             ◀️
           </button>
 
-          {/* Page counter */}
           <div className="text-center">
-            <p className="font-nunito text-sm font-bold text-text-dark">
-              Page {currentPage + 1} of {totalPages}
-            </p>
-            <p className="font-sarabun text-xs text-text-dark/60">
-              หน้า {currentPage + 1} จาก {totalPages}
-            </p>
+            <p className="font-nunito text-sm font-bold text-text-dark">Page {currentPage + 1} of {totalPages}</p>
+            <p className="font-sarabun text-xs text-text-dark/60">หน้า {currentPage + 1} จาก {totalPages}</p>
           </div>
 
-          {/* Next button */}
           <button
-            onClick={goNext}
-            disabled={isLastPage}
+            onClick={goNext} disabled={isLastPage} aria-label="Next page"
             className={`flex h-14 w-14 items-center justify-center rounded-full text-2xl transition-colors ${
-              isLastPage
-                ? "bg-gray-100 text-gray-300 cursor-not-allowed"
-                : "bg-sky-dark/10 text-sky-dark hover:bg-sky-dark/20 active:bg-sky-dark/30"
+              isLastPage ? "bg-gray-100 text-gray-300 cursor-not-allowed" : "bg-sky-dark/10 text-sky-dark hover:bg-sky-dark/20"
             }`}
-            aria-label="Next page"
           >
             ▶️
           </button>
         </div>
 
-        {/* Auto-play toggle */}
+        {/* Auto-play */}
         <div className="px-5 pb-5">
           <button
             onClick={() => setIsAutoPlaying(!isAutoPlaying)}
             className={`w-full min-h-[48px] rounded-xl px-5 py-3 font-nunito text-sm font-bold transition-colors ${
-              isAutoPlaying
-                ? "bg-leaf text-white shadow-md"
-                : "bg-leaf/20 text-text-dark hover:bg-leaf/30"
+              isAutoPlaying ? "bg-leaf text-white shadow-md" : "bg-leaf/20 text-text-dark hover:bg-leaf/30"
             }`}
           >
             {isAutoPlaying ? "⏸ " : "▶ "}
-            Auto-play &middot;{" "}
-            <span className="font-sarabun">เล่นอัตโนมัติ</span>
-            {isAutoPlaying && (
-              <span className="ml-2 text-xs opacity-80">(ON)</span>
-            )}
+            Auto-play &middot; <span className="font-sarabun">เล่นอัตโนมัติ</span>
+            {isAutoPlaying && <span className="ml-2 text-xs opacity-80">(ON)</span>}
           </button>
+        </div>
+
+        {/* Progress bar */}
+        <div className="px-5 pb-4">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200">
+            <div
+              className="h-full rounded-full bg-sky-dark transition-all duration-500"
+              style={{ width: `${((currentPage + 1) / totalPages) * 100}%` }}
+            />
+          </div>
         </div>
       </div>
     </div>
