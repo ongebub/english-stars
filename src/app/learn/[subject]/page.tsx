@@ -23,13 +23,23 @@ export default async function SubjectPage({
   if (!data) notFound();
   const subject = data as Subject;
 
-  // Get current user for quiz stats
   const { data: { user } } = await supabase.auth.getUser();
+
+  // Quiz stats
   let attemptCount = 0;
   let bestScore: number | null = null;
   let bestTotal = 10;
 
+  // Flashcard stats
+  let flashcardViewed = 0;
+  let flashcardTotal = 0;
+  let flashcardsComplete = false;
+
+  // Medal
+  let quizMedal: string | null = null;
+
   if (user) {
+    // Quiz attempts
     const { data: attempts } = await supabase
       .from("quiz_attempts")
       .select("score, total")
@@ -40,6 +50,32 @@ export default async function SubjectPage({
       attemptCount = attempts.length;
       bestScore = Math.max(...attempts.map((a) => a.score));
       bestTotal = attempts.find((a) => a.score === bestScore)?.total || 10;
+    }
+
+    // Quiz medal
+    if (bestScore !== null) {
+      if (bestScore >= 10) quizMedal = "gold";
+      else if (bestScore >= 8) quizMedal = "silver";
+      else if (bestScore >= 6) quizMedal = "bronze";
+    }
+
+    // Flashcard progress
+    const { count: totalCards } = await supabase
+      .from("flashcards")
+      .select("id", { count: "exact", head: true })
+      .eq("subject_id", subject.id);
+
+    flashcardTotal = totalCards || 0;
+
+    if (flashcardTotal > 0) {
+      const { count: viewed } = await supabase
+        .from("flashcard_progress")
+        .select("id", { count: "exact", head: true })
+        .eq("child_id", user.id)
+        .eq("subject_id", subject.id);
+
+      flashcardViewed = viewed || 0;
+      flashcardsComplete = flashcardViewed >= flashcardTotal;
     }
   }
 
@@ -62,6 +98,32 @@ export default async function SubjectPage({
       </h1>
       <p className="font-sarabun text-lg text-text-mid">{subject.title_th}</p>
 
+      {/* Medals display */}
+      {(flashcardsComplete || quizMedal) && (
+        <div className="mt-3 flex items-center gap-2">
+          {flashcardsComplete && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-leaf/20 px-3 py-1 text-sm font-bold">
+              📗 <span className="font-nunito">Cards done</span>
+            </span>
+          )}
+          {quizMedal === "gold" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-sun/30 px-3 py-1 text-sm font-bold">
+              🥇 <span className="font-nunito">Gold</span>
+            </span>
+          )}
+          {quizMedal === "silver" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-gray-200 px-3 py-1 text-sm font-bold">
+              🥈 <span className="font-nunito">Silver</span>
+            </span>
+          )}
+          {quizMedal === "bronze" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-coral/20 px-3 py-1 text-sm font-bold">
+              🥉 <span className="font-nunito">Bronze</span>
+            </span>
+          )}
+        </div>
+      )}
+
       <div className="mt-8 grid w-full grid-cols-2 gap-4">
         {MODULES.map((mod) => (
           <Link
@@ -76,11 +138,31 @@ export default async function SubjectPage({
             <span className="font-sarabun text-center text-sm text-text-mid">
               {mod.titleTh}
             </span>
+
+            {/* Flashcard progress */}
+            {mod.path === "flashcards" && flashcardTotal > 0 && (
+              <span className="mt-1 text-xs text-text-mid">
+                {flashcardsComplete ? (
+                  <span className="text-leaf font-bold">✅ Complete / ครบแล้ว</span>
+                ) : (
+                  <>{flashcardViewed} of {flashcardTotal} viewed</>
+                )}
+              </span>
+            )}
+
             {/* Quiz stats */}
             {mod.path === "quiz" && attemptCount > 0 && (
               <span className="mt-1 text-xs text-text-mid">
-                {attemptCount} attempt{attemptCount > 1 ? "s" : ""} &middot; Best: {bestScore}/{bestTotal}{" "}
+                {quizMedal === "gold" && "🥇 Gold · "}
+                {quizMedal === "silver" && "🥈 Silver · "}
+                {quizMedal === "bronze" && "🥉 Bronze · "}
+                Best: {bestScore}/{bestTotal}{" "}
                 {"⭐".repeat(stars)}
+              </span>
+            )}
+            {mod.path === "quiz" && attemptCount > 0 && (
+              <span className="text-xs text-text-light">
+                {attemptCount} attempt{attemptCount > 1 ? "s" : ""}
               </span>
             )}
           </Link>
