@@ -27,12 +27,20 @@ export default async function QuizPage({
   const subject = subjectData as Subject;
 
   /* ── Fetch all quiz questions for this subject ── */
-  const { data: questionsData } = await supabase
+  console.log(`[Quiz] Fetching questions for subject: ${subject.title_en} (id: ${subject.id}, slug: ${slug})`);
+
+  const { data: questionsData, error: questionsError } = await supabase
     .from("quiz_questions")
     .select("*")
-    .eq("subject_id", subject.id);
+    .eq("subject_id", subject.id)
+    .limit(60);
+
+  if (questionsError) {
+    console.error("[Quiz] Error fetching questions:", questionsError);
+  }
 
   const questions = (questionsData ?? []) as QuizQuestion[];
+  console.log(`[Quiz] Fetched ${questions.length} questions for ${subject.title_en}`);
 
   /* ── Not enough questions ── */
   if (questions.length < 1) {
