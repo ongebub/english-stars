@@ -393,33 +393,40 @@ export default function QuizEngine({
                   animationDelay: `${idx * 0.08}s`,
                 }}
               >
-                <span className="flex items-center justify-center gap-2">
-                  {option.image_url ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={option.image_url}
-                        alt={option.text}
-                        className="h-10 w-10 rounded object-contain"
-                      />
-                      <span>{option.text}</span>
-                    </>
-                  ) : (
+                {/* word_to_picture with image: large image + small caption */}
+                {currentQuestion.question_type === "word_to_picture" && option.image_url ? (
+                  <span className="flex flex-col items-center gap-1 w-full">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={option.image_url}
+                      alt={option.text}
+                      className="h-[120px] w-[120px] rounded-lg object-contain"
+                    />
+                    <span className="text-xs text-text-mid">{option.text}</span>
+                    {selectedOption !== null && idx === selectedOption && (
+                      <span className="text-lg">{option.is_correct ? "✅" : "❌"}</span>
+                    )}
+                    {selectedOption !== null && idx === correctIndex && idx !== selectedOption && (
+                      <span className="text-lg">✅</span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-2">
+                    {option.image_url && (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={option.image_url} alt={option.text} className="h-10 w-10 rounded object-contain" />
+                      </>
+                    )}
                     <span>{option.text}</span>
-                  )}
-
-                  {/* Feedback icon */}
-                  {selectedOption !== null && idx === selectedOption && (
-                    <span className="ml-1 text-lg">
-                      {option.is_correct ? "✅" : "❌"}
-                    </span>
-                  )}
-                  {selectedOption !== null &&
-                    idx === correctIndex &&
-                    idx !== selectedOption && (
+                    {selectedOption !== null && idx === selectedOption && (
+                      <span className="ml-1 text-lg">{option.is_correct ? "✅" : "❌"}</span>
+                    )}
+                    {selectedOption !== null && idx === correctIndex && idx !== selectedOption && (
                       <span className="ml-1 text-lg">✅</span>
                     )}
-                </span>
+                  </span>
+                )}
               </button>
             );
           })}
