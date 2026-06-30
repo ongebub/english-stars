@@ -83,6 +83,7 @@ export default async function FlashcardsPage({ params }: PageProps) {
           flashcards={flashcards}
           subjectTitle={subject.title_en}
           subjectId={subject.id}
+          subjectSlug={slug}
         />
       )}
     </div>
