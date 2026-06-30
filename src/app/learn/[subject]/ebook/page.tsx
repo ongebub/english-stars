@@ -77,7 +77,7 @@ export default async function EbookPage({ params }: PageProps) {
           </Link>
         </div>
       ) : (
-        <EbookReader pages={pages} subjectTitle={subject.title_en} subjectId={subject.id} />
+        <EbookReader pages={pages} subjectTitle={subject.title_en} subjectId={subject.id} subjectSlug={slug} />
       )}
     </div>
   );
