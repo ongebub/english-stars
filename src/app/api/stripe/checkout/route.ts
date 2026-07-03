@@ -105,8 +105,8 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/${planType === "school" ? "school" : "learn"}?subscribed=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/subscribe`,
+      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://englishallstars.com"}/${planType === "school" ? "school" : "learn"}?subscribed=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://englishallstars.com"}/subscribe`,
       metadata: {
         supabase_user_id: user.id,
         plan_type: planType,

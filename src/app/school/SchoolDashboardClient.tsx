@@ -104,7 +104,7 @@ export default function SchoolDashboardClient({
   if (!schoolCode) {
     return (
       <div className="max-w-md mx-auto mt-8 text-center">
-        <p className="text-text-mid">No school code found. Please contact support.</p>
+        <p className="text-text-mid">No school code found. Please contact <a href="mailto:info@englishallstars.com" className="text-sky-dark hover:underline">info@englishallstars.com</a></p>
       </div>
     );
   }

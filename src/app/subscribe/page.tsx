@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 function familyPrice(children: number): number {
   if (children <= 1) return 750;
@@ -62,7 +63,7 @@ export default function SubscribePage() {
     <div className="min-h-screen flex items-center justify-center px-4 py-8">
       <div className="max-w-2xl w-full">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-3">🦉</div>
+          <Image src="/logo-small.png" alt="English Allstars" width={120} height={120} className="mx-auto mb-3" />
           <h1 className="text-2xl font-extrabold text-text-dark">Subscribe to English Allstars</h1>
           <p className="font-sarabun text-text-mid mt-1">สมัครสมาชิก English Allstars</p>
         </div>
@@ -284,6 +285,15 @@ export default function SubscribePage() {
         <div className="bg-sun/30 rounded-xl p-4 mt-6 text-center">
           <p className="text-sm text-text-dark font-semibold">🆓 ABCs subject is free!</p>
           <p className="font-sarabun text-xs text-text-mid">วิชา ABCs เรียนฟรี!</p>
+        </div>
+
+        <div className="text-center mt-6">
+          <p className="text-xs text-text-light">
+            Questions? Contact us at{" "}
+            <a href="mailto:info@englishallstars.com" className="text-sky-dark hover:underline">
+              info@englishallstars.com
+            </a>
+          </p>
         </div>
       </div>
     </div>

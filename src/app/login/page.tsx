@@ -225,6 +225,10 @@ export default function LoginPage() {
           English Allstars - Learn English the fun way!
           <br />
           เรียนภาษาอังกฤษอย่างสนุกสนาน!
+          <br />
+          <a href="mailto:info@englishallstars.com" className="text-sky-dark hover:underline text-xs">
+            info@englishallstars.com
+          </a>
         </p>
       </div>
     </div>

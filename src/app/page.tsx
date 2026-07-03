@@ -104,6 +104,15 @@ export default function LandingPage() {
           <p className="font-sarabun text-sm text-text-light mt-1">
             พัฒนาโดยเจ้าของภาษาอังกฤษ และอาจารย์ภาษาอังกฤษมหาวิทยาลัยไทย
           </p>
+          <p className="text-xs text-text-light mt-3">
+            <a href="mailto:info@englishallstars.com" className="text-sky-dark hover:underline">
+              info@englishallstars.com
+            </a>
+            {" "}&middot;{" "}
+            <a href="https://englishallstars.com" className="text-sky-dark hover:underline">
+              englishallstars.com
+            </a>
+          </p>
         </div>
       </section>
     </div>
