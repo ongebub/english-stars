@@ -40,6 +40,10 @@ export default async function SubjectPage({
   let ebookTotalPages = 0;
   let ebookComplete = false;
 
+  // Picture quiz stats
+  let pictureQuizAttempts = 0;
+  let pictureQuizBest: number | null = null;
+
   // Medal
   let quizMedal: string | null = null;
 
@@ -104,6 +108,18 @@ export default async function SubjectPage({
         ebookComplete = ebookProgress.completed || false;
       }
     }
+
+    // Picture quiz attempts
+    const { data: pqAttempts } = await supabase
+      .from("picture_quiz_attempts")
+      .select("score, total")
+      .eq("child_id", user.id)
+      .eq("subject_id", subject.id);
+
+    if (pqAttempts && pqAttempts.length > 0) {
+      pictureQuizAttempts = pqAttempts.length;
+      pictureQuizBest = Math.max(...pqAttempts.map((a) => a.score));
+    }
   }
 
   const stars = bestScore !== null
@@ -114,6 +130,7 @@ export default async function SubjectPage({
     { emoji: "🃏", titleEn: "Flashcards", titleTh: "บัตรคำศัพท์", path: "flashcards", bg: "bg-sun/30" },
     { emoji: "📖", titleEn: "E-book", titleTh: "หนังสือ", path: "ebook", bg: "bg-leaf/20" },
     { emoji: "🧠", titleEn: "Quiz", titleTh: "แบบทดสอบ", path: "quiz", bg: "bg-coral/20" },
+    { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30" },
     { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20" },
   ] as const;
 
@@ -203,6 +220,19 @@ export default async function SubjectPage({
             {mod.path === "quiz" && attemptCount > 0 && (
               <span className="text-xs text-text-light">
                 {attemptCount} attempt{attemptCount > 1 ? "s" : ""}
+              </span>
+            )}
+
+            {/* Picture quiz stats */}
+            {mod.path === "picture-quiz" && pictureQuizAttempts > 0 && (
+              <span className="mt-1 text-xs text-text-mid">
+                Best: {pictureQuizBest}/10{" "}
+                {"⭐".repeat(pictureQuizBest !== null ? (pictureQuizBest >= 9 ? 3 : pictureQuizBest >= 7 ? 2 : 1) : 0)}
+              </span>
+            )}
+            {mod.path === "picture-quiz" && pictureQuizAttempts === 0 && (
+              <span className="mt-1 text-xs text-text-mid">
+                Tap the right picture!
               </span>
             )}
           </Link>

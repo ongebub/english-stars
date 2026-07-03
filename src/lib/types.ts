@@ -117,6 +117,24 @@ export interface SchoolCode {
   expires_at: string;
 }
 
+export interface PictureQuizOption {
+  text: string;
+  image_url: string;
+  is_correct: boolean;
+}
+
+export interface PictureQuizQuestion {
+  id: string;
+  subject_id: string;
+  question_en: string;
+  question_th: string;
+  audio_url: string | null;
+  correct_option_text: string;
+  options: PictureQuizOption[];
+  difficulty: number;
+  created_at: string;
+}
+
 export type TrophyType =
   | "first_steps"
   | "perfect_score"
