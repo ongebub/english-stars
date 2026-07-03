@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function LearnLayout({
   children,
@@ -8,13 +9,17 @@ export default function LearnLayout({
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#F5F7FA" }}>
       {/* ── Sticky top nav ── */}
-      <nav className="sticky top-0 z-30 bg-sky-dark px-4 py-3 shadow-md">
+      <nav className="sticky top-0 z-30 bg-sky-dark px-4 py-2 shadow-md">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
-          <Link
-            href="/learn"
-            className="font-nunito text-xl font-extrabold text-white"
-          >
-            English&nbsp;Stars&nbsp;🦉
+          <Link href="/learn" className="flex items-center">
+            <Image
+              src="/logo-small.png"
+              alt="English Allstars"
+              width={48}
+              height={48}
+              priority
+              className="rounded-lg"
+            />
           </Link>
 
           <div className="flex items-center gap-4">

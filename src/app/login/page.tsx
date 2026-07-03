@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
 export default function LoginPage() {
@@ -74,9 +75,14 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-text-dark font-nunito">
-            English Stars 🦉
-          </h1>
+          <Image
+            src="/logo.png"
+            alt="English Allstars"
+            width={200}
+            height={200}
+            priority
+            className="mx-auto mb-2"
+          />
           <p className="text-text-mid font-sarabun mt-2 text-lg">
             เรียนภาษาอังกฤษสนุกๆ
           </p>
@@ -216,7 +222,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-sm text-text-mid mt-4 font-sarabun">
-          English Stars - Learn English the fun way!
+          English Allstars - Learn English the fun way!
           <br />
           เรียนภาษาอังกฤษอย่างสนุกสนาน!
         </p>

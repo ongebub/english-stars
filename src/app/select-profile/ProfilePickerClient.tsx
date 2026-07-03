@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { setActiveChild } from "@/lib/active-child";
 import type { Profile } from "@/lib/types";
 
@@ -76,7 +77,14 @@ export default function ProfilePickerClient({ childProfiles: children }: Props) 
       <div className="max-w-lg w-full">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="text-7xl mb-4">🦉</div>
+          <Image
+            src="/logo-small.png"
+            alt="English Allstars"
+            width={200}
+            height={200}
+            priority
+            className="mx-auto mb-4"
+          />
           <h1 className="text-3xl font-black text-white font-nunito">
             Who&apos;s Learning Today?
           </h1>

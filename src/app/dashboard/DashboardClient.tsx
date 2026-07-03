@@ -177,7 +177,7 @@ export default function DashboardClient({
           Hello, {profile.display_name}! 👋
         </h1>
         <p className="text-text-mid font-sarabun text-lg mt-1">
-          สวัสดี {profile.display_name}! ยินดีต้อนรับสู่ English Stars
+          สวัสดี {profile.display_name}! ยินดีต้อนรับสู่ English Allstars
         </p>
       </div>
 

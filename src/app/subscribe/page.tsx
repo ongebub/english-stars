@@ -63,8 +63,8 @@ export default function SubscribePage() {
       <div className="max-w-2xl w-full">
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">🦉</div>
-          <h1 className="text-2xl font-extrabold text-text-dark">Subscribe to English Stars</h1>
-          <p className="font-sarabun text-text-mid mt-1">สมัครสมาชิก English Stars</p>
+          <h1 className="text-2xl font-extrabold text-text-dark">Subscribe to English Allstars</h1>
+          <p className="font-sarabun text-text-mid mt-1">สมัครสมาชิก English Allstars</p>
         </div>
 
         {/* Plan selector */}

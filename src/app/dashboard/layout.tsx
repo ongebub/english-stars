@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
 export default function DashboardLayout({
@@ -23,11 +24,15 @@ export default function DashboardLayout({
       <nav className="bg-white shadow-md sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           {/* Logo */}
-          <Link
-            href="/dashboard"
-            className="text-xl font-bold text-text-dark font-nunito hover:text-sky-dark transition-colors"
-          >
-            English Stars 🦉
+          <Link href="/dashboard" className="flex items-center">
+            <Image
+              src="/logo-small.png"
+              alt="English Allstars"
+              width={48}
+              height={48}
+              priority
+              className="rounded-lg"
+            />
           </Link>
 
           {/* Navigation links */}

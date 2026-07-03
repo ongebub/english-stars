@@ -1,10 +1,25 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export const metadata: Metadata = {
-  title: "English Stars 🦉 · เรียนภาษาอังกฤษสนุกๆ",
-  description: "Prepare your child for English school entrance exams. Fun flashcards, e-books, quizzes and more for Thai children aged 4-10.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  title: "English Allstars | เรียนภาษาอังกฤษ",
+  description: "English Allstars - K-1 ESL test prep for Thai children preparing for English school entrance exams.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "English Allstars",
+    description: "K-1 ESL test prep for Thai children",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({

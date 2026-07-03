@@ -66,8 +66,8 @@ export async function POST(req: NextRequest) {
       : calculateSchoolPrice(childCount);
 
     const productName = planType === "family"
-      ? "English Stars Family Plan"
-      : "English Stars School Plan";
+      ? "English Allstars Family Plan"
+      : "English Allstars School Plan";
 
     const description = planType === "family"
       ? `Family plan – ${childCount} child${childCount > 1 ? "ren" : ""}`

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function LandingPage() {
   return (
@@ -9,8 +10,14 @@ export default function LandingPage() {
         <div className="absolute -top-20 -right-16 w-72 h-72 bg-white/[0.07] rounded-full" />
         <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-white/[0.05] rounded-full" />
         <div className="relative z-10 max-w-lg mx-auto text-center">
-          <div className="text-6xl mb-4 animate-bounce">🦉</div>
-          <h1 className="text-4xl font-black mb-2">English Stars</h1>
+          <Image
+            src="/logo.png"
+            alt="English Allstars"
+            width={300}
+            height={300}
+            priority
+            className="mx-auto mb-4"
+          />
           <p className="font-sarabun text-lg opacity-90 mb-1">เรียนภาษาอังกฤษสนุกๆ</p>
           <p className="text-sm opacity-80 mb-6">Prepare your child for English school entrance exams</p>
           <p className="font-sarabun text-sm opacity-80 mb-8">เตรียมความพร้อมสำหรับการสอบเข้าโรงเรียนภาษาอังกฤษ</p>

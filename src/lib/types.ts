@@ -1,5 +1,5 @@
 /* ──────────────────────────────────────────────
- *  Database schema types for English Stars
+ *  Database schema types for English Allstars
  * ────────────────────────────────────────────── */
 
 // ── Row types ────────────────────────────────
