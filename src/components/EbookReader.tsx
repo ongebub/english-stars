@@ -97,10 +97,8 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
           },
           { onConflict: "child_id,subject_id" }
         );
-        if (isComplete && !savedRef.current) {
-          savedRef.current = true;
-          setShowComplete(true);
-        }
+        // Don't show completion screen here — wait until audio finishes on last page
+        if (isComplete) savedRef.current = true;
       } catch { /* silent */ }
     }
     saveProgress();
@@ -201,10 +199,16 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
         setIsPlaying(false);
         setHighlightIndex(-1);
         stopLoop();
+
+        // Show completion screen after last page audio finishes
+        if (currentPage >= totalPages - 1) {
+          setShowComplete(true);
+          return;
+        }
       }, 600);
 
       // Auto-advance: check the ref (always current) not the stale closure
-      if (autoPlayRef.current) {
+      if (autoPlayRef.current && currentPage < totalPages - 1) {
         autoAdvanceTimer.current = setTimeout(() => {
           setCurrentPage((prev) => {
             if (prev >= totalPages - 1) {
