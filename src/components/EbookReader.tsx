@@ -225,7 +225,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
       setIsPlaying(true);
       if (wordTimings && wordTimings.length > 0) startLoop();
     }).catch(() => {});
-  }, [page.audio_url, words.length, wordTimings, playbackRate, totalPages, stopAudio, startLoop, stopLoop]);
+  }, [page.audio_url, words.length, wordTimings, playbackRate, totalPages, currentPage, stopAudio, startLoop, stopLoop]);
 
   // Keep playAudio ref in sync so auto-play effect always calls the latest version
   playAudioRef.current = playAudio;
@@ -262,7 +262,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
     }
   }, [wordTimings, page.audio_url, words.length, playbackRate, startLoop, stopLoop]);
 
-  useEffect(() => { if (isLastPage && isAutoPlaying) setIsAutoPlaying(false); }, [isLastPage, isAutoPlaying]);
+  // Don't turn off auto-play on last page — let audio finish and show completion
   useEffect(() => { return () => { stopAudio(); }; }, [stopAudio]);
 
   // Completion screen

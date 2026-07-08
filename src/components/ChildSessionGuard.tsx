@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { getActiveChild, clearActiveChild } from "@/lib/active-child";
+import { clearActiveChild } from "@/lib/active-child";
 import { getSchoolSession, clearSchoolSession } from "@/lib/school-session";
 
 const HEARTBEAT_INTERVAL = 30_000; // 30 seconds
