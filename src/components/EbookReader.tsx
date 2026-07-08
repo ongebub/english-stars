@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import NextImage from "next/image";
 import type { EbookPage } from "@/lib/types";
 
 interface EbookReaderProps {
@@ -331,13 +332,16 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
         onTouchEnd={handleTouchEnd}
       >
         {/* Image — fills available space */}
-        <div className="flex-1 flex items-center justify-center min-h-0 w-full max-w-md px-4 pt-1">
+        <div className="flex-1 flex items-center justify-center min-h-0 w-full max-w-md px-4 pt-1 relative">
           {page.image_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <NextImage
               src={page.image_url}
               alt={`Page ${page.page_number}`}
+              width={512}
+              height={512}
+              priority={currentPage === 0}
               className="max-w-full max-h-full object-contain rounded-2xl shadow-md"
+              sizes="(max-width: 448px) 100vw, 448px"
             />
           ) : (
             <div className="w-[80%] aspect-square flex items-center justify-center rounded-2xl bg-sun/40">

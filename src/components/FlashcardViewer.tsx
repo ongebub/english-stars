@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
+import NextImage from "next/image";
 import type { Flashcard } from "@/lib/types";
 
 const PASTEL_COLORS = [
@@ -201,9 +202,10 @@ export function FlashcardViewer({
           {/* Image */}
           <div className={`flex-1 flex items-center justify-center w-full min-h-0 rounded-2xl ${bgColor}`}>
             {card.image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={card.image_url} alt={card.word_en}
-                className="max-w-full max-h-full object-contain rounded-xl p-2" />
+              <NextImage src={card.image_url} alt={card.word_en}
+                width={400} height={400}
+                className="max-w-full max-h-full object-contain rounded-xl p-2"
+                sizes="(max-width: 448px) 100vw, 400px" />
             ) : (
               <span className="select-none text-8xl">{emoji}</span>
             )}
