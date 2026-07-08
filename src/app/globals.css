@@ -2,14 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Sarabun:wght@400;600;700&display=swap');
-
 body {
   font-family: 'Nunito', sans-serif;
-  background: linear-gradient(160deg, #E3F2FD 0%, #E8F5E9 50%, #FFF8E1 100%);
   min-height: 100vh;
+}
+
+html:not(.dark) body {
+  background: linear-gradient(160deg, #E3F2FD 0%, #E8F5E9 50%, #FFF8E1 100%);
   color: #1A237E;
 }
+
+html.dark body {
+  background: #111827 !important;
+  color: #E5E7EB;
+}
+
+/* Force dark backgrounds on common white containers */
+html.dark .bg-white { background-color: #1F2937 !important; }
+html.dark .bg-cream { background-color: #111827 !important; }
+html.dark .bg-\[\#F5F7FA\] { background-color: #111827 !important; }
+
+/* Dark mode text overrides for Thai subtitles and common text */
+html.dark .text-text-dark { color: #F3F4F6 !important; }
+html.dark .text-text-mid { color: #D1D5DB !important; }
+html.dark .text-text-light { color: #9CA3AF !important; }
+html.dark .text-\[\#1A237E\] { color: #F3F4F6 !important; }
+
+/* Borders */
+html.dark .border-gray-100 { border-color: #374151 !important; }
+html.dark .border-gray-200 { border-color: #374151 !important; }
+
+/* Shadows look better subtle in dark mode */
+html.dark .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important; }
+html.dark .shadow-md { box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important; }
+html.dark .shadow-lg { box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important; }
 
 @layer utilities {
   .text-balance {

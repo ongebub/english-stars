@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import type { EbookPage } from "@/lib/types";
@@ -12,46 +12,73 @@ interface EbookReaderProps {
   subjectSlug: string;
 }
 
-const PASTEL_COLORS = ["bg-sun/40", "bg-leaf/30", "bg-coral/30", "bg-sky-dark/20"];
-
-/**
- * Calculate estimated start time for each word based on character-weighted
- * distribution across the total audio duration. Longer words get more time.
- */
-function calculateWordTimings(words: string[], duration: number) {
-  const totalChars = words.reduce((sum, w) => sum + Math.max(w.length, 1), 0);
-  let elapsed = 0;
-  return words.map((word) => {
-    const start = elapsed;
-    const wordDuration = (Math.max(word.length, 1) / totalChars) * duration;
-    elapsed += wordDuration;
-    return { word, start, end: elapsed };
-  });
-}
-
 export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: EbookReaderProps) {
   const [currentPage, setCurrentPage] = useState(0);
-  const [isFading, setIsFading] = useState(false);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(-1);
+  const [isSlow, setIsSlow] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("ebook-speed") !== "normal";
+    }
+    return true;
+  });
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const timingsRef = useRef<{ word: string; start: number; end: number }[]>([]);
+  const rafRef = useRef<number | null>(null);
+  const autoPlayRef = useRef(false);
+  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const playAudioRef = useRef<() => void>(() => {});
   const savedRef = useRef(false);
   const touchStartRef = useRef<number | null>(null);
+
+  // Keep refs in sync so callbacks always see current values
+  autoPlayRef.current = isAutoPlaying;
 
   const page = pages[currentPage];
   const totalPages = pages.length;
   const isFirstPage = currentPage === 0;
   const isLastPage = currentPage === totalPages - 1;
-  const pageEmoji = (page as EbookPage & { emoji?: string }).emoji;
-  const pastelBg = PASTEL_COLORS[currentPage % PASTEL_COLORS.length];
+  const playbackRate = isSlow ? 0.75 : 1;
 
-  // Split text into words for highlighting
-  const words = page.text_en.split(/\s+/).filter(Boolean);
+  // Preload ALL page images on mount so navigation is instant
+  useEffect(() => {
+    for (const p of pages) {
+      if (p.image_url) {
+        const img = new window.Image();
+        img.src = p.image_url;
+      }
+      if (p.audio_url) {
+        const audio = new Audio();
+        audio.preload = "auto";
+        audio.src = p.audio_url;
+      }
+    }
+  }, [pages]);
+
+  const wordTimings = page.word_timings;
+  const words = useMemo(() => {
+    if (wordTimings && wordTimings.length > 0) {
+      return wordTimings.map((wt) => wt.word);
+    }
+    return page.text_en.split(/\s+/).filter(Boolean);
+  }, [wordTimings, page.text_en]);
+
+  const indexAt = useCallback(
+    (t: number) => {
+      if (!wordTimings || wordTimings.length === 0) return -1;
+      let lo = 0, hi = wordTimings.length - 1, ans = -1;
+      while (lo <= hi) {
+        const mid = (lo + hi) >> 1;
+        if (wordTimings[mid].start <= t) { ans = mid; lo = mid + 1; }
+        else { hi = mid - 1; }
+      }
+      if (ans === wordTimings.length - 1 && ans >= 0 && t > wordTimings[ans].end + 0.15) return -1;
+      return ans;
+    },
+    [wordTimings]
+  );
 
   // Save progress
   useEffect(() => {
@@ -79,49 +106,79 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
     saveProgress();
   }, [currentPage, totalPages, subjectId]);
 
-  // Reset highlight when page changes
+  const stopLoop = useCallback(() => {
+    if (rafRef.current != null) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+  }, []);
+
+  const startLoop = useCallback(() => {
+    const tick = () => {
+      const a = audioRef.current;
+      if (!a) return;
+      setHighlightIndex(indexAt(a.currentTime));
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    stopLoop();
+    rafRef.current = requestAnimationFrame(tick);
+  }, [indexAt, stopLoop]);
+
   useEffect(() => {
     setHighlightIndex(-1);
     setIsPlaying(false);
-  }, [currentPage]);
+    stopLoop();
+  }, [currentPage, stopLoop]);
 
   const stopAudio = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.removeEventListener("timeupdate", handleTimeUpdate);
-      audioRef.current = null;
-    }
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current.onended = null; audioRef.current = null; }
+    if (autoAdvanceTimer.current) { clearTimeout(autoAdvanceTimer.current); autoAdvanceTimer.current = null; }
     setIsPlaying(false);
     setHighlightIndex(-1);
-  }, []);
-
-  function handleTimeUpdate() {
-    const audio = audioRef.current;
-    if (!audio || !timingsRef.current.length) return;
-    const t = audio.currentTime;
-    const idx = timingsRef.current.findIndex((w) => t >= w.start && t < w.end);
-    if (idx !== -1) setHighlightIndex(idx);
-  }
+    stopLoop();
+  }, [stopLoop]);
 
   const goToPage = useCallback((index: number) => {
     if (index < 0 || index >= totalPages) return;
     stopAudio();
-    setIsFading(true);
-    setTimeout(() => { setCurrentPage(index); setIsFading(false); }, 200);
+    setCurrentPage(index);
   }, [totalPages, stopAudio]);
 
-  const goNext = useCallback(() => {
-    if (!isLastPage) goToPage(currentPage + 1);
-  }, [currentPage, isLastPage, goToPage]);
+  const goNext = useCallback(() => { if (!isLastPage) goToPage(currentPage + 1); }, [currentPage, isLastPage, goToPage]);
+  const goPrev = useCallback(() => { if (!isFirstPage) goToPage(currentPage - 1); }, [currentPage, isFirstPage, goToPage]);
 
-  const goPrev = useCallback(() => {
-    if (!isFirstPage) goToPage(currentPage - 1);
-  }, [currentPage, isFirstPage, goToPage]);
-
-  // Swipe support
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartRef.current = e.touches[0].clientX;
+  const toggleSpeed = useCallback(() => {
+    setIsSlow((prev) => {
+      const next = !prev;
+      localStorage.setItem("ebook-speed", next ? "slow" : "normal");
+      if (audioRef.current) audioRef.current.playbackRate = next ? 0.75 : 1;
+      return next;
+    });
   }, []);
+
+  // Auto-play toggle: if active and audio is playing, pause it in place.
+  // If active and audio is paused, resume it. If not active, turn on auto-play.
+  const toggleAutoPlay = useCallback(() => {
+    if (isAutoPlaying) {
+      const a = audioRef.current;
+      if (a && !a.paused) {
+        // Pause audio and highlighting in place
+        a.pause();
+        setIsPlaying(false);
+        stopLoop();
+      } else if (a && a.paused) {
+        // Resume from where we left off
+        a.play().then(() => {
+          setIsPlaying(true);
+          if (wordTimings && wordTimings.length > 0) startLoop();
+        }).catch(() => {});
+      } else {
+        // No audio ref (between pages) — turn off auto-play
+        setIsAutoPlaying(false);
+      }
+    } else {
+      setIsAutoPlaying(true);
+    }
+  }, [isAutoPlaying, wordTimings, startLoop, stopLoop]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => { touchStartRef.current = e.touches[0].clientX; }, []);
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (touchStartRef.current === null) return;
     const diff = e.changedTouches[0].clientX - touchStartRef.current;
@@ -129,104 +186,99 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
     touchStartRef.current = null;
   }, [goNext, goPrev]);
 
+  // Core audio play — handles both manual play and auto-play advancing
   const playAudio = useCallback(() => {
     if (!page.audio_url) return;
     stopAudio();
-
     const audio = new Audio(page.audio_url);
+    audio.playbackRate = playbackRate;
     audioRef.current = audio;
 
-    // When we know the duration, calculate word timings
-    audio.addEventListener("loadedmetadata", () => {
-      timingsRef.current = calculateWordTimings(words, audio.duration);
-    });
+    audio.onended = () => {
+      // Brief highlight on last word then clear
+      setHighlightIndex(words.length - 1);
+      setTimeout(() => {
+        setIsPlaying(false);
+        setHighlightIndex(-1);
+        stopLoop();
+      }, 600);
 
-    // Also handle case where duration is available immediately (cached audio)
-    if (audio.duration && !isNaN(audio.duration)) {
-      timingsRef.current = calculateWordTimings(words, audio.duration);
-    }
-
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-
-    audio.addEventListener("ended", () => {
-      setIsPlaying(false);
-      // Keep last word highlighted briefly, then clear
-      setTimeout(() => setHighlightIndex(-1), 800);
-    });
+      // Auto-advance: check the ref (always current) not the stale closure
+      if (autoPlayRef.current) {
+        autoAdvanceTimer.current = setTimeout(() => {
+          setCurrentPage((prev) => {
+            if (prev >= totalPages - 1) {
+              setIsAutoPlaying(false);
+              return prev;
+            }
+            return prev + 1;
+          });
+        }, 1200);
+      }
+    };
 
     audio.play().then(() => {
       setIsPlaying(true);
+      if (wordTimings && wordTimings.length > 0) startLoop();
     }).catch(() => {});
-  }, [page.audio_url, words, stopAudio]);
+  }, [page.audio_url, words.length, wordTimings, playbackRate, totalPages, stopAudio, startLoop, stopLoop]);
 
-  // Auto-play: play audio, then advance when audio ends
+  // Keep playAudio ref in sync so auto-play effect always calls the latest version
+  playAudioRef.current = playAudio;
+
+  // When auto-play is on and the page changes, start playing the new page
   useEffect(() => {
     if (!isAutoPlaying) return;
+    // Small delay so the fade transition finishes
+    const t = setTimeout(() => {
+      if (autoPlayRef.current) playAudioRef.current();
+    }, 400);
+    return () => clearTimeout(t);
+  }, [isAutoPlaying, currentPage]);
 
-    function onEnded() {
-      // Wait a beat then go to next page
-      autoPlayRef.current = setTimeout(() => {
-        setCurrentPage((prev) => {
-          if (prev >= totalPages - 1) {
-            setIsAutoPlaying(false);
-            return prev;
-          }
-          setIsFading(true);
-          setTimeout(() => setIsFading(false), 200);
-          return prev + 1;
-        });
-      }, 1500) as unknown as ReturnType<typeof setInterval>;
+  const jumpTo = useCallback((i: number) => {
+    if (!wordTimings || !wordTimings[i]) return;
+    const a = audioRef.current;
+    if (!a) {
+      if (!page.audio_url) return;
+      const audio = new Audio(page.audio_url);
+      audio.playbackRate = playbackRate;
+      audioRef.current = audio;
+      audio.onended = () => {
+        setHighlightIndex(words.length - 1);
+        setTimeout(() => { setIsPlaying(false); setHighlightIndex(-1); stopLoop(); }, 600);
+      };
+      audio.currentTime = wordTimings[i].start + 0.001;
+      audio.play().then(() => { setIsPlaying(true); startLoop(); }).catch(() => {});
+      return;
     }
-
-    // Play current page audio
-    if (page.audio_url) {
-      // Small delay to let state settle
-      const t = setTimeout(() => {
-        if (!audioRef.current || audioRef.current.paused) {
-          playAudio();
-        }
-        if (audioRef.current) {
-          audioRef.current.addEventListener("ended", onEnded, { once: true });
-        }
-      }, 300);
-      return () => { clearTimeout(t); };
-    } else {
-      // No audio, just wait then advance
-      autoPlayRef.current = setTimeout(onEnded, 4000) as unknown as ReturnType<typeof setInterval>;
+    a.currentTime = wordTimings[i].start + 0.001;
+    if (a.paused) {
+      a.play().then(() => { setIsPlaying(true); startLoop(); }).catch(() => {});
     }
+  }, [wordTimings, page.audio_url, words.length, playbackRate, startLoop, stopLoop]);
 
-    return () => {
-      if (autoPlayRef.current) clearTimeout(autoPlayRef.current as unknown as number);
-    };
-  }, [isAutoPlaying, currentPage, page.audio_url, totalPages, playAudio]);
-
-  useEffect(() => {
-    if (isLastPage && isAutoPlaying) setIsAutoPlaying(false);
-  }, [isLastPage, isAutoPlaying]);
-
-  // Cleanup
-  useEffect(() => {
-    return () => { stopAudio(); };
-  }, [stopAudio]);
+  useEffect(() => { if (isLastPage && isAutoPlaying) setIsAutoPlaying(false); }, [isLastPage, isAutoPlaying]);
+  useEffect(() => { return () => { stopAudio(); }; }, [stopAudio]);
 
   // Completion screen
   if (showComplete) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white px-6">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white dark:bg-gray-900 px-6 transition-colors">
         <div className="text-center">
           <div className="text-8xl mb-6 animate-bounce">🦉</div>
-          <h2 className="font-nunito text-3xl font-black text-text-dark">You finished the book!</h2>
-          <p className="font-sarabun text-xl text-text-mid mt-2">เก่งมาก! 🎉</p>
+          <h2 className="font-fredoka text-3xl font-semibold text-text-dark dark:text-gray-100">You finished the book!</h2>
+          <p className="font-sarabun text-xl text-text-mid dark:text-gray-400 mt-2">เก่งมาก! 🎉</p>
           <div className="mt-4 flex gap-2 justify-center text-4xl">
             <span>⭐</span><span>⭐</span><span>⭐</span>
           </div>
           <div className="mt-8 flex flex-col gap-3 w-full max-w-xs mx-auto">
             <button onClick={() => { setShowComplete(false); goToPage(0); savedRef.current = false; }}
-              className="min-h-[56px] rounded-2xl py-4 font-bold text-white bg-leaf active:scale-95 transition-transform shadow-lg">
+              className="min-h-[56px] rounded-2xl py-4 text-white bg-leaf active:scale-95 transition-transform shadow-lg font-fredoka text-lg font-medium">
               Read Again / <span className="font-sarabun">อ่านอีกครั้ง</span>
             </button>
             <Link href={`/learn/${subjectSlug}`}
-              className="min-h-[48px] flex items-center justify-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white">
+              className="min-h-[48px] flex items-center justify-center rounded-xl bg-sky-dark px-6 py-3 font-fredoka font-medium text-white">
               Back / <span className="font-sarabun ml-1">กลับ</span>
             </Link>
           </div>
@@ -236,102 +288,177 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-white">
-      {/* ── Top bar ── */}
-      <div className="flex-shrink-0 flex items-center justify-between px-3 py-2 border-b border-gray-100">
+    <div className="fixed inset-0 z-50 flex flex-col bg-white dark:bg-gray-900 transition-colors">
+      {/* Top bar */}
+      <div className="flex-shrink-0 flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-700">
         <Link href={`/learn/${subjectSlug}`}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-sky-dark hover:bg-gray-100">
-          <span className="text-xl">✕</span>
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 text-gray-600 active:scale-95 transition-transform">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </Link>
         <div className="text-center">
-          <p className="font-nunito text-sm font-bold text-text-dark">
-            Page {currentPage + 1} / {totalPages}
+          <p className="font-fredoka text-sm font-medium text-text-dark dark:text-gray-100">
+            Page {currentPage + 1} of {totalPages}
           </p>
-          <p className="font-sarabun text-[10px] text-text-mid">{subjectTitle}</p>
+          <p className="font-sarabun text-[10px] text-text-mid dark:text-gray-400">{subjectTitle}</p>
         </div>
-        <button onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-          className={`flex h-10 w-10 items-center justify-center rounded-full text-sm ${
-            isAutoPlaying ? "bg-leaf/20 text-leaf" : "text-text-mid hover:bg-gray-100"
-          }`}>
-          {isAutoPlaying ? "⏸" : "▶"}
-        </button>
+        <div className="w-9" /> {/* spacer to balance close button */}
       </div>
 
-      {/* ── Progress bar ── */}
-      <div className="h-1 w-full bg-gray-100 flex-shrink-0">
-        <div className="h-full bg-sky-dark transition-all duration-500"
-          style={{ width: `${((currentPage + 1) / totalPages) * 100}%` }} />
+      {/* Progress dots */}
+      <div className="flex-shrink-0 flex items-center justify-center gap-1.5 py-2">
+        {pages.map((_, i) => (
+          <div
+            key={i}
+            className={`rounded-full transition-all duration-300 ${
+              i === currentPage
+                ? "w-6 h-2 bg-sky-dark"
+                : i < currentPage
+                ? "w-2 h-2 bg-sky-dark/40"
+                : "w-2 h-2 bg-gray-200"
+            }`}
+          />
+        ))}
       </div>
 
-      {/* ── Image area (takes ~60% of remaining space) ── */}
-      <div className={`flex-[3] flex items-center justify-center min-h-0 transition-opacity duration-200 ${isFading ? "opacity-0" : "opacity-100"}`}
-        onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-        {page.image_url ? (
-          <div className="w-full h-full flex items-center justify-center p-3">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={page.image_url} alt={`Page ${page.page_number}`}
-              className="max-w-full max-h-full object-contain rounded-2xl" />
-          </div>
-        ) : (
-          <div className={`w-[85%] aspect-[4/3] flex items-center justify-center rounded-2xl ${pastelBg}`}>
-            <span className="text-8xl">{pageEmoji || "📖"}</span>
-          </div>
-        )}
-      </div>
+      {/* Main content — image + text share same max-width */}
+      <div
+        className="flex-1 flex flex-col items-center min-h-0"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Image — fills available space */}
+        <div className="flex-1 flex items-center justify-center min-h-0 w-full max-w-md px-4 pt-1">
+          {page.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={page.image_url}
+              alt={`Page ${page.page_number}`}
+              className="max-w-full max-h-full object-contain rounded-2xl shadow-md"
+            />
+          ) : (
+            <div className="w-[80%] aspect-square flex items-center justify-center rounded-2xl bg-sun/40">
+              <span className="text-8xl">📖</span>
+            </div>
+          )}
+        </div>
 
-      {/* ── Text panel with word highlighting ── */}
-      <div className={`flex-[2] flex flex-col min-h-0 bg-white rounded-t-3xl -mt-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] relative z-10 transition-opacity duration-200 ${isFading ? "opacity-0" : "opacity-100"}`}>
-        {/* Text content - scrollable */}
-        <div className="flex-1 overflow-y-auto px-5 pt-5 pb-2">
-          <p className="font-nunito text-[19px] leading-[1.7] text-text-dark">
-            {words.map((word, i) => (
-              <span key={`${currentPage}-${i}`}>
-                <span
-                  className={`transition-all duration-150 rounded px-[2px] ${
-                    i === highlightIndex
-                      ? "text-[#0288D1] font-extrabold bg-sky-dark/10 scale-105 inline-block"
-                      : i < highlightIndex && highlightIndex >= 0
-                      ? "text-text-mid"
-                      : "text-text-dark"
-                  }`}
-                >
-                  {word}
+        {/* Text — same max-width as image */}
+        <div className="flex-shrink-0 w-full max-w-md px-4 py-3">
+          <div className="mx-auto">
+            <p className="font-fredoka text-[22px] font-medium leading-[1.8] text-center select-none">
+              {words.map((word, i) => (
+                <span key={`${currentPage}-${i}`}>
+                  <span
+                    onClick={() => jumpTo(i)}
+                    className={`cursor-pointer rounded-md px-[3px] py-[1px] transition-colors duration-100 ${
+                      i === highlightIndex
+                        ? "bg-sky/30 text-sky-dark dark:bg-sky-dark/30 dark:text-sky"
+                        : i < highlightIndex && highlightIndex >= 0
+                        ? "text-text-light dark:text-gray-600"
+                        : "text-text-dark dark:text-gray-100"
+                    }`}
+                  >
+                    {word}
+                  </span>
+                  {i < words.length - 1 ? " " : ""}
                 </span>
-                {" "}
-              </span>
-            ))}
-          </p>
+              ))}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom control bar */}
+      <div
+        className="flex-shrink-0 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-700 px-4 py-3"
+        style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+      >
+        {/* Speed toggle — pill switch with turtle/rabbit */}
+        <div className="flex items-center justify-center mb-3">
+          <button
+            onClick={toggleSpeed}
+            aria-label="Toggle speed"
+            className="flex items-center rounded-full bg-sky-dark/10 p-1 transition-all"
+          >
+            <div className={`flex items-center justify-center w-16 h-10 rounded-full text-3xl transition-all duration-200 ${
+              isSlow ? "bg-sky-dark shadow-md" : ""
+            }`}>
+              🐢
+            </div>
+            <div className={`flex items-center justify-center w-16 h-10 rounded-full text-3xl transition-all duration-200 ${
+              !isSlow ? "bg-leaf shadow-md" : ""
+            }`}>
+              🐇
+            </div>
+          </button>
         </div>
 
-        {/* ── Bottom controls ── */}
-        <div className="flex-shrink-0 flex items-center justify-around border-t border-gray-100 px-4 py-3"
-          style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+        {/* Navigation + play + auto */}
+        <div className="flex items-center justify-center gap-3">
           {/* Previous */}
           <button onClick={goPrev} disabled={isFirstPage} aria-label="Previous page"
-            className={`flex h-14 w-14 items-center justify-center rounded-full text-xl transition-all active:scale-90 ${
-              isFirstPage ? "bg-gray-100 text-gray-300" : "bg-sky-dark/10 text-sky-dark"
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all active:scale-90 ${
+              isFirstPage
+                ? "bg-gray-200 text-gray-400"
+                : "bg-sky-dark text-white shadow active:bg-sky-dark/80"
             }`}>
-            ◀️
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
           </button>
 
-          {/* Play audio - prominent center button */}
-          <button onClick={playAudio} disabled={!page.audio_url} aria-label="Play audio"
-            className={`flex h-16 w-16 items-center justify-center rounded-full text-2xl shadow-lg transition-all active:scale-90 ${
+          {/* Play / Pause */}
+          <button onClick={() => {
+            const a = audioRef.current;
+            if (a && !a.paused) {
+              a.pause();
+              setIsPlaying(false);
+              stopLoop();
+            } else if (a && a.paused && a.currentTime > 0) {
+              a.play().then(() => {
+                setIsPlaying(true);
+                if (wordTimings && wordTimings.length > 0) startLoop();
+              }).catch(() => {});
+            } else {
+              playAudio();
+            }
+          }} disabled={!page.audio_url} aria-label="Play audio"
+            className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all active:scale-90 ${
               isPlaying
-                ? "bg-sun text-text-dark animate-pulse"
+                ? "bg-sun text-text-dark"
                 : page.audio_url
                 ? "bg-leaf text-white"
                 : "bg-gray-200 text-gray-400"
             }`}>
-            {isPlaying ? "🔊" : "▶️"}
+            {isPlaying ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            )}
+          </button>
+
+          {/* Auto-read: toggles auto-play, and pauses/resumes audio when active */}
+          <button onClick={toggleAutoPlay} aria-label="Auto-read"
+            className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all active:scale-90 ${
+              isAutoPlaying
+                ? "bg-coral text-white"
+                : "bg-purple/30 text-purple-dark"
+            }`}>
+            {isAutoPlaying ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z"/></svg>
+            )}
           </button>
 
           {/* Next */}
           <button onClick={goNext} disabled={isLastPage} aria-label="Next page"
-            className={`flex h-14 w-14 items-center justify-center rounded-full text-xl transition-all active:scale-90 ${
-              isLastPage ? "bg-gray-100 text-gray-300" : "bg-sky-dark/10 text-sky-dark"
+            className={`flex h-12 w-12 items-center justify-center rounded-2xl transition-all active:scale-90 ${
+              isLastPage
+                ? "bg-gray-200 text-gray-400"
+                : "bg-sky-dark text-white shadow active:bg-sky-dark/80"
             }`}>
-            ▶️
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
           </button>
         </div>
       </div>

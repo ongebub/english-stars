@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -35,8 +36,9 @@ const config: Config = {
         "text-light": "#90A4AE",
       },
       fontFamily: {
-        nunito: ["Nunito", "sans-serif"],
-        sarabun: ["Sarabun", "sans-serif"],
+        nunito: ["var(--font-nunito)", "Nunito", "sans-serif"],
+        sarabun: ["var(--font-sarabun)", "Sarabun", "sans-serif"],
+        fredoka: ["var(--font-fredoka)", "Fredoka", "cursive", "sans-serif"],
       },
       borderRadius: {
         xl: "20px",

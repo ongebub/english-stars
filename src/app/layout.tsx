@@ -1,5 +1,24 @@
 import type { Metadata, Viewport } from "next";
+import { Nunito, Sarabun, Fredoka } from "next/font/google";
 import "./globals.css";
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800", "900"],
+  variable: "--font-nunito",
+});
+
+const sarabun = Sarabun({
+  subsets: ["latin", "thai"],
+  weight: ["400", "600", "700"],
+  variable: "--font-sarabun",
+});
+
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-fredoka",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -28,8 +47,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="font-nunito antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          try {
+            if (localStorage.getItem('theme') === 'dark') {
+              document.documentElement.classList.add('dark');
+            }
+          } catch(e) {}
+        `}} />
+      </head>
+      <body className={`${nunito.variable} ${sarabun.variable} ${fredoka.variable} font-nunito antialiased`}>
         {children}
       </body>
     </html>

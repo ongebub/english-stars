@@ -63,10 +63,10 @@ export default async function LearnPage() {
 
   return (
     <section>
-      <h1 className="font-nunito text-center text-3xl font-extrabold text-text-dark">
+      <h1 className="font-nunito text-center text-3xl font-extrabold text-text-dark dark:text-gray-100">
         Choose a Subject
       </h1>
-      <p className="font-sarabun mt-1 text-center text-lg text-text-mid">
+      <p className="font-sarabun mt-1 text-center text-lg text-text-mid dark:text-gray-400">
         เลือกวิชาที่จะเรียน
       </p>
 
@@ -75,8 +75,8 @@ export default async function LearnPage() {
 
         return (
           <div key={mod} className="mt-8">
-            <h2 className="font-nunito text-xl font-bold text-text-dark">{label.en}</h2>
-            <p className="font-sarabun text-sm text-text-mid">{label.th}</p>
+            <h2 className="font-nunito text-xl font-bold text-text-dark dark:text-gray-100">{label.en}</h2>
+            <p className="font-sarabun text-sm text-text-mid dark:text-gray-400">{label.th}</p>
 
             <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
               {items.map((subject) => {
@@ -94,7 +94,7 @@ export default async function LearnPage() {
                   <Link
                     key={subject.id}
                     href={href}
-                    className="group relative flex min-h-[140px] flex-col items-center justify-center rounded-xl bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                    className="group relative flex min-h-[140px] flex-col items-center justify-center rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
                     style={{ borderBottom: `4px solid ${color}` }}
                   >
                     {/* Badges: top-right corner */}
@@ -131,19 +131,19 @@ export default async function LearnPage() {
                     </div>
 
                     {isLocked && (
-                      <span className="absolute inset-0 rounded-xl bg-gray-100/50 pointer-events-none" />
+                      <span className="absolute inset-0 rounded-xl bg-gray-100/50 dark:bg-gray-700/50 pointer-events-none" />
                     )}
 
                     <span className={`text-5xl ${isLocked ? "opacity-50 grayscale" : ""}`}>
                       {subject.emoji}
                     </span>
                     <span className={`font-nunito mt-2 text-center text-base font-bold ${
-                      isLocked ? "text-text-light" : "text-text-dark"
+                      isLocked ? "text-text-light" : "text-text-dark dark:text-gray-100"
                     }`}>
                       {subject.title_en}
                     </span>
                     <span className={`font-sarabun text-center text-sm ${
-                      isLocked ? "text-text-light" : "text-text-mid"
+                      isLocked ? "text-text-light" : "text-text-mid dark:text-gray-400"
                     }`}>
                       {subject.title_th}
                     </span>

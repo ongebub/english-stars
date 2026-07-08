@@ -158,8 +158,8 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
         <div className="flex-shrink-0 px-4 pt-3 pb-2">
           <div className="flex items-center justify-between mb-2">
             <Link href={`/learn/${subjectSlug}`}
-              className="flex h-10 w-10 items-center justify-center rounded-full text-text-mid hover:bg-gray-100">
-              <span className="text-lg">✕</span>
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-600 active:scale-95 transition-transform">
+              <span className="text-lg font-bold">✕</span>
             </Link>
             <div className="flex items-center gap-2">
               <span className="font-nunito text-sm font-bold text-text-dark">

@@ -28,6 +28,12 @@ export interface Flashcard {
   created_at: string;
 }
 
+export interface WordTiming {
+  word: string;
+  start: number;
+  end: number;
+}
+
 export interface EbookPage {
   id: string;
   subject_id: string;
@@ -35,6 +41,7 @@ export interface EbookPage {
   text_en: string;
   image_url: string | null;
   audio_url: string | null;
+  word_timings: WordTiming[] | null;
   created_at: string;
 }
 

@@ -137,10 +137,10 @@ export default async function SubjectPage({
   return (
     <section className="flex flex-col items-center">
       <span className="text-6xl">{subject.emoji}</span>
-      <h1 className="font-nunito mt-3 text-2xl font-extrabold text-text-dark">
+      <h1 className="font-nunito mt-3 text-2xl font-extrabold text-text-dark dark:text-gray-100">
         {subject.title_en}
       </h1>
-      <p className="font-sarabun text-lg text-text-mid">{subject.title_th}</p>
+      <p className="font-sarabun text-lg text-text-mid dark:text-gray-400">{subject.title_th}</p>
 
       {/* Medals display */}
       {(flashcardsComplete || quizMedal) && (
@@ -173,13 +173,13 @@ export default async function SubjectPage({
           <Link
             key={mod.path}
             href={`/learn/${slug}/${mod.path}`}
-            className={`flex min-h-[140px] flex-col items-center justify-center rounded-xl p-5 shadow-md transition-shadow hover:shadow-lg ${mod.bg}`}
+            className={`flex min-h-[140px] flex-col items-center justify-center rounded-xl p-5 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 ${mod.bg}`}
           >
             <span className="text-5xl">{mod.emoji}</span>
-            <span className="font-nunito mt-2 text-center text-base font-bold text-text-dark">
+            <span className="font-nunito mt-2 text-center text-base font-bold text-text-dark dark:text-gray-100">
               {mod.titleEn}
             </span>
-            <span className="font-sarabun text-center text-sm text-text-mid">
+            <span className="font-sarabun text-center text-sm text-text-mid dark:text-gray-400">
               {mod.titleTh}
             </span>
 

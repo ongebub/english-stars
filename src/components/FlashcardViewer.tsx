@@ -27,8 +27,6 @@ export function FlashcardViewer({
   const [shuffledOrder, setShuffledOrder] = useState<number[]>(() =>
     flashcards.map((_, i) => i)
   );
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [slideDirection, setSlideDirection] = useState<"left" | "right">("left");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const touchStartRef = useRef<number | null>(null);
   const [isSlow, setIsSlow] = useState<boolean>(() => {
@@ -46,6 +44,25 @@ export function FlashcardViewer({
   const total = flashcards.length;
   const bgColor = PASTEL_COLORS[cardIndex % PASTEL_COLORS.length];
   const emoji = PLACEHOLDER_EMOJIS[cardIndex % PLACEHOLDER_EMOJIS.length];
+
+  // Preload adjacent card images + audio
+  useEffect(() => {
+    const adjacentIndices = [currentIndex - 1, currentIndex + 1];
+    for (const i of adjacentIndices) {
+      const wrappedI = i < 0 ? total - 1 : i >= total ? 0 : i;
+      const ci = shuffledOrder[wrappedI];
+      const fc = flashcards[ci];
+      if (fc?.image_url) {
+        const img = new window.Image();
+        img.src = fc.image_url;
+      }
+      if (fc?.audio_url) {
+        const audio = new Audio();
+        audio.preload = "auto";
+        audio.src = fc.audio_url;
+      }
+    }
+  }, [currentIndex, shuffledOrder, flashcards, total]);
 
   // Track card view
   useEffect(() => {
@@ -69,19 +86,17 @@ export function FlashcardViewer({
     if (viewedIds.size >= total && total > 0 && !showComplete) setShowComplete(true);
   }, [viewedIds.size, total, showComplete]);
 
-  const goTo = useCallback((next: number, direction: "left" | "right") => {
-    if (isTransitioning) return;
-    setSlideDirection(direction);
-    setIsTransitioning(true);
-    setTimeout(() => { setCurrentIndex(next); setIsTransitioning(false); }, 200);
-  }, [isTransitioning]);
+  const goTo = useCallback((next: number) => {
+    if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+    setCurrentIndex(next);
+  }, []);
 
   const goPrev = useCallback(() => {
-    goTo(currentIndex === 0 ? total - 1 : currentIndex - 1, "right");
+    goTo(currentIndex === 0 ? total - 1 : currentIndex - 1);
   }, [currentIndex, total, goTo]);
 
   const goNext = useCallback(() => {
-    goTo(currentIndex === total - 1 ? 0 : currentIndex + 1, "left");
+    goTo(currentIndex === total - 1 ? 0 : currentIndex + 1);
   }, [currentIndex, total, goTo]);
 
   useEffect(() => {
@@ -138,10 +153,6 @@ export function FlashcardViewer({
     audio.play().catch(() => {});
   }, [card.audio_url, isSlow]);
 
-  const transitionClass = isTransitioning
-    ? slideDirection === "left" ? "opacity-0 -translate-x-4" : "opacity-0 translate-x-4"
-    : "opacity-100 translate-x-0";
-
   const viewedCount = viewedIds.size;
   const progressPercent = total > 0 ? Math.round((viewedCount / total) * 100) : 0;
 
@@ -150,11 +161,11 @@ export function FlashcardViewer({
       {/* ── Top bar ── */}
       <div className="flex flex-shrink-0 items-center justify-between px-3 py-2 border-b border-gray-100">
         <Link href={`/learn/${subjectSlug}`}
-          className="flex h-10 w-10 items-center justify-center rounded-full text-sky-dark hover:bg-gray-100">
-          <span className="text-xl">✕</span>
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-600 active:scale-95 transition-transform">
+          <span className="text-xl font-bold">✕</span>
         </Link>
         <div className="text-center">
-          <p className="font-nunito text-sm font-bold text-text-dark">{currentIndex + 1} / {total}</p>
+          <p className="font-fredoka text-sm font-medium text-text-dark">{currentIndex + 1} of {total}</p>
           <p className="font-sarabun text-[10px] text-text-mid">{subjectTitle}</p>
         </div>
         <button onClick={toggleShuffle}
@@ -186,7 +197,7 @@ export function FlashcardViewer({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className={`flex flex-col items-center w-full h-full transition-all duration-200 ease-in-out ${transitionClass}`}>
+        <div className="flex flex-col items-center w-full h-full">
           {/* Image */}
           <div className={`flex-1 flex items-center justify-center w-full min-h-0 rounded-2xl ${bgColor}`}>
             {card.image_url ? (
@@ -209,35 +220,54 @@ export function FlashcardViewer({
       </div>
 
       {/* ── Bottom control bar ── */}
-      <div className="flex-shrink-0 flex items-center justify-around border-t border-gray-200 bg-white px-4 py-3"
-        style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
-        {/* Previous */}
-        <button onClick={goPrev} aria-label="Previous card"
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-sky-dark text-xl text-white shadow active:scale-90 transition-transform">
-          ◀️
-        </button>
+      <div
+        className="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3"
+        style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
+      >
+        {/* Speed toggle — pill switch with turtle/rabbit */}
+        <div className="flex items-center justify-center mb-3">
+          <button
+            onClick={toggleSpeed}
+            aria-label="Toggle speed"
+            className="flex items-center rounded-full bg-sky-dark/10 p-1 transition-all"
+          >
+            <div className={`flex items-center justify-center w-16 h-10 rounded-full text-3xl transition-all duration-200 ${
+              isSlow ? "bg-sky-dark shadow-md" : ""
+            }`}>
+              🐢
+            </div>
+            <div className={`flex items-center justify-center w-16 h-10 rounded-full text-3xl transition-all duration-200 ${
+              !isSlow ? "bg-leaf shadow-md" : ""
+            }`}>
+              🐇
+            </div>
+          </button>
+        </div>
 
-        {/* Audio */}
-        <button onClick={playAudio} disabled={!card.audio_url} aria-label="Play audio"
-          className={`flex h-16 w-16 items-center justify-center rounded-full text-2xl shadow-lg transition-transform active:scale-90 ${
-            card.audio_url ? "bg-leaf text-white" : "bg-gray-200 text-gray-400"
-          }`}>
-          🔊
-        </button>
+        {/* Navigation + play */}
+        <div className="flex items-center justify-center gap-3">
+          {/* Previous */}
+          <button onClick={goPrev} aria-label="Previous card"
+            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-dark text-white shadow transition-all active:scale-90">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </button>
 
-        {/* Speed toggle */}
-        <button onClick={toggleSpeed} aria-label="Toggle speed"
-          className={`flex h-12 w-12 items-center justify-center rounded-full text-xl transition-all ${
-            isSlow ? "bg-[#0288D1] text-white shadow" : "bg-gray-100 text-text-mid"
-          }`}>
-          {isSlow ? "🐢" : "🐇"}
-        </button>
+          {/* Play audio */}
+          <button onClick={playAudio} disabled={!card.audio_url} aria-label="Play audio"
+            className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-all active:scale-90 ${
+              card.audio_url ? "bg-leaf text-white" : "bg-gray-200 text-gray-400"
+            }`}>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            </svg>
+          </button>
 
-        {/* Next */}
-        <button onClick={goNext} aria-label="Next card"
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-sky-dark text-xl text-white shadow active:scale-90 transition-transform">
-          ▶️
-        </button>
+          {/* Next */}
+          <button onClick={goNext} aria-label="Next card"
+            className="flex h-12 w-12 items-center justify-center rounded-2xl bg-sky-dark text-white shadow transition-all active:scale-90">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+          </button>
+        </div>
       </div>
     </div>
   );
