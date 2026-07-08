@@ -3,6 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setSchoolSession } from "@/lib/school-session";
+import { getDeviceFingerprint, getDeviceLabel } from "@/lib/device-fingerprint";
+import { setSessionId } from "@/components/ChildSessionGuard";
 import Link from "next/link";
 
 const AVATAR_EMOJIS = ["🧒", "👧", "👦", "🧒🏻", "👧🏽", "👦🏾", "🦸", "🧑‍🎓", "🐻", "🐰", "🦊", "🐼"];
@@ -79,6 +81,26 @@ function JoinPageContent() {
         school_name: data.school_name,
         join_code: data.join_code,
       });
+
+      // Register child session for device limiting
+      try {
+        const device_hash = await getDeviceFingerprint();
+        const device_label = getDeviceLabel();
+        const sessionRes = await fetch("/api/child-session/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            child_id: data.child_id,
+            device_hash,
+            device_label,
+            is_school: true,
+          }),
+        });
+        const sessionData = await sessionRes.json();
+        if (sessionData.session_id) setSessionId(sessionData.session_id);
+      } catch {
+        // Session registration failed — still allow access
+      }
 
       router.push("/learn");
     } catch {

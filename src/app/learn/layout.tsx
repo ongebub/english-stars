@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ChildSessionGuard } from "@/components/ChildSessionGuard";
 
 export default function LearnLayout({
   children,
@@ -41,8 +42,10 @@ export default function LearnLayout({
         </div>
       </nav>
 
-      {/* ── Page content ── */}
-      <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+      {/* ── Page content with session guard ── */}
+      <main className="mx-auto max-w-4xl px-4 py-6">
+        <ChildSessionGuard>{children}</ChildSessionGuard>
+      </main>
     </div>
   );
 }

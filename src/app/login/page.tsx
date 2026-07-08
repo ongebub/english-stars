@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
+import { getDeviceFingerprint } from '@/lib/device-fingerprint';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,6 +62,23 @@ export default function LoginPage() {
           return;
         }
 
+        // Check if this device is trusted (2FA)
+        const device_hash = await getDeviceFingerprint();
+        const checkRes = await fetch('/api/auth/check-device', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ device_hash }),
+        });
+        const checkData = await checkRes.json();
+
+        if (checkData.requires_2fa) {
+          sessionStorage.setItem('es_pending_device_hash', device_hash);
+          router.push('/verify-device');
+          return;
+        }
+
+        // Device is trusted — set cookie and proceed
+        document.cookie = `es_device_id=${device_hash}; path=/; max-age=${30 * 24 * 60 * 60}; samesite=lax`;
         router.push('/learn');
       }
     } catch {

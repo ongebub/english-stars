@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { setActiveChild } from "@/lib/active-child";
+import { getDeviceFingerprint, getDeviceLabel } from "@/lib/device-fingerprint";
+import { setSessionId } from "@/components/ChildSessionGuard";
 import type { Profile } from "@/lib/types";
 
 const AVATAR_GRID = [
@@ -26,13 +28,33 @@ export default function ProfilePickerClient({ childProfiles: children }: Props) 
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState("");
 
-  function selectChild(child: Profile) {
+  async function selectChild(child: Profile) {
     setActiveChild(
       child.id,
       child.display_name,
       child.avatar_emoji || "🧒",
       null
     );
+
+    try {
+      const device_hash = await getDeviceFingerprint();
+      const device_label = getDeviceLabel();
+      const res = await fetch("/api/child-session/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          child_id: child.id,
+          device_hash,
+          device_label,
+          is_school: false,
+        }),
+      });
+      const data = await res.json();
+      if (data.session_id) setSessionId(data.session_id);
+    } catch {
+      // Session registration failed — still allow access
+    }
+
     router.push("/learn");
   }
 
@@ -64,6 +86,26 @@ export default function ProfilePickerClient({ childProfiles: children }: Props) 
         data.profile.avatar_emoji || childEmoji,
         null
       );
+
+      try {
+        const device_hash = await getDeviceFingerprint();
+        const device_label = getDeviceLabel();
+        const res2 = await fetch("/api/child-session/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            child_id: data.profile.id,
+            device_hash,
+            device_label,
+            is_school: false,
+          }),
+        });
+        const d = await res2.json();
+        if (d.session_id) setSessionId(d.session_id);
+      } catch {
+        // Session registration failed — still allow access
+      }
+
       router.push("/learn");
     } catch {
       setError("Something went wrong");
