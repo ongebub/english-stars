@@ -331,8 +331,8 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        {/* Image — fills available space */}
-        <div className="flex-1 flex items-center justify-center min-h-0 w-full max-w-md px-4 pt-1 relative">
+        {/* Image — near-fixed size, takes ~55% of available space */}
+        <div className="flex-shrink-0 flex items-center justify-center w-full max-w-md px-4 pt-1" style={{ height: "55%" }}>
           {page.image_url ? (
             <NextImage
               src={page.image_url}
@@ -350,8 +350,8 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
           )}
         </div>
 
-        {/* Text — same max-width as image */}
-        <div className="flex-shrink-0 w-full max-w-md px-4 py-3">
+        {/* Text — scrollable if too long */}
+        <div className="flex-1 min-h-0 w-full max-w-md px-4 py-2 overflow-y-auto">
           <div className="mx-auto">
             <p className="font-fredoka text-[22px] font-medium leading-[1.8] text-center select-none">
               {words.map((word, i) => (
