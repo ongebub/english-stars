@@ -351,7 +351,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
         </div>
 
         {/* Text — scrollable if too long */}
-        <div className="flex-1 min-h-0 w-full max-w-md px-4 py-2 overflow-y-auto">
+        <div className="flex-1 min-h-0 w-full max-w-md px-4 py-2 overflow-y-auto scrollbar-hide">
           <div className="mx-auto">
             <p className="font-fredoka text-[22px] font-medium leading-[1.8] text-center select-none">
               {words.map((word, i) => (
