@@ -127,11 +127,13 @@ export default async function SubjectPage({
     : 0;
 
   const MODULES = [
-    { emoji: "🃏", titleEn: "Flashcards", titleTh: "บัตรคำศัพท์", path: "flashcards", bg: "bg-sun/30" },
-    { emoji: "📖", titleEn: "E-book", titleTh: "หนังสือ", path: "ebook", bg: "bg-leaf/20" },
-    { emoji: "🧠", titleEn: "Quiz", titleTh: "แบบทดสอบ", path: "quiz", bg: "bg-coral/20" },
-    { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30" },
-    { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20" },
+    { emoji: "🃏", titleEn: "Flashcards", titleTh: "บัตรคำศัพท์", path: "flashcards", bg: "bg-sun/30", step: 1 },
+    { emoji: "📖", titleEn: "Storybook", titleTh: "หนังสือนิทาน", path: "ebook", bg: "bg-leaf/20", step: 2 },
+    { emoji: "📚", titleEn: "Lesson Book", titleTh: "หนังสือบทเรียน", path: "lesson", bg: "bg-sky/20", step: 3 },
+    { emoji: "🧠", titleEn: "Quiz", titleTh: "แบบทดสอบ", path: "quiz", bg: "bg-coral/20", step: 4 },
+    { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30", step: 5 },
+    { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20", step: 6 },
+    { emoji: "🏆", titleEn: "Subject Final Test", titleTh: "สอบปลายบท", path: "final-test", bg: "bg-sun-dark/20", step: 7 },
   ] as const;
 
   return (
@@ -168,73 +170,61 @@ export default async function SubjectPage({
         </div>
       )}
 
-      <div className="mt-8 grid w-full grid-cols-2 gap-4">
+      <div className="mt-8 flex w-full flex-col gap-3 max-w-md mx-auto">
         {MODULES.map((mod) => (
           <Link
             key={mod.path}
             href={`/learn/${slug}/${mod.path}`}
-            className={`flex min-h-[140px] flex-col items-center justify-center rounded-xl p-5 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 ${mod.bg}`}
+            className={`flex items-center gap-4 rounded-xl p-4 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 ${mod.bg}`}
           >
-            <span className="text-5xl">{mod.emoji}</span>
-            <span className="font-nunito mt-2 text-center text-base font-bold text-text-dark dark:text-gray-100">
-              {mod.titleEn}
-            </span>
-            <span className="font-sarabun text-center text-sm text-text-mid dark:text-gray-400">
-              {mod.titleTh}
-            </span>
-
-            {/* Ebook progress */}
-            {mod.path === "ebook" && ebookTotalPages > 0 && (
-              <span className="mt-1 text-xs text-text-mid">
-                {ebookComplete ? (
-                  <span className="text-leaf font-bold">📗 Complete! / อ่านจบแล้ว!</span>
-                ) : ebookLastPage > 0 ? (
-                  <>Page {ebookLastPage} of {ebookTotalPages}</>
-                ) : (
-                  <>Start Reading / เริ่มอ่าน</>
-                )}
+            <span className="text-4xl flex-shrink-0">{mod.emoji}</span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="font-nunito text-base font-bold text-text-dark dark:text-gray-100">
+                  {mod.titleEn}
+                </span>
+                <span className="text-xs text-text-light font-nunito">Step {mod.step}</span>
+              </div>
+              <span className="font-sarabun text-sm text-text-mid dark:text-gray-400">
+                {mod.titleTh}
               </span>
-            )}
-
-            {/* Flashcard progress */}
-            {mod.path === "flashcards" && flashcardTotal > 0 && (
-              <span className="mt-1 text-xs text-text-mid">
-                {flashcardsComplete ? (
-                  <span className="text-leaf font-bold">✅ Complete / ครบแล้ว</span>
-                ) : (
-                  <>{flashcardViewed} of {flashcardTotal} viewed</>
-                )}
-              </span>
-            )}
-
-            {/* Quiz stats */}
-            {mod.path === "quiz" && attemptCount > 0 && (
-              <span className="mt-1 text-xs text-text-mid">
-                {quizMedal === "gold" && "🥇 Gold · "}
-                {quizMedal === "silver" && "🥈 Silver · "}
-                {quizMedal === "bronze" && "🥉 Bronze · "}
-                Best: {bestScore}/{bestTotal}{" "}
-                {"⭐".repeat(stars)}
-              </span>
-            )}
-            {mod.path === "quiz" && attemptCount > 0 && (
-              <span className="text-xs text-text-light">
-                {attemptCount} attempt{attemptCount > 1 ? "s" : ""}
-              </span>
-            )}
-
-            {/* Picture quiz stats */}
-            {mod.path === "picture-quiz" && pictureQuizAttempts > 0 && (
-              <span className="mt-1 text-xs text-text-mid">
-                Best: {pictureQuizBest}/10{" "}
-                {"⭐".repeat(pictureQuizBest !== null ? (pictureQuizBest >= 9 ? 3 : pictureQuizBest >= 7 ? 2 : 1) : 0)}
-              </span>
-            )}
-            {mod.path === "picture-quiz" && pictureQuizAttempts === 0 && (
-              <span className="mt-1 text-xs text-text-mid">
-                Tap the right picture!
-              </span>
-            )}
+              {/* Progress info */}
+              {mod.path === "ebook" && ebookTotalPages > 0 && (
+                <span className="text-xs text-text-mid block">
+                  {ebookComplete ? (
+                    <span className="text-leaf font-bold">📗 Complete! / อ่านจบแล้ว!</span>
+                  ) : ebookLastPage > 0 ? (
+                    <>Page {ebookLastPage} of {ebookTotalPages}</>
+                  ) : (
+                    <>Start Reading / เริ่มอ่าน</>
+                  )}
+                </span>
+              )}
+              {mod.path === "flashcards" && flashcardTotal > 0 && (
+                <span className="text-xs text-text-mid block">
+                  {flashcardsComplete ? (
+                    <span className="text-leaf font-bold">✅ Complete / ครบแล้ว</span>
+                  ) : (
+                    <>{flashcardViewed} of {flashcardTotal} viewed</>
+                  )}
+                </span>
+              )}
+              {mod.path === "quiz" && attemptCount > 0 && (
+                <span className="text-xs text-text-mid block">
+                  {quizMedal === "gold" && "🥇 "}
+                  {quizMedal === "silver" && "🥈 "}
+                  {quizMedal === "bronze" && "🥉 "}
+                  Best: {bestScore}/{bestTotal} {"⭐".repeat(stars)}
+                </span>
+              )}
+              {mod.path === "picture-quiz" && pictureQuizAttempts > 0 && (
+                <span className="text-xs text-text-mid block">
+                  Best: {pictureQuizBest}/10{" "}
+                  {"⭐".repeat(pictureQuizBest !== null ? (pictureQuizBest >= 9 ? 3 : pictureQuizBest >= 7 ? 2 : 1) : 0)}
+                </span>
+              )}
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0 text-text-light"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
           </Link>
         ))}
       </div>
