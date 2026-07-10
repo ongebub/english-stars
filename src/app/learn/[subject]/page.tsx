@@ -127,13 +127,13 @@ export default async function SubjectPage({
     : 0;
 
   const MODULES = [
-    { emoji: "🃏", titleEn: "Flashcards", titleTh: "บัตรคำศัพท์", path: "flashcards", bg: "bg-sun/30", step: 1 },
-    { emoji: "📖", titleEn: "Storybook", titleTh: "หนังสือนิทาน", path: "ebook", bg: "bg-leaf/20", step: 2 },
-    { emoji: "📚", titleEn: "Lesson Book", titleTh: "หนังสือบทเรียน", path: "lesson", bg: "bg-sky/20", step: 3 },
-    { emoji: "🧠", titleEn: "Quiz", titleTh: "แบบทดสอบ", path: "quiz", bg: "bg-coral/20", step: 4 },
-    { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30", step: 5 },
-    { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20", step: 6 },
-    { emoji: "🏆", titleEn: "Subject Final Test", titleTh: "สอบปลายบท", path: "final-test", bg: "bg-sun-dark/20", step: 7 },
+    { emoji: "🃏", titleEn: "Flashcards", titleTh: "บัตรคำศัพท์", path: "flashcards", bg: "bg-sun/30", border: "#F9A825", step: 1 },
+    { emoji: "📖", titleEn: "Storybook", titleTh: "หนังสือนิทาน", path: "ebook", bg: "bg-leaf/20", border: "#66BB6A", step: 2 },
+    { emoji: "📚", titleEn: "Lesson Book", titleTh: "หนังสือบทเรียน", path: "lesson", bg: "bg-sky/20", border: "#0288D1", step: 3 },
+    { emoji: "🧠", titleEn: "Quiz", titleTh: "แบบทดสอบ", path: "quiz", bg: "bg-coral/20", border: "#FF8A65", step: 4 },
+    { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30", border: "#E64A19", step: 5 },
+    { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20", border: "#CE93D8", step: 6 },
+    { emoji: "🏆", titleEn: "Subject Final Test", titleTh: "สอบปลายบท", path: "final-test", bg: "bg-sun-dark/20", border: "#F9A825", step: 7 },
   ] as const;
 
   return (
@@ -176,6 +176,7 @@ export default async function SubjectPage({
             key={mod.path}
             href={`/learn/${slug}/${mod.path}`}
             className={`flex items-center gap-4 rounded-xl p-4 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 ${mod.bg}`}
+            style={{ borderBottom: `4px solid ${mod.border}` }}
           >
             <span className="text-4xl flex-shrink-0">{mod.emoji}</span>
             <div className="flex-1 min-w-0">
