@@ -11,7 +11,7 @@ export default function LoginPage() {
   const router = useRouter();
   const supabase = createClient();
 
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,6 +25,18 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      if (mode === 'forgot') {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/api/auth/callback?next=/reset-password`,
+        });
+        if (resetError) {
+          setError('Could not send reset email. Please try again.\nไม่สามารถส่งอีเมลรีเซ็ตได้ กรุณาลองใหม่');
+        } else {
+          setSuccess('Check your email for a password reset link.\nตรวจสอบอีเมลของคุณสำหรับลิงก์รีเซ็ตรหัสผ่าน');
+        }
+        return;
+      }
+
       if (mode === 'signup') {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
@@ -161,28 +173,30 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Password */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-bold text-text-dark mb-1"
-              >
-                <span className="font-nunito">Password</span>{' '}
-                <span className="font-sarabun text-text-mid">รหัสผ่าน</span>
-              </label>
-              <input
-                id="password"
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 min-h-[48px] text-text-dark
-                           focus:border-sky-dark focus:outline-none focus:ring-2 focus:ring-sky-dark/30
-                           transition-colors"
-              />
-            </div>
+            {/* Password (hidden in forgot mode) */}
+            {mode !== 'forgot' && (
+              <div>
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-bold text-text-dark mb-1"
+                >
+                  <span className="font-nunito">Password</span>{' '}
+                  <span className="font-sarabun text-text-mid">รหัสผ่าน</span>
+                </label>
+                <input
+                  id="password"
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 min-h-[48px] text-text-dark
+                             focus:border-sky-dark focus:outline-none focus:ring-2 focus:ring-sky-dark/30
+                             transition-colors"
+                />
+              </div>
+            )}
 
             {/* Error message */}
             {error && (
@@ -213,7 +227,12 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  <span>{mode === 'login' ? 'Logging in...' : 'Creating account...'}</span>
+                  <span>{mode === 'forgot' ? 'Sending...' : mode === 'login' ? 'Logging in...' : 'Creating account...'}</span>
+                </span>
+              ) : mode === 'forgot' ? (
+                <span>
+                  <span className="font-nunito">Send Reset Link</span>{' '}
+                  <span className="font-sarabun">ส่งลิงก์รีเซ็ต</span>
                 </span>
               ) : mode === 'login' ? (
                 <span>
@@ -227,6 +246,26 @@ export default function LoginPage() {
                 </span>
               )}
             </button>
+
+            {/* Forgot password link (only on login mode) */}
+            {mode === 'login' && (
+              <button
+                type="button"
+                onClick={() => { setMode('forgot'); setError(null); setSuccess(null); }}
+                className="w-full text-center text-sm text-sky-dark font-semibold hover:underline"
+              >
+                Forgot password? / <span className="font-sarabun">ลืมรหัสผ่าน?</span>
+              </button>
+            )}
+            {mode === 'forgot' && (
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setError(null); setSuccess(null); }}
+                className="w-full text-center text-sm text-sky-dark font-semibold hover:underline"
+              >
+                ← Back to login / <span className="font-sarabun">กลับไปเข้าสู่ระบบ</span>
+              </button>
+            )}
           </form>
         </div>
 
