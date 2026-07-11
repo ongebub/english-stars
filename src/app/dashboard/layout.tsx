@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { AppFooter } from '@/components/AppFooter';
 
 export default function DashboardLayout({
   children,
@@ -83,6 +84,7 @@ export default function DashboardLayout({
       <main className="max-w-5xl mx-auto px-4 py-8">
         {children}
       </main>
+      <AppFooter />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { getDeviceFingerprint } from '@/lib/device-fingerprint';
+import { AppFooter } from '@/components/AppFooter';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,6 +40,10 @@ export default function LoginPage() {
       }
 
       if (mode === 'signup') {
+        if (!agreedToTerms) {
+          setError('Please agree to the Terms & Conditions to create an account.\nกรุณายอมรับข้อกำหนดและเงื่อนไขเพื่อสร้างบัญชี');
+          return;
+        }
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -198,6 +204,31 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Terms checkbox (signup only) */}
+            {mode === 'signup' && (
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-1 h-5 w-5 rounded border-gray-300 text-sky-dark focus:ring-sky-dark/30 flex-shrink-0"
+                />
+                <span className="text-sm text-text-mid">
+                  I agree to the{' '}
+                  <Link href="/terms" target="_blank" className="text-sky-dark font-semibold hover:underline">
+                    Terms & Conditions
+                  </Link>
+                  <br />
+                  <span className="font-sarabun">
+                    ฉันยอมรับ{' '}
+                    <Link href="/terms" target="_blank" className="text-sky-dark font-semibold hover:underline">
+                      ข้อกำหนดและเงื่อนไข
+                    </Link>
+                  </span>
+                </span>
+              </label>
+            )}
+
             {/* Error message */}
             {error && (
               <div className="bg-coral/20 border-2 border-coral rounded-xl p-4 text-sm text-text-dark whitespace-pre-line">
@@ -278,15 +309,9 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-sm text-text-mid mt-4 font-sarabun">
-          English Allstars - Learn English the fun way!
-          <br />
-          เรียนภาษาอังกฤษอย่างสนุกสนาน!
-          <br />
-          <a href="mailto:info@englishallstars.com" className="text-sky-dark hover:underline text-xs">
-            info@englishallstars.com
-          </a>
-        </p>
+        <div className="mt-4">
+          <AppFooter />
+        </div>
       </div>
     </div>
   );
