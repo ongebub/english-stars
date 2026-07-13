@@ -78,7 +78,7 @@ export default async function LearnPage() {
             <h2 className="font-nunito text-xl font-bold text-text-dark dark:text-gray-100">{label.en}</h2>
             <p className="font-sarabun text-sm text-text-mid dark:text-gray-400">{label.th}</p>
 
-            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {items.map((subject) => {
                 const isFree = subject.slug === FREE_SLUG;
                 const isLocked = !isSubscribed && !isFree;
@@ -94,59 +94,49 @@ export default async function LearnPage() {
                   <Link
                     key={subject.id}
                     href={href}
-                    className="group relative flex min-h-[140px] flex-col items-center justify-center rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                    className={`group relative flex items-center gap-4 rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg ${isLocked ? "opacity-70" : ""}`}
                     style={{ borderBottom: `4px solid ${color}` }}
                   >
-                    {/* Badges: top-right corner */}
-                    <div className="absolute right-2 top-2 flex flex-col items-end gap-0.5">
-                      {isFree ? (
-                        <span className="rounded-full bg-leaf px-2 py-0.5 text-xs font-bold text-white">
-                          Free &middot; <span className="font-sarabun">ฟรี</span>
-                        </span>
-                      ) : isLocked ? (
-                        <span className="text-text-light">🔒</span>
-                      ) : null}
+                    {isLocked && (
+                      <span className="absolute inset-0 rounded-xl bg-gray-100/30 dark:bg-gray-700/30 pointer-events-none" />
+                    )}
 
-                      {/* Medal badges */}
-                      {!isLocked && hasFlashcardBadge && (
-                        <span className="rounded-full bg-leaf/20 px-1.5 py-0.5 text-xs" title="All flashcards viewed">
-                          📗
-                        </span>
-                      )}
-                      {!isLocked && quizMedal === "gold" && (
-                        <span className="rounded-full bg-sun/30 px-1.5 py-0.5 text-xs" title="Quiz: Gold">
-                          🥇
-                        </span>
-                      )}
-                      {!isLocked && quizMedal === "silver" && (
-                        <span className="rounded-full bg-gray-200 px-1.5 py-0.5 text-xs" title="Quiz: Silver">
-                          🥈
-                        </span>
-                      )}
-                      {!isLocked && quizMedal === "bronze" && (
-                        <span className="rounded-full bg-coral/20 px-1.5 py-0.5 text-xs" title="Quiz: Bronze">
-                          🥉
-                        </span>
+                    <span className={`text-4xl flex-shrink-0 ${isLocked ? "grayscale" : ""}`}>
+                      {subject.emoji}
+                    </span>
+
+                    <div className="flex-1 min-w-0">
+                      <span className={`font-nunito text-base font-bold block ${
+                        isLocked ? "text-text-light" : "text-text-dark dark:text-gray-100"
+                      }`}>
+                        {subject.title_en}
+                      </span>
+                      <span className={`font-sarabun text-sm block ${
+                        isLocked ? "text-text-light" : "text-text-mid dark:text-gray-400"
+                      }`}>
+                        {subject.title_th}
+                      </span>
+
+                      {/* Badges */}
+                      {!isLocked && (hasFlashcardBadge || quizMedal) && (
+                        <div className="flex items-center gap-1 mt-1">
+                          {hasFlashcardBadge && <span className="text-xs" title="All flashcards viewed">📗</span>}
+                          {quizMedal === "gold" && <span className="text-xs" title="Quiz: Gold">🥇</span>}
+                          {quizMedal === "silver" && <span className="text-xs" title="Quiz: Silver">🥈</span>}
+                          {quizMedal === "bronze" && <span className="text-xs" title="Quiz: Bronze">🥉</span>}
+                        </div>
                       )}
                     </div>
 
-                    {isLocked && (
-                      <span className="absolute inset-0 rounded-xl bg-gray-100/50 dark:bg-gray-700/50 pointer-events-none" />
+                    {isFree ? (
+                      <span className="rounded-full bg-leaf px-2 py-0.5 text-xs font-bold text-white flex-shrink-0">
+                        Free / <span className="font-sarabun">ฟรี</span>
+                      </span>
+                    ) : isLocked ? (
+                      <span className="text-text-light flex-shrink-0">🔒</span>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0 text-text-light"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
                     )}
-
-                    <span className={`text-5xl ${isLocked ? "opacity-50 grayscale" : ""}`}>
-                      {subject.emoji}
-                    </span>
-                    <span className={`font-nunito mt-2 text-center text-base font-bold ${
-                      isLocked ? "text-text-light" : "text-text-dark dark:text-gray-100"
-                    }`}>
-                      {subject.title_en}
-                    </span>
-                    <span className={`font-sarabun text-center text-sm ${
-                      isLocked ? "text-text-light" : "text-text-mid dark:text-gray-400"
-                    }`}>
-                      {subject.title_th}
-                    </span>
                   </Link>
                 );
               })}

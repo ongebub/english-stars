@@ -170,7 +170,7 @@ export default async function SubjectPage({
         </div>
       )}
 
-      <div className="mt-8 flex w-full flex-col gap-3 max-w-md mx-auto">
+      <div className="mt-8 w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
         {MODULES.map((mod) => (
           <Link
             key={mod.path}
