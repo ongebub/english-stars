@@ -10,9 +10,19 @@ export default function LearnLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#F5F7FA] dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-[#F5F7FA] dark:bg-gray-900 transition-colors relative">
+      {/* Background starfield */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none opacity-50 dark:opacity-30"
+        style={{
+          backgroundImage: "url(/starfield.png)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      />
       {/* ── Sticky top nav ── */}
-      <nav className="sticky top-0 z-30 bg-sky-dark px-4 py-2 shadow-md">
+      <nav className="sticky top-0 z-30 bg-sky-dark px-4 py-2 shadow-md relative">
         <div className="mx-auto flex max-w-4xl items-center justify-between">
           <Link href="/learn" className="flex items-center">
             <Image
@@ -44,7 +54,7 @@ export default function LearnLayout({
       </nav>
 
       {/* ── Page content with session guard ── */}
-      <main className="mx-auto max-w-4xl px-4 py-6">
+      <main className="mx-auto max-w-4xl px-4 py-6 relative z-10">
         <ChildSessionGuard>{children}</ChildSessionGuard>
       </main>
       <AppFooter />
