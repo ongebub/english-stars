@@ -126,14 +126,23 @@ export default async function SubjectPage({
     ? bestScore >= (bestTotal * 0.9) ? 3 : bestScore >= (bestTotal * 0.7) ? 2 : 1
     : 0;
 
+  const STORY_SLUGS = [
+    "abcs", "phonics-sounds", "numbers-counting", "colors",
+    "shapes", "animals", "plants", "food-drink",
+    "body-parts", "five-senses", "feelings-emotions", "jobs-careers",
+    "vehicles", "buildings", "around-the-house", "at-school",
+  ];
+  const hasReadAlong = STORY_SLUGS.includes(slug);
+
   const MODULES = [
     { emoji: "🃏", titleEn: "Flashcards", titleTh: "บัตรคำศัพท์", path: "flashcards", bg: "bg-sun/30", border: "#F9A825", step: 1 },
     { emoji: "📖", titleEn: "Storybook", titleTh: "หนังสือนิทาน", path: "ebook", bg: "bg-leaf/20", border: "#66BB6A", step: 2 },
-    { emoji: "📚", titleEn: "Lesson Book", titleTh: "หนังสือบทเรียน", path: "lesson", bg: "bg-sky/20", border: "#0288D1", step: 3 },
-    { emoji: "🧠", titleEn: "Quiz", titleTh: "แบบทดสอบ", path: "quiz", bg: "bg-coral/20", border: "#FF8A65", step: 4 },
-    { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30", border: "#E64A19", step: 5 },
-    { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20", border: "#CE93D8", step: 6 },
-  ] as const;
+    ...(hasReadAlong ? [{ emoji: "🎧", titleEn: "Read-Along Story", titleTh: "นิทานอ่านตาม", path: `__read-along__`, bg: "bg-sky/20", border: "#0288D1", step: 3 }] : []),
+    { emoji: "📚", titleEn: "Lesson Book", titleTh: "หนังสือบทเรียน", path: "lesson", bg: "bg-sky/20", border: "#0288D1", step: hasReadAlong ? 4 : 3 },
+    { emoji: "🧠", titleEn: "Quiz", titleTh: "แบบทดสอบ", path: "quiz", bg: "bg-coral/20", border: "#FF8A65", step: hasReadAlong ? 5 : 4 },
+    { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30", border: "#E64A19", step: hasReadAlong ? 6 : 5 },
+    { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20", border: "#CE93D8", step: hasReadAlong ? 7 : 6 },
+  ];
 
   return (
     <section className="flex flex-col items-center">
@@ -172,8 +181,8 @@ export default async function SubjectPage({
       <div className="mt-8 w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
         {MODULES.map((mod) => (
           <Link
-            key={mod.path}
-            href={`/learn/${slug}/${mod.path}`}
+            key={mod.path + mod.titleEn}
+            href={mod.path === "__read-along__" ? `/learn/${slug}/ebook` : `/learn/${slug}/${mod.path}`}
             className={`flex items-center gap-4 rounded-xl p-4 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 ${mod.bg}`}
             style={{ borderBottom: `4px solid ${mod.border}` }}
           >
