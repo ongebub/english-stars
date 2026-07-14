@@ -13,7 +13,7 @@ export default function LearnLayout({
     <div className="min-h-screen bg-[#F5F7FA] dark:bg-gray-900 transition-colors relative">
       {/* Background starfield */}
       <div
-        className="fixed inset-0 z-0 pointer-events-none opacity-50 dark:opacity-30"
+        className="fixed inset-0 z-0 pointer-events-none opacity-35 dark:opacity-15"
         style={{
           backgroundImage: "url(/starfield.png)",
           backgroundSize: "cover",
