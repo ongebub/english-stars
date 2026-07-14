@@ -6,7 +6,8 @@ import type { Subject } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 const MODULE_LABELS: Record<string, { en: string; th: string }> = {
-  "1": { en: "K – 3rd Grade", th: "อนุบาล – ป.3" },
+  "1": { en: "Module 1", th: "โมดูล 1" },
+  "2": { en: "Module 2", th: "โมดูล 2" },
 };
 
 const RIBBON_COLORS = ["#0288D1", "#66BB6A", "#FF8A65", "#FFD54F", "#CE93D8"];
