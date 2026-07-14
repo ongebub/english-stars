@@ -143,6 +143,28 @@ export default async function LearnPage() {
           </div>
         );
       })}
+      {/* Final Test button */}
+      <div className="mt-12 mb-4">
+        <Link
+          href="/learn/final-test"
+          className="block w-full max-w-md mx-auto rounded-2xl p-6 text-center shadow-lg
+                     bg-gradient-to-r from-[#F9A825] via-[#FFD54F] to-[#F9A825]
+                     hover:from-[#F57F17] hover:via-[#FFC107] hover:to-[#F57F17]
+                     transition-all hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]"
+          style={{ borderBottom: "4px solid #E65100" }}
+        >
+          <span className="text-5xl block mb-2">🏆</span>
+          <span className="font-nunito text-2xl font-extrabold text-text-dark block">
+            Final Test
+          </span>
+          <span className="font-sarabun text-lg text-text-dark/80 block">
+            สอบปลายภาค
+          </span>
+          <span className="text-sm text-text-dark/60 mt-1 block">
+            Comprehensive test across all subjects
+          </span>
+        </Link>
+      </div>
     </section>
   );
 }

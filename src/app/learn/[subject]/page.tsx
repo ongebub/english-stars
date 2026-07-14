@@ -133,7 +133,6 @@ export default async function SubjectPage({
     { emoji: "🧠", titleEn: "Quiz", titleTh: "แบบทดสอบ", path: "quiz", bg: "bg-coral/20", border: "#FF8A65", step: 4 },
     { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30", border: "#E64A19", step: 5 },
     { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20", border: "#CE93D8", step: 6 },
-    { emoji: "🏆", titleEn: "Subject Final Test", titleTh: "สอบปลายบท", path: "final-test", bg: "bg-sun-dark/20", border: "#F9A825", step: 7 },
   ] as const;
 
   return (
