@@ -38,6 +38,7 @@ export interface EbookPage {
   id: string;
   subject_id: string;
   page_number: number;
+  page_type: "storybook" | "reader";
   text_en: string;
   image_url: string | null;
   audio_url: string | null;

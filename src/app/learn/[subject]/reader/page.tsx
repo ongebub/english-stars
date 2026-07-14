@@ -9,11 +9,10 @@ interface PageProps {
   params: Promise<{ subject: string }>;
 }
 
-export default async function EbookPage({ params }: PageProps) {
+export default async function ReaderPage({ params }: PageProps) {
   const { subject: slug } = await params;
   const supabase = await createClient();
 
-  // Fetch the subject by slug
   const { data: subject } = await supabase
     .from("subjects")
     .select("*")
@@ -37,18 +36,17 @@ export default async function EbookPage({ params }: PageProps) {
     );
   }
 
-  // Fetch storybook pages for this subject
+  // Fetch reader pages for this subject
   const { data: pages } = await supabase
     .from("ebook_pages")
     .select("*")
     .eq("subject_id", subject.id)
-    .eq("page_type", "storybook")
+    .eq("page_type", "reader")
     .order("page_number", { ascending: true })
     .returns<EbookPage[]>();
 
   return (
     <div className="flex flex-col items-center gap-6">
-      {/* Back link */}
       <div className="w-full max-w-md">
         <Link
           href={`/learn/${slug}`}
@@ -62,14 +60,13 @@ export default async function EbookPage({ params }: PageProps) {
         </Link>
       </div>
 
-      {/* Ebook reader or empty state */}
       {!pages || pages.length === 0 ? (
         <div className="flex flex-col items-center gap-4 rounded-xl bg-white p-10 shadow-md">
-          <span className="text-5xl">📖</span>
+          <span className="text-5xl">🎧</span>
           <p className="font-nunito text-xl font-bold text-text-dark">
-            No e-book yet
+            No read-along story yet
           </p>
-          <p className="font-sarabun text-text-mid">ยังไม่มีหนังสือ</p>
+          <p className="font-sarabun text-text-mid">ยังไม่มีนิทานอ่านตาม</p>
           <Link
             href={`/learn/${slug}`}
             className="mt-2 inline-block rounded-xl bg-sky-dark px-6 py-3 font-nunito font-bold text-white"

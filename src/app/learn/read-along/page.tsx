@@ -44,7 +44,7 @@ export default async function ReadAlongPage() {
           return (
             <Link
               key={subject.id}
-              href={`/learn/${subject.slug}/ebook`}
+              href={`/learn/${subject.slug}/reader`}
               className="flex items-center gap-4 rounded-xl bg-white dark:bg-gray-800 p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
               style={{ borderBottom: `4px solid ${color}` }}
             >
