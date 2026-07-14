@@ -143,8 +143,31 @@ export default async function LearnPage() {
           </div>
         );
       })}
+      {/* Read-Along Stories button */}
+      <div className="mt-12">
+        <Link
+          href="/learn/read-along"
+          className="block w-full max-w-md mx-auto rounded-2xl p-6 text-center shadow-lg
+                     bg-gradient-to-r from-[#0288D1] via-[#4FC3F7] to-[#0288D1]
+                     hover:from-[#01579B] hover:via-[#0288D1] hover:to-[#01579B]
+                     transition-all hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]"
+          style={{ borderBottom: "4px solid #01579B" }}
+        >
+          <span className="text-5xl block mb-2">📖</span>
+          <span className="font-nunito text-2xl font-extrabold text-white block">
+            Read-Along Stories
+          </span>
+          <span className="font-sarabun text-lg text-white/80 block">
+            นิทานอ่านตาม
+          </span>
+          <span className="text-sm text-white/60 mt-1 block">
+            Listen and follow along with all 16 storybooks
+          </span>
+        </Link>
+      </div>
+
       {/* Final Test button */}
-      <div className="mt-12 mb-4">
+      <div className="mt-4 mb-4">
         <Link
           href="/learn/final-test"
           className="block w-full max-w-md mx-auto rounded-2xl p-6 text-center shadow-lg
