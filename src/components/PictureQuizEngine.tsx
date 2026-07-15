@@ -163,10 +163,10 @@ export default function PictureQuizEngine({
   /* ── READY PHASE ── */
   if (phase === "ready") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6"
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-6"
         style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <span className="text-8xl animate-bounce mb-6">{subjectEmoji}</span>
-        <h1 className="font-nunito text-3xl font-black text-text-dark text-center">
+        <h1 className="font-nunito text-3xl font-black text-text-dark dark:text-gray-100 text-center">
           {subjectTitle}
         </h1>
         <h2 className="font-nunito text-xl font-bold text-coral mt-2">
@@ -203,24 +203,24 @@ export default function PictureQuizEngine({
     if (optionCount === 3) gridClass = "grid-cols-3";
 
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-white" key={currentIndex}>
+      <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-gray-900" key={currentIndex}>
         {/* Top bar */}
         <div className="flex-shrink-0 px-4 pb-2" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
           <div className="flex items-center justify-between mb-2">
             <Link
               href={`/learn/${subjectSlug}`}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-600 active:scale-95 transition-transform"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 active:scale-95 transition-transform"
             >
               <span className="text-lg font-bold">✕</span>
             </Link>
             <div className="flex items-center gap-2">
-              <span className="font-nunito text-sm font-bold text-text-dark">
+              <span className="font-nunito text-sm font-bold text-text-dark dark:text-gray-100">
                 {currentIndex + 1}/{QUIZ_SIZE}
               </span>
               <span className="font-nunito text-sm font-bold text-leaf">✅ {score}</span>
             </div>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
             <div
               className="h-full rounded-full bg-gradient-to-r from-coral to-sun transition-all duration-500"
               style={{ width: `${progress}%` }}
@@ -240,10 +240,10 @@ export default function PictureQuizEngine({
               </button>
             )}
           </div>
-          <h2 className="font-nunito text-2xl font-extrabold text-text-dark text-center leading-snug mt-2">
+          <h2 className="font-nunito text-2xl font-extrabold text-text-dark dark:text-gray-100 text-center leading-snug mt-2">
             {currentQuestion.question_en}
           </h2>
-          <p className="font-sarabun text-sm text-text-mid text-center mt-1">
+          <p className="font-sarabun text-sm text-text-mid dark:text-gray-400 text-center mt-1">
             {currentQuestion.question_th}
           </p>
         </div>
@@ -319,7 +319,7 @@ export default function PictureQuizEngine({
   /* ── RESULTS PHASE ── */
   if (phase === "results") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6 overflow-hidden">
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-6 overflow-hidden">
         {/* Confetti */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {Array.from({ length: 20 }).map((_, i) => (

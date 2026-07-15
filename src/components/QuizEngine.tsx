@@ -128,10 +128,10 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
   /* ── READY PHASE ── */
   if (phase === "ready") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6"
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-6"
         style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <span className="text-8xl animate-bounce mb-6">{subjectEmoji}</span>
-        <h1 className="font-nunito text-3xl font-black text-text-dark text-center">{subjectTitle}</h1>
+        <h1 className="font-nunito text-3xl font-black text-text-dark dark:text-gray-100 text-center">{subjectTitle}</h1>
         <h2 className="font-nunito text-xl font-bold text-sky-dark mt-2">
           Quiz Time! <span className="font-sarabun text-lg">ทดสอบ!</span>
         </h2>
@@ -155,16 +155,16 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
     const isW2P = currentQuestion.question_type === "word_to_picture";
 
     return (
-      <div className="fixed inset-0 z-50 flex flex-col bg-white" key={currentIndex}>
+      <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-gray-900" key={currentIndex}>
         {/* Top bar */}
         <div className="flex-shrink-0 px-4 pb-2" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
           <div className="flex items-center justify-between mb-2">
             <Link href={`/learn/${subjectSlug}`}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-600 active:scale-95 transition-transform">
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 active:scale-95 transition-transform">
               <span className="text-lg font-bold">✕</span>
             </Link>
             <div className="flex items-center gap-2">
-              <span className="font-nunito text-sm font-bold text-text-dark">
+              <span className="font-nunito text-sm font-bold text-text-dark dark:text-gray-100">
                 {currentIndex + 1}/{QUIZ_SIZE}
               </span>
               <span className="font-nunito text-sm font-bold text-leaf">
@@ -172,44 +172,45 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
               </span>
             </div>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
             <div className="h-full rounded-full bg-gradient-to-r from-sky-dark to-leaf transition-all duration-500"
               style={{ width: `${progress}%` }} />
           </div>
         </div>
 
-        {/* Question content - scrollable area */}
-        <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 pb-4">
-          {/* Question prompt */}
-          <div className="flex-shrink-0 py-3">
-            <div className="flex justify-center mb-3">
-              {currentQuestion.image_url ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img src={currentQuestion.image_url} alt="" className="h-24 w-24 rounded-xl object-contain" />
-              ) : (
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sun/30 text-3xl">
-                  {subjectEmoji}
+        {/* Question content - centered in remaining space */}
+        <div className="flex-1 flex flex-col items-center justify-center min-h-0 overflow-y-auto px-4 pb-4">
+          <div className="w-full max-w-2xl">
+            {/* Question prompt */}
+            <div className="flex-shrink-0 py-3">
+              <div className="flex justify-center mb-3">
+                {currentQuestion.image_url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={currentQuestion.image_url} alt="" className="h-24 w-24 rounded-xl object-contain" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sun/30 text-3xl">
+                    {subjectEmoji}
+                  </div>
+                )}
+              </div>
+              <h2 className="font-nunito text-xl font-extrabold text-text-dark dark:text-gray-100 text-center leading-snug">
+                {currentQuestion.prompt_en}
+              </h2>
+              {currentQuestion.prompt_th && (
+                <p className="font-sarabun text-sm text-text-mid dark:text-gray-400 text-center mt-1">{currentQuestion.prompt_th}</p>
+              )}
+              {currentQuestion.audio_url && (
+                <div className="flex justify-center mt-2">
+                  <button onClick={() => playAudio(currentQuestion.audio_url)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full bg-leaf text-white text-sm active:scale-90">
+                    🔊
+                  </button>
                 </div>
               )}
             </div>
-            <h2 className="font-nunito text-xl font-extrabold text-text-dark text-center leading-snug">
-              {currentQuestion.prompt_en}
-            </h2>
-            {currentQuestion.prompt_th && (
-              <p className="font-sarabun text-sm text-text-mid text-center mt-1">{currentQuestion.prompt_th}</p>
-            )}
-            {currentQuestion.audio_url && (
-              <div className="flex justify-center mt-2">
-                <button onClick={() => playAudio(currentQuestion.audio_url)}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-leaf text-white text-sm active:scale-90">
-                  🔊
-                </button>
-              </div>
-            )}
-          </div>
 
-          {/* Options grid - fills remaining space */}
-          <div className={`flex-1 grid grid-cols-2 gap-3 min-h-0 ${isW2P ? "auto-rows-fr" : "auto-rows-min"}`}>
+            {/* Options grid */}
+            <div className={`grid grid-cols-2 gap-3 mt-4 ${isW2P ? "auto-rows-fr" : "auto-rows-min"}`}>
             {currentQuestion.options.map((option, idx) => {
               let bg = "bg-white border-2 border-gray-200";
               let scale = "";
@@ -246,6 +247,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
                 </button>
               );
             })}
+            </div>
           </div>
         </div>
       </div>
@@ -255,7 +257,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
   /* ── RESULTS PHASE ── */
   if (phase === "results") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6 overflow-hidden">
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-6 overflow-hidden">
         {/* Confetti */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {Array.from({ length: 20 }).map((_, i) => <ConfettiPiece key={i} index={i} />)}
