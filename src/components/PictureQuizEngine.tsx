@@ -10,6 +10,7 @@ interface PictureQuizEngineProps {
   subjectId: string;
   subjectSlug: string;
   subjectTitle: string;
+  subjectEmoji: string;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -56,6 +57,7 @@ export default function PictureQuizEngine({
   subjectId,
   subjectSlug,
   subjectTitle,
+  subjectEmoji,
 }: PictureQuizEngineProps) {
   const QUIZ_SIZE = Math.min(10, questions.length);
 
@@ -162,7 +164,7 @@ export default function PictureQuizEngine({
   if (phase === "ready") {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6">
-        <span className="text-8xl animate-bounce mb-6">🖼️</span>
+        <span className="text-8xl animate-bounce mb-6">{subjectEmoji}</span>
         <h1 className="font-nunito text-3xl font-black text-text-dark text-center">
           {subjectTitle}
         </h1>

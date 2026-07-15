@@ -70,6 +70,7 @@ export default async function QuizPage({
       subjectId={subject.id}
       subjectSlug={slug}
       subjectTitle={subject.title_en}
+      subjectEmoji={subject.emoji}
     />
   );
 }

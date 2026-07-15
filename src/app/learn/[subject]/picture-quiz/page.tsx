@@ -58,6 +58,7 @@ export default async function PictureQuizPage({
       subjectId={subject.id}
       subjectSlug={slug}
       subjectTitle={subject.title_en}
+      subjectEmoji={subject.emoji}
     />
   );
 }

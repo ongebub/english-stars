@@ -10,6 +10,7 @@ interface QuizEngineProps {
   subjectId: string;
   subjectSlug: string;
   subjectTitle: string;
+  subjectEmoji: string;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -45,7 +46,7 @@ function ConfettiPiece({ index }: { index: number }) {
 
 type Phase = "ready" | "playing" | "results";
 
-export default function QuizEngine({ questions, subjectId, subjectSlug, subjectTitle }: QuizEngineProps) {
+export default function QuizEngine({ questions, subjectId, subjectSlug, subjectTitle, subjectEmoji }: QuizEngineProps) {
   const QUIZ_SIZE = Math.min(10, questions.length);
 
   const [phase, setPhase] = useState<Phase>("ready");
@@ -128,7 +129,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
   if (phase === "ready") {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6">
-        <span className="text-8xl animate-bounce mb-6">🧠</span>
+        <span className="text-8xl animate-bounce mb-6">{subjectEmoji}</span>
         <h1 className="font-nunito text-3xl font-black text-text-dark text-center">{subjectTitle}</h1>
         <h2 className="font-nunito text-xl font-bold text-sky-dark mt-2">
           Quiz Time! <span className="font-sarabun text-lg">ทดสอบ!</span>
@@ -180,18 +181,16 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
         <div className="flex-1 flex flex-col min-h-0 overflow-y-auto px-4 pb-4">
           {/* Question prompt */}
           <div className="flex-shrink-0 py-3">
-            {currentQuestion.image_url ? (
-              <div className="flex justify-center mb-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+            <div className="flex justify-center mb-3">
+              {currentQuestion.image_url ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img src={currentQuestion.image_url} alt="" className="h-24 w-24 rounded-xl object-contain" />
-              </div>
-            ) : (
-              <div className="flex justify-center mb-3">
+              ) : (
                 <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sun/30 text-3xl">
-                  {currentQuestion.question_type === "word_to_letter" ? "🔤" : currentQuestion.question_type === "fill_blank" ? "✏️" : "🖼️"}
+                  {subjectEmoji}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
             <h2 className="font-nunito text-xl font-extrabold text-text-dark text-center leading-snug">
               {currentQuestion.prompt_en}
             </h2>
