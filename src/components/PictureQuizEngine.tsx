@@ -302,7 +302,7 @@ export default function PictureQuizEngine({
                     loading="eager"
                   />
                   {option.text && (
-                    <span className="absolute bottom-1 left-0 right-0 text-center font-nunito text-lg font-bold text-text-dark bg-white/80 py-1">
+                    <span className="absolute bottom-0 left-0 right-0 text-center font-nunito text-lg font-bold text-gray-900 bg-white py-1.5 border-t border-gray-200">
                       {option.text}
                     </span>
                   )}
