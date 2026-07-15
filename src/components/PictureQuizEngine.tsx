@@ -298,6 +298,11 @@ export default function PictureQuizEngine({
                     className="w-full h-full object-contain p-2"
                     loading="eager"
                   />
+                  {option.text && (
+                    <span className="absolute bottom-1 left-0 right-0 text-center font-nunito text-lg font-bold text-text-dark bg-white/80 py-1">
+                      {option.text}
+                    </span>
+                  )}
                   {overlayEl}
                 </button>
               );

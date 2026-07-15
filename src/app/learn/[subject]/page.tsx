@@ -146,7 +146,7 @@ export default async function SubjectPage({
   ];
 
   return (
-    <section className="flex flex-col items-center">
+    <section className="flex flex-col items-center pt-4">
       <span className="text-6xl">{subject.emoji}</span>
       <h1 className="font-nunito mt-3 text-2xl font-extrabold text-text-dark dark:text-gray-100">
         {subject.title_en}
