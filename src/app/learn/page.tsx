@@ -5,9 +5,13 @@ import type { Subject } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-const MODULE_LABELS: Record<string, { en: string; th: string }> = {
-  "1": { en: "Module 1", th: "โมดูล 1" },
-  "2": { en: "Module 2", th: "โมดูล 2" },
+const BAND_ORDER = ["K", "1", "2", "3", "all"];
+const BAND_LABELS: Record<string, { en: string; th: string }> = {
+  K:   { en: "Kindergarten",  th: "อนุบาล" },
+  "1": { en: "Grade 1",      th: "ป.1" },
+  "2": { en: "Grade 2",      th: "ป.2" },
+  "3": { en: "Grade 3",      th: "ป.3" },
+  all: { en: "All Grades",   th: "ทุกระดับชั้น" },
 };
 
 const RIBBON_COLORS = ["#0288D1", "#66BB6A", "#FF8A65", "#FFD54F", "#CE93D8"];
@@ -37,7 +41,6 @@ export default async function LearnPage() {
     .from("subjects")
     .select("*")
     .eq("is_published", true)
-    .order("module")
     .order("sort_order");
 
   // Fetch medals for this user
@@ -52,12 +55,19 @@ export default async function LearnPage() {
     }
   }
 
+  // Group by grade_band, maintaining BAND_ORDER
   const grouped: Record<string, Subject[]> = {};
   for (const s of (subjects ?? []) as Subject[]) {
-    const key = String(s.module);
+    const key = s.grade_band ?? "all";
     if (!grouped[key]) grouped[key] = [];
     grouped[key].push(s);
   }
+
+  // Order bands: known bands first in BAND_ORDER, then any unknown bands alphabetically
+  const bandKeys = [
+    ...BAND_ORDER.filter((b) => grouped[b]),
+    ...Object.keys(grouped).filter((b) => !BAND_ORDER.includes(b)).sort(),
+  ];
 
   let cardIndex = 0;
 
@@ -70,11 +80,12 @@ export default async function LearnPage() {
         เลือกวิชาที่จะเรียน
       </p>
 
-      {Object.entries(grouped).map(([mod, items]) => {
-        const label = MODULE_LABELS[mod] ?? { en: `Module ${mod}`, th: `โมดูล ${mod}` };
+      {bandKeys.map((band) => {
+        const items = grouped[band];
+        const label = BAND_LABELS[band] ?? { en: `Grade ${band}`, th: `ป.${band}` };
 
         return (
-          <div key={mod} className="mt-8">
+          <div key={band} className="mt-8">
             <h2 className="font-nunito text-xl font-bold text-text-dark dark:text-gray-100">{label.en}</h2>
             <p className="font-sarabun text-sm text-text-mid dark:text-gray-400">{label.th}</p>
 
@@ -144,51 +155,6 @@ export default async function LearnPage() {
           </div>
         );
       })}
-      {/* Read-Along Stories button */}
-      <div className="mt-12">
-        <Link
-          href="/learn/read-along"
-          className="block w-full max-w-md mx-auto rounded-2xl p-6 text-center shadow-lg
-                     bg-gradient-to-r from-[#0288D1] via-[#4FC3F7] to-[#0288D1]
-                     hover:from-[#01579B] hover:via-[#0288D1] hover:to-[#01579B]
-                     transition-all hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]"
-          style={{ borderBottom: "4px solid #01579B" }}
-        >
-          <span className="text-5xl block mb-2">📖</span>
-          <span className="font-nunito text-2xl font-extrabold text-white block">
-            Read-Along Stories
-          </span>
-          <span className="font-sarabun text-lg text-white/80 block">
-            นิทานอ่านตาม
-          </span>
-          <span className="text-sm text-white/60 mt-1 block">
-            Listen and follow along with all 16 storybooks
-          </span>
-        </Link>
-      </div>
-
-      {/* Final Test button */}
-      <div className="mt-4 mb-4">
-        <Link
-          href="/learn/final-test"
-          className="block w-full max-w-md mx-auto rounded-2xl p-6 text-center shadow-lg
-                     bg-gradient-to-r from-[#F9A825] via-[#FFD54F] to-[#F9A825]
-                     hover:from-[#F57F17] hover:via-[#FFC107] hover:to-[#F57F17]
-                     transition-all hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]"
-          style={{ borderBottom: "4px solid #E65100" }}
-        >
-          <span className="text-5xl block mb-2">🏆</span>
-          <span className="font-nunito text-2xl font-extrabold text-text-dark block">
-            Final Test
-          </span>
-          <span className="font-sarabun text-lg text-text-dark/80 block">
-            สอบปลายภาค
-          </span>
-          <span className="text-sm text-text-dark/60 mt-1 block">
-            Comprehensive test across all subjects
-          </span>
-        </Link>
-      </div>
     </section>
   );
 }

@@ -217,6 +217,12 @@ export function FlashcardViewer({
             {card.word_th && (
               <p className="font-sarabun text-lg text-text-mid">{card.word_th}</p>
             )}
+            {card.example_en && (
+              <p className="font-nunito text-base text-text-mid mt-1">{card.example_en}</p>
+            )}
+            {card.example_th && (
+              <p className="font-sarabun text-sm text-text-light mt-0.5">{card.example_th}</p>
+            )}
           </div>
         </div>
       </div>

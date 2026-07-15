@@ -11,6 +11,7 @@ export interface Subject {
   title_en: string;
   title_th: string;
   emoji: string;
+  grade_band: string;
   sort_order: number;
   is_published: boolean;
   created_at: string;
@@ -24,6 +25,8 @@ export interface Flashcard {
   word_th: string;
   image_url: string | null;
   audio_url: string | null;
+  example_en: string | null;
+  example_th: string | null;
   sort_order: number;
   created_at: string;
 }
