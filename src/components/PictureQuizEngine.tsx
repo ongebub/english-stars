@@ -163,7 +163,8 @@ export default function PictureQuizEngine({
   /* ── READY PHASE ── */
   if (phase === "ready") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <span className="text-8xl animate-bounce mb-6">{subjectEmoji}</span>
         <h1 className="font-nunito text-3xl font-black text-text-dark text-center">
           {subjectTitle}
@@ -204,7 +205,7 @@ export default function PictureQuizEngine({
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-white" key={currentIndex}>
         {/* Top bar */}
-        <div className="flex-shrink-0 px-4 pt-3 pb-2">
+        <div className="flex-shrink-0 px-4 pb-2" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
           <div className="flex items-center justify-between mb-2">
             <Link
               href={`/learn/${subjectSlug}`}

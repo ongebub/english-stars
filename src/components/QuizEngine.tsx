@@ -128,7 +128,8 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
   /* ── READY PHASE ── */
   if (phase === "ready") {
     return (
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6">
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white px-6"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}>
         <span className="text-8xl animate-bounce mb-6">{subjectEmoji}</span>
         <h1 className="font-nunito text-3xl font-black text-text-dark text-center">{subjectTitle}</h1>
         <h2 className="font-nunito text-xl font-bold text-sky-dark mt-2">
@@ -156,7 +157,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
     return (
       <div className="fixed inset-0 z-50 flex flex-col bg-white" key={currentIndex}>
         {/* Top bar */}
-        <div className="flex-shrink-0 px-4 pt-3 pb-2">
+        <div className="flex-shrink-0 px-4 pb-2" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
           <div className="flex items-center justify-between mb-2">
             <Link href={`/learn/${subjectSlug}`}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-600 active:scale-95 transition-transform">
@@ -230,7 +231,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={option.image_url} alt={option.text}
                         className="w-full flex-1 min-h-0 object-contain rounded-lg" />
-                      <span className="text-xs text-text-mid mt-1 truncate w-full text-center">{option.text}</span>
+                      <span className="font-nunito text-lg font-bold text-text-dark mt-1 truncate w-full text-center">{option.text}</span>
                     </>
                   ) : (
                     <span className="font-nunito text-base font-bold text-text-dark text-center">{option.text}</span>
