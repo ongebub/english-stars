@@ -100,11 +100,11 @@ export default function PunchlistPage() {
   return (
     <main className="mx-auto max-w-4xl px-4 py-8">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">🔨 Punchlist</h1>
-        <p className="mt-1 text-gray-500">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">🔨 Punchlist</h1>
+        <p className="mt-1 text-gray-500 dark:text-gray-400">
           {doneCount} of {items.length} done · updates sync live — no refresh needed
         </p>
-        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200">
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
           <div
             className="h-full rounded-full bg-green-500 transition-all duration-500"
             style={{ width: `${items.length ? (doneCount / items.length) * 100 : 0}%` }}
@@ -114,7 +114,7 @@ export default function PunchlistPage() {
 
       {sections.map(([section, sectionItems]) => (
         <section key={section} className="mb-8">
-          <h2 className="mb-3 border-b border-gray-200 pb-1 text-lg font-semibold text-gray-700">
+          <h2 className="mb-3 border-b border-gray-200 dark:border-gray-700 pb-1 text-lg font-semibold text-gray-700 dark:text-gray-200">
             {section}
           </h2>
           <ul className="space-y-2">
@@ -122,17 +122,17 @@ export default function PunchlistPage() {
               <li
                 key={item.id}
                 className={`rounded-lg border p-3 transition-colors ${
-                  item.done ? 'border-gray-200 bg-gray-50 opacity-60' : 'border-gray-300 bg-white'
+                  item.done ? 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 opacity-60' : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
                 }`}
               >
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div className={item.done ? 'line-through text-gray-400' : ''}>
-                    <span className="font-medium text-gray-900">
-                      <span className="mr-2 text-gray-400">#{item.item_number}</span>
+                  <div className={item.done ? 'line-through text-gray-400 dark:text-gray-500' : ''}>
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      <span className="mr-2 text-gray-400 dark:text-gray-500">#{item.item_number}</span>
                       {item.title}
                     </span>
                     {item.description && (
-                      <p className="mt-0.5 text-sm text-gray-500">{item.description}</p>
+                      <p className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">{item.description}</p>
                     )}
                   </div>
                   <div className="flex shrink-0 items-center gap-4 pt-1">
@@ -177,7 +177,7 @@ function Check({
   onChange: () => void;
 }) {
   return (
-    <label className="flex cursor-pointer select-none items-center gap-1.5 text-sm text-gray-600">
+    <label className="flex cursor-pointer select-none items-center gap-1.5 text-sm text-gray-600 dark:text-gray-300">
       <input
         type="checkbox"
         checked={checked}
