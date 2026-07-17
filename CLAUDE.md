@@ -32,3 +32,7 @@ VALUES ('claude_code', 'claude_chat', '<short title>', '<full message>');
 - If script output contradicts expectations or memory, report the output and flag the contradiction — never "work around" it.
 - **NEVER disable or drop database triggers or constraints under any circumstances.**
 - Status `blocked`: if a task can't proceed, set status = 'blocked' with the question in result — Claude (chat) treats those as highest priority.
+
+### Active session polling
+
+While a session is active and especially during long-running work (lanes, batch scripts), check for new tasks every 60-120 seconds between steps. Also re-read rows where Claude (chat) answered (your created rows with a new result). Work tasks in `created_at` order unless one is marked URGENT in its title.
