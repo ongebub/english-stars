@@ -130,6 +130,8 @@ anime; normal friendly cartoon eyes, not large glossy anime eyes.
   `node --env-file=.env.local "ebook scripts/<name>.mjs"`.
 - All scripts are IDEMPOTENT: skip existing storage files, delete-then-insert or
   upsert DB rows, safe to re-run after any crash.
+- **Scripts that reference existing content must verify it exists at runtime and
+  fail with a named report, never assume it from memory of past sessions.**
 
 ## READER BOOKS (current production push)
 
