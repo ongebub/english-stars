@@ -14,6 +14,14 @@ const BAND_LABELS: Record<string, { en: string; th: string }> = {
   all: { en: "All Grades",   th: "ทุกระดับชั้น" },
 };
 
+// Maps grade_band to reader reading_level
+const BAND_TO_READER_LEVEL: Record<string, number> = {
+  K: 1,
+  "1": 2,
+  "2": 3,
+  "3": 3,
+};
+
 const RIBBON_COLORS = ["#0288D1", "#66BB6A", "#FF8A65", "#FFD54F", "#CE93D8"];
 const FREE_SLUG = "abcs";
 
@@ -55,6 +63,16 @@ export default async function LearnPage() {
     }
   }
 
+  // Fetch reader book counts per level to know which grades have stories
+  const { data: readerCounts } = await supabase
+    .from("reader_books")
+    .select("reading_level")
+    .eq("is_published", true);
+
+  const readerLevelsWithBooks = new Set(
+    (readerCounts ?? []).map((r: { reading_level: number }) => r.reading_level)
+  );
+
   // Group by grade_band, maintaining BAND_ORDER
   const grouped: Record<string, Subject[]> = {};
   for (const s of (subjects ?? []) as Subject[]) {
@@ -83,6 +101,8 @@ export default async function LearnPage() {
       {bandKeys.map((band) => {
         const items = grouped[band];
         const label = BAND_LABELS[band] ?? { en: `Grade ${band}`, th: `ป.${band}` };
+        const readerLevel = BAND_TO_READER_LEVEL[band];
+        const hasReaders = readerLevel ? readerLevelsWithBooks.has(readerLevel) : false;
 
         return (
           <div key={band} className="mt-8">
@@ -152,35 +172,34 @@ export default async function LearnPage() {
                 );
               })}
             </div>
+
+            {/* Read-Along Stories button at end of grade (only if that grade has published books) */}
+            {hasReaders && (
+              <div className="mt-4">
+                <Link
+                  href={`/learn/read-along?level=${readerLevel}`}
+                  className="flex items-center gap-4 rounded-xl bg-gradient-to-r from-[#0288D1] to-[#4FC3F7] p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                  style={{ borderBottom: "4px solid #01579B" }}
+                >
+                  <span className="text-4xl flex-shrink-0">📖</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-nunito text-base font-bold text-white block">
+                      Read-Along Stories
+                    </span>
+                    <span className="font-sarabun text-sm text-white/80 block">
+                      นิทานอ่านตาม
+                    </span>
+                  </div>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0 text-white/70"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </Link>
+              </div>
+            )}
           </div>
         );
       })}
 
-      {/* Read-Along Stories button */}
-      <div className="mt-12">
-        <Link
-          href="/learn/read-along"
-          className="block w-full max-w-md mx-auto rounded-2xl p-6 text-center shadow-lg
-                     bg-gradient-to-r from-[#0288D1] via-[#4FC3F7] to-[#0288D1]
-                     hover:from-[#01579B] hover:via-[#0288D1] hover:to-[#01579B]
-                     transition-all hover:shadow-xl hover:-translate-y-1 active:scale-[0.98]"
-          style={{ borderBottom: "4px solid #01579B" }}
-        >
-          <span className="text-5xl block mb-2">📖</span>
-          <span className="font-nunito text-2xl font-extrabold text-white block">
-            Read-Along Stories
-          </span>
-          <span className="font-sarabun text-lg text-white/80 block">
-            นิทานอ่านตาม
-          </span>
-          <span className="text-sm text-white/60 mt-1 block">
-            Listen and follow along with all 16 storybooks
-          </span>
-        </Link>
-      </div>
-
       {/* Final Test button */}
-      <div className="mt-4 mb-4">
+      <div className="mt-12 mb-4">
         <Link
           href="/learn/final-test"
           className="block w-full max-w-md mx-auto rounded-2xl p-6 text-center shadow-lg
