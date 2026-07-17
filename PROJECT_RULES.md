@@ -74,6 +74,10 @@ but the three humans/owl must remain central.
   cartoon style, NOT anime; normal friendly cartoon eyes, not large glossy anime eyes."*
 - **Continuity clause** — props and setting carried from prior pages named explicitly
   ("the same red ball," "the same mango tree").
+- **Scene-only pages** — any page whose text contains no characters must include
+  verbatim: *"No people, no children, no animals, no characters."* (adjust "no
+  animals" if an animal IS the subject). Scene-only pages without this clause get
+  invented characters.
 - Readers: **ONE image per page** (Chris's rule — accuracy of the prompt is
   everything; flagged pages get regenerated, not multi-candidate picked).
 - Every prompt is written FROM the page's exact approved sentence. The scene must
