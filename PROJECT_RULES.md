@@ -32,6 +32,20 @@ Chris (owner, reviews everything) + Matt (English professor, reviews all Thai te
    that references an image must be written against that image's `image_catalog`
    description — or written FIRST, with the image then generated to match.
 
+### Format ruling (Chris, 17 Jul — supersedes per-subject format in Matt's docs)
+ALL flashcards across ALL subjects, present and future, use exactly one of two
+audio formats: **simple/concrete word = bare word only**; **complex/abstract word
+= word then one context sentence**. No word-repeated-twice formats, no
+word-plus-article formats. Matt's per-subject format examples are treated as
+content suggestions, not format law.
+
+### Content decisions (Chris, 17 Jul)
+- Synonyms & Antonyms, Countable & Uncountable, Common Verbs, and Question Words
+  all KEEP their current live implementations — do not rebuild toward Matt's New
+  Subjects doc variants.
+- Countable & Uncountable explicitly gets **NO e-book** (storybook_planned = false).
+- Days/Months/Seasons will teach Thailand's three seasons (hot, rainy, cool), not four.
+
 ## CHARACTER BIBLE (state features explicitly in EVERY image prompt — never rely on the Element alone)
 
 | Character | Element ID | Must state every time |
@@ -46,6 +60,13 @@ New recurring friends (no Elements — describe fully and IDENTICALLY every appe
 - **Duck**: small yellow duckling, orange beak and feet
 These three characters are the core of everything. New animal friends are allowed,
 but the three humans/owl must remain central.
+
+### Character canon (backstory — NO image generation yet, designs TBD)
+- **Thawan**: 8 years old, 1st grade, hometown Nakhon Si Thammarat, Thailand.
+- **Bua**: Thawan's younger sister, 5 years old. **Boon**: Thawan's older brother, 12 years old.
+- Nong Fah has an unnamed brother and sister (per Family Tree / Clothes specs).
+- Future recurring humans (design-locked before first generation, not before):
+  Nong Fah's mom, Emily (American classmate from the USA), Teacher Julie.
 
 ## IMAGE GENERATION
 
