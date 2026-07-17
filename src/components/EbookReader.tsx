@@ -269,7 +269,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
   // Completion screen
   if (showComplete) {
     return (
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white dark:bg-gray-900 px-6 transition-colors">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white dark:bg-gray-900 px-6 transition-colors">
         <div className="text-center">
           <div className="text-8xl mb-6 animate-bounce">🦉</div>
           <h2 className="font-fredoka text-3xl font-semibold text-text-dark dark:text-gray-100">You finished the book!</h2>
@@ -293,7 +293,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
   }
 
   return (
-    <div className="fixed inset-0 z-[9999] flex flex-col bg-white dark:bg-gray-900 transition-colors">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-gray-900 transition-colors">
       {/* Top bar */}
       <div className="flex-shrink-0 flex items-center justify-between px-3 pb-2 border-b border-gray-100 dark:border-gray-700"
         style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>

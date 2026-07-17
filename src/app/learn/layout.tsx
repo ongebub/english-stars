@@ -54,7 +54,7 @@ export default function LearnLayout({
       </nav>
 
       {/* ── Page content with session guard ── */}
-      <main className="mx-auto max-w-4xl px-4 py-6 relative z-10">
+      <main className="mx-auto max-w-4xl px-4 py-6 relative">
         <ChildSessionGuard>{children}</ChildSessionGuard>
       </main>
       <AppFooter />
