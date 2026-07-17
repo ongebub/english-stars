@@ -79,7 +79,7 @@ export default async function ReaderBookPage({
           pages={ebookPages}
           subjectTitle={book.title_en}
           subjectId={bookId}
-          subjectSlug={`read-along/${bookId}`}
+          subjectSlug={`read-along?level=${book.reading_level}`}
         />
       )}
     </div>
