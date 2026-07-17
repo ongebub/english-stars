@@ -50,19 +50,53 @@ but the three humans/owl must remain central.
 ## IMAGE GENERATION
 
 - Model: `nano_banana_2`, aspect_ratio `1:1`.
-- Style suffix on EVERY prompt: *"Soft cel-shaded children's storybook illustration
-  style, clean rounded linework, bright cheerful colors, warm and wholesome mood,
-  square composition. No text, no letters, no words."*
-- Anti-anime guard on EVERY prompt with characters: *"Western storybook cartoon
-  style, NOT anime; normal friendly cartoon eyes, not large glossy anime eyes."*
+- **Element IDs are MANDATORY.** Embed `<<<element_id>>>` in the prompt text
+  immediately before each character's name, every single time they appear:
+
+  | Character | Element UUID |
+  |-----------|-------------|
+  | Ollie     | `b9926e8d-23ab-4d21-b0e8-895affff1467` |
+  | Nong Fah  | `8edea4b8-45e7-4238-b2f9-763134c602b7` |
+  | Thawan    | `95530f76-6c73-47bf-9307-4b9fad7c0879` |
+
+  Do NOT pass Element IDs via the `medias` parameter — nano_banana_2 rejects
+  `reference_element` role. The `<<<UUID>>>` prompt syntax is the only correct method.
+
+- **Feature restatement in words anyway** — the Element alone drops the red bow
+  ~1-in-6, so always state: "red bow in her hair," "cowlick tuft at his crown,"
+  "round glasses and blue graduation cap," verbatim, every appearance.
+- **Outfit continuity** — pick each character's outfit once per story and repeat
+  identically on every page (e.g. "teal t-shirt and dark blue shorts").
+- Style suffix on EVERY prompt (copy-paste, never reword): *"Soft cel-shaded
+  children's storybook illustration style, clean rounded linework, bright cheerful
+  colors, warm and wholesome mood, square composition. No text, no letters, no words."*
+- Anti-anime guard on EVERY prompt (copy-paste, never reword): *"Western storybook
+  cartoon style, NOT anime; normal friendly cartoon eyes, not large glossy anime eyes."*
+- **Continuity clause** — props and setting carried from prior pages named explicitly
+  ("the same red ball," "the same mango tree").
 - Readers: **ONE image per page** (Chris's rule — accuracy of the prompt is
   everything; flagged pages get regenerated, not multi-candidate picked).
 - Every prompt is written FROM the page's exact approved sentence. The scene must
-  literally depict the sentence. Continuity details (props, clothing, weather,
-  location) are re-stated verbatim on every page where they appear.
+  literally depict the sentence.
 - Store the exact prompt in `reader_pages.image_prompt` — regens must be reproducible.
 - Known failure modes to avoid: anime-eye drift, missing red bow, missing cowlick,
   curved-glass/aquarium perspective scenes, accidental rendered text.
+
+### Gold-standard prompt example (The Big Mango p7, "Ollie flies up.")
+
+```
+<<<b9926e8d-23ab-4d21-b0e8-895affff1467>>> Ollie, a brown owl with round glasses
+and a blue graduation cap, flies upward toward a large ripe yellow mango hanging
+in a leafy green mango tree, his wings spread mid-flight. Below him on the grass,
+<<<95530f76-6c73-47bf-9307-4b9fad7c0879>>> Thawan, an 8-year-old Thai boy with a
+small cowlick tuft of hair sticking up at his crown, wearing a teal t-shirt and
+dark blue shorts, looks up at Ollie with an excited hopeful expression, hands
+raised. Sunny daytime, garden setting, the same mango tree and single large mango
+from the previous pages. Soft cel-shaded children's storybook illustration style,
+clean rounded linework, bright cheerful colors, warm and wholesome mood, square
+composition. No text, no letters, no words. Western storybook cartoon style, NOT
+anime; normal friendly cartoon eyes, not large glossy anime eyes.
+```
 
 ## IMAGE CATALOG (mandatory — this is what ended the blind-writing era)
 
