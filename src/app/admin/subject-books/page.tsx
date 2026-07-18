@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 const supabase = createClient();
 
-type Subject = { id: string; title_en: string; emoji: string };
+type Subject = { id: string; title_en: string; emoji: string; unreviewed: number };
 
 type EbookPage = {
   id: string;
@@ -36,12 +36,17 @@ export default function SubjectBooksPage() {
 
   useEffect(() => {
     async function loadSubjects() {
-      // Get distinct subject_ids from ebook_pages
+      // Get distinct subject_ids from ebook_pages + unreviewed counts
       const { data, error: err } = await supabase
         .from('ebook_pages')
-        .select('subject_id');
+        .select('subject_id, reviewed, image_url');
       if (err) { setError(err.message); setLoading(false); return; }
 
+      const countMap: Record<string, number> = {};
+      for (const r of data ?? []) {
+        if (!countMap[r.subject_id]) countMap[r.subject_id] = 0;
+        if (!r.reviewed && r.image_url) countMap[r.subject_id]++;
+      }
       const ids = Array.from(new Set((data ?? []).map((r: { subject_id: string }) => r.subject_id)));
       if (ids.length === 0) { setLoading(false); return; }
 
@@ -51,7 +56,7 @@ export default function SubjectBooksPage() {
         .in('id', ids)
         .order('sort_order');
       if (sErr) { setError(sErr.message); setLoading(false); return; }
-      setSubjects(subData as Subject[]);
+      setSubjects((subData ?? []).map(s => ({ ...s, unreviewed: countMap[s.id] || 0 })) as Subject[]);
       setLoading(false);
     }
     loadSubjects();
@@ -131,7 +136,7 @@ export default function SubjectBooksPage() {
         >
           <option value="">Select a subject...</option>
           {subjects.map((s) => (
-            <option key={s.id} value={s.id}>{s.emoji} {s.title_en}</option>
+            <option key={s.id} value={s.id}>{s.emoji} {s.title_en}{s.unreviewed > 0 ? ` (${s.unreviewed} to review)` : ' \u2713'}</option>
           ))}
         </select>
 

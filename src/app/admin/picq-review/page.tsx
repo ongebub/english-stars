@@ -13,6 +13,7 @@ type Subject = {
   id: string;
   title_en: string;
   emoji: string;
+  unreviewed: number;
 };
 
 type Option = {
@@ -45,15 +46,21 @@ export default function PicqReviewPage() {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Load subjects that have picture quiz questions
+  // Load subjects that have picture quiz questions + unreviewed counts
   useEffect(() => {
     async function loadSubjects() {
       const { data, error: err } = await supabase
         .from('picture_quiz_questions')
-        .select('subject_id');
+        .select('subject_id, reviewed');
       if (err) { setError(err.message); setLoading(false); return; }
 
-      const subjectIds = Array.from(new Set((data ?? []).map((r: { subject_id: string }) => r.subject_id)));
+      // Count unreviewed per subject
+      const countMap: Record<string, number> = {};
+      for (const r of data ?? []) {
+        if (!countMap[r.subject_id]) countMap[r.subject_id] = 0;
+        if (!r.reviewed) countMap[r.subject_id]++;
+      }
+      const subjectIds = Object.keys(countMap);
       if (subjectIds.length === 0) { setLoading(false); return; }
 
       const { data: subData, error: sErr } = await supabase
@@ -62,7 +69,7 @@ export default function PicqReviewPage() {
         .in('id', subjectIds)
         .order('sort_order');
       if (sErr) { setError(sErr.message); setLoading(false); return; }
-      setSubjects(subData as Subject[]);
+      setSubjects((subData ?? []).map(s => ({ ...s, unreviewed: countMap[s.id] || 0 })) as Subject[]);
       setLoading(false);
     }
     loadSubjects();
@@ -155,7 +162,7 @@ export default function PicqReviewPage() {
           <option value="">Select a subject...</option>
           {subjects.map((s) => (
             <option key={s.id} value={s.id}>
-              {s.emoji} {s.title_en}
+              {s.emoji} {s.title_en}{s.unreviewed > 0 ? ` (${s.unreviewed} to review)` : ' \u2713'}
             </option>
           ))}
         </select>

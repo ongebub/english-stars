@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 const supabase = createClient();
 
-type Subject = { id: string; title_en: string; emoji: string };
+type Subject = { id: string; title_en: string; emoji: string; unreviewed: number };
 
 type Flashcard = {
   id: string;
@@ -36,12 +36,17 @@ export default function FlashcardsAdminPage() {
 
   useEffect(() => {
     async function loadSubjects() {
-      const { data, error: err } = await supabase
-        .from('subjects')
-        .select('id, title_en, emoji')
-        .order('sort_order');
-      if (err) { setError(err.message); setLoading(false); return; }
-      setSubjects(data as Subject[]);
+      const [{ data: subData, error: sErr }, { data: fcData }] = await Promise.all([
+        supabase.from('subjects').select('id, title_en, emoji').order('sort_order'),
+        supabase.from('flashcards').select('subject_id, reviewed, image_url'),
+      ]);
+      if (sErr) { setError(sErr.message); setLoading(false); return; }
+      const countMap: Record<string, number> = {};
+      for (const r of fcData ?? []) {
+        if (!countMap[r.subject_id]) countMap[r.subject_id] = 0;
+        if (!r.reviewed && r.image_url) countMap[r.subject_id]++;
+      }
+      setSubjects((subData ?? []).map(s => ({ ...s, unreviewed: countMap[s.id] || 0 })) as Subject[]);
       setLoading(false);
     }
     loadSubjects();
@@ -121,7 +126,7 @@ export default function FlashcardsAdminPage() {
         >
           <option value="">Select a subject...</option>
           {subjects.map((s) => (
-            <option key={s.id} value={s.id}>{s.emoji} {s.title_en}</option>
+            <option key={s.id} value={s.id}>{s.emoji} {s.title_en}{s.unreviewed > 0 ? ` (${s.unreviewed} to review)` : ''}</option>
           ))}
         </select>
 
