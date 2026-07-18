@@ -61,12 +61,25 @@ New recurring friends (no Elements — describe fully and IDENTICALLY every appe
 These three characters are the core of everything. New animal friends are allowed,
 but the three humans/owl must remain central.
 
+### Locked supporting character designs (use VERBATIM every appearance)
+- **Nong Fah's Mom**: "a kind Thai woman in her thirties with dark hair in a low bun,
+  wearing a simple lavender blouse, with a warm gentle smile"
+- **Grandma** (Nong Fah's human grandmother — NOT Grandma Owl): "Grandma, an elderly
+  Thai woman with silver hair in a neat bun, warm dark eyes and gentle wrinkles,
+  wearing a soft green blouse and a long grey skirt, walking gently"
+- **Grandma Owl** (Ollie's grandmother): "an elderly grey-brown owl with small round
+  spectacles and a soft pink flowered shawl around her shoulders"
+- **Bua** (Thawan's younger sister, 3 years old): "Bua, a 3-year-old Thai girl with
+  chin-length straight black hair and side bangs, wearing a pink t-shirt and white shorts"
+- Generic one-off humans (mail carrier, little boy at kite festival): describe fully
+  inline, friendly cartoon adults/children, never resembling the locked kids.
+
 ### Character canon (backstory — NO image generation yet, designs TBD)
 - **Thawan**: 8 years old, 1st grade, hometown Nakhon Si Thammarat, Thailand.
-- **Bua**: Thawan's younger sister, 5 years old. **Boon**: Thawan's older brother, 12 years old.
+- **Bua**: Thawan's younger sister, 3 years old. **Boon**: Thawan's older brother, 12 years old.
 - Nong Fah has an unnamed brother and sister (per Family Tree / Clothes specs).
 - Future recurring humans (design-locked before first generation, not before):
-  Nong Fah's mom, Emily (American classmate from the USA), Teacher Julie.
+  Emily (American classmate from the USA), Teacher Julie.
 
 ## IMAGE GENERATION
 

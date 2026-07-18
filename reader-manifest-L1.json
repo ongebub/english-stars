@@ -1,0 +1,48 @@
+{
+  "comment": "Level 1 reader manifest — pending Chris's final approval of story text. Each story is one independent work lane for a sub-agent. DO NOT alter text_en once approved.",
+  "reading_level": 1,
+  "voice_id": "C1npRmjB19a6yNkEucvx",
+  "stories": [
+    { "sort_order": 1, "slug": "ollie-can-fly", "title_en": "Ollie Can Fly", "pages": [
+      "This is Ollie.", "Ollie can fly.", "Ollie can fly up.", "Ollie can fly down.",
+      "Ollie can fly fast.", "Ollie can fly slow.", "Can Ollie fly to school?",
+      "Yes! Ollie can fly to school." ] },
+    { "sort_order": 2, "slug": "i-see", "title_en": "I See", "pages": [
+      "Nong Fah is at the zoo.", "\"I see a lion,\" says Nong Fah.", "\"I see a monkey.\"",
+      "\"I see an elephant.\"", "\"I see a penguin.\"", "\"I see a snake!\"",
+      "And the animals see me!" ] },
+    { "sort_order": 3, "slug": "the-big-mango", "title_en": "The Big Mango", "pages": [
+      "Thawan sees a big mango.", "The mango is up in the tree.", "Thawan jumps up.",
+      "No mango.", "Thawan jumps up, up, up.", "No mango.", "Ollie flies up.",
+      "Ollie gets the mango!", "\"Thank you, Ollie!\"" ] },
+    { "sort_order": 4, "slug": "where-is-ollie", "title_en": "Where Is Ollie?", "pages": [
+      "Nong Fah and Thawan play hide and seek.", "Where is Ollie?",
+      "Is Ollie under the bed? No.", "Is Ollie in the box? No.",
+      "Is Ollie behind the door? No.", "Look up!", "Ollie is in the tree!" ] },
+    { "sort_order": 5, "slug": "the-red-ball", "title_en": "The Red Ball", "pages": [
+      "Thawan has a red ball.", "He kicks the ball.", "The ball goes up.",
+      "The ball goes down.", "The ball goes in the pond!", "A frog jumps out.",
+      "The frog has the ball!", "\"Silly frog!\" says Thawan." ] },
+    { "sort_order": 6, "slug": "nong-fahs-cat", "title_en": "Nong Fah's Cat", "pages": [
+      "Nong Fah has a cat.", "The cat is small.", "The cat can run.",
+      "The cat can jump.", "The cat can sleep.", "The cat sleeps on Nong Fah!",
+      "Shh! The cat is sleeping." ] },
+    { "sort_order": 7, "slug": "rain-rain", "title_en": "Rain, Rain", "pages": [
+      "Look at the rain.", "Rain on the house.", "Rain on the tree.",
+      "Rain on the car.", "Rain on Ollie!", "Ollie is wet.",
+      "Nong Fah has an umbrella.", "Now Ollie is not wet." ] },
+    { "sort_order": 8, "slug": "the-little-duck", "title_en": "The Little Duck", "pages": [
+      "A little duck is sad.", "The duck cannot find its mom.", "Thawan helps the duck.",
+      "They look here.", "They look there.", "They look at the pond.",
+      "Mom duck is at the pond!", "The little duck is happy." ] },
+    { "sort_order": 9, "slug": "one-two-three", "title_en": "One, Two, Three", "pages": [
+      "Ollie sees one star.", "Ollie sees two stars.", "Ollie sees three stars.",
+      "Nong Fah sees four stars.", "Thawan sees five stars.",
+      "They see many, many stars!", "Good night, stars." ] },
+    { "sort_order": 10, "slug": "i-like", "title_en": "I Like", "pages": [
+      "\"I like apples,\" says Nong Fah.", "\"I like bananas,\" says Thawan.",
+      "\"I like cake,\" says Nong Fah.", "\"I like cookies,\" says Thawan.",
+      "\"What do you like, Ollie?\"", "\"I like cookies and milk!\" says Ollie.",
+      "They all like cookies!" ] }
+  ]
+}

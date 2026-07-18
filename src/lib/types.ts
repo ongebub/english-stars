@@ -14,6 +14,7 @@ export interface Subject {
   grade_band: string;
   sort_order: number;
   is_published: boolean;
+  storybook_planned: boolean;
   created_at: string;
   updated_at: string;
 }

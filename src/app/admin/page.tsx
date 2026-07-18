@@ -1,158 +1,93 @@
-"use client";
+import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import type { Subject } from "@/lib/types";
+type CardDef = {
+  href: string;
+  title: string;
+  description: string;
+  emoji: string;
+  countKey: string;
+};
 
-export default function AdminPage() {
-  const supabase = createClient();
-  const [subjects, setSubjects] = useState<Subject[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState<string | null>(null);
-  const [form, setForm] = useState({ title_en: "", title_th: "", emoji: "", module: 1, is_published: true });
+const cards: CardDef[] = [
+  { href: "/admin/reader-review", title: "Reader Books (L1-L3)", description: "Review reader book pages, images, and audio", emoji: "\uD83D\uDCD6", countKey: "readerBooks" },
+  { href: "/admin/subject-books", title: "Subject Storybooks", description: "Browse ebook pages by subject", emoji: "\uD83D\uDCDA", countKey: "subjectBooks" },
+  { href: "/admin/picq-review", title: "Picture Quizzes", description: "Review and flag picture quiz questions", emoji: "\uD83D\uDDBC\uFE0F", countKey: "pictureQuizzes" },
+  { href: "/admin/flashcards", title: "Flashcards", description: "Browse flashcard images and audio", emoji: "\uD83C\uDCCF", countKey: "flashcards" },
+  { href: "/admin/catalog", title: "Image Catalog", description: "Search and review all cataloged images", emoji: "\uD83D\uDDC2\uFE0F", countKey: "catalog" },
+  { href: "/admin/subjects", title: "Subject Editor", description: "Edit subject titles, emoji, and publish status", emoji: "\u2699\uFE0F", countKey: "subjects" },
+  { href: "/punchlist", title: "Punchlist / Roadmap", description: "Launch tracker and task list", emoji: "\uD83D\uDCCB", countKey: "" },
+];
 
-  useEffect(() => {
-    loadSubjects();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+async function getCounts() {
+  const supabase = await createClient();
 
-  async function loadSubjects() {
-    const { data } = await supabase
-      .from("subjects")
-      .select("*")
-      .order("module")
-      .order("sort_order");
-    setSubjects(data || []);
-    setLoading(false);
-  }
+  const [readerBooks, ebookSubjects, picqSubjects, publishedSubjects, catalogImages, totalSubjects] =
+    await Promise.all([
+      supabase.from("reader_books").select("id", { count: "exact", head: true }),
+      supabase.from("ebook_pages").select("subject_id", { count: "exact", head: false }).then(async (res) => {
+        const ids = new Set((res.data ?? []).map((r: { subject_id: string }) => r.subject_id));
+        return ids.size;
+      }),
+      supabase.from("picture_quiz_questions").select("subject_id").then((res) => {
+        const ids = new Set((res.data ?? []).map((r: { subject_id: string }) => r.subject_id));
+        return ids.size;
+      }),
+      supabase.from("subjects").select("id", { count: "exact", head: true }).eq("is_published", true),
+      supabase.from("image_catalog").select("id", { count: "exact", head: true }),
+      supabase.from("subjects").select("id", { count: "exact", head: true }),
+    ]);
 
-  async function handleSave(id: string) {
-    await supabase
-      .from("subjects")
-      .update({
-        title_en: form.title_en,
-        title_th: form.title_th,
-        emoji: form.emoji,
-        is_published: form.is_published,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
-    setEditing(null);
-    loadSubjects();
-  }
+  return {
+    readerBooks: readerBooks.count ?? 0,
+    subjectBooks: ebookSubjects,
+    pictureQuizzes: picqSubjects,
+    flashcards: publishedSubjects.count ?? 0,
+    catalog: catalogImages.count ?? 0,
+    subjects: totalSubjects.count ?? 0,
+  } as Record<string, number>;
+}
 
-  function startEdit(subject: Subject) {
-    setEditing(subject.id);
-    setForm({
-      title_en: subject.title_en,
-      title_th: subject.title_th,
-      emoji: subject.emoji,
-      module: subject.module,
-      is_published: subject.is_published,
-    });
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-4xl animate-bounce">🦉</div>
-      </div>
-    );
-  }
+export default async function AdminHubPage() {
+  const counts = await getCounts();
 
   return (
     <div className="min-h-screen pb-8">
-      <div className="bg-gradient-to-r from-sky-dark to-[#1565C0] text-white px-6 py-6"
-        style={{ borderRadius: "0 0 24px 24px" }}>
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-2xl font-extrabold">⚙️ Admin · จัดการ</h1>
-          <p className="text-white/80 text-sm mt-1">Manage subjects and content</p>
+      <div
+        className="bg-gradient-to-r from-sky-dark to-[#1565C0] text-white px-6 py-6"
+        style={{ borderRadius: "0 0 24px 24px" }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <h1 className="text-2xl font-extrabold">Admin Hub</h1>
+          <p className="text-white/80 text-sm mt-1">Content management dashboard</p>
         </div>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 mt-6">
-        <h2 className="text-lg font-bold text-text-dark mb-4">Subjects · วิชา</h2>
-
-        {[1, 2].map((mod) => (
-          <div key={mod} className="mb-8">
-            <h3 className="text-sm font-bold text-text-mid mb-3">
-              Module {mod} · โมดูล {mod}
-            </h3>
-            <div className="space-y-2">
-              {subjects
-                .filter((s) => s.module === mod)
-                .map((subject) => (
-                  <div key={subject.id} className="bg-white rounded-xl p-4 shadow-sm">
-                    {editing === subject.id ? (
-                      <div className="space-y-3">
-                        <div className="flex gap-2">
-                          <input
-                            value={form.emoji}
-                            onChange={(e) => setForm({ ...form, emoji: e.target.value })}
-                            className="w-16 px-2 py-1 border rounded-lg text-center text-xl"
-                            placeholder="emoji"
-                          />
-                          <input
-                            value={form.title_en}
-                            onChange={(e) => setForm({ ...form, title_en: e.target.value })}
-                            className="flex-1 px-3 py-1 border rounded-lg text-sm"
-                            placeholder="English title"
-                          />
-                        </div>
-                        <input
-                          value={form.title_th}
-                          onChange={(e) => setForm({ ...form, title_th: e.target.value })}
-                          className="w-full px-3 py-1 border rounded-lg text-sm font-sarabun"
-                          placeholder="Thai title"
-                        />
-                        <div className="flex items-center gap-4">
-                          <label className="flex items-center gap-2 text-sm">
-                            <input
-                              type="checkbox"
-                              checked={form.is_published}
-                              onChange={(e) => setForm({ ...form, is_published: e.target.checked })}
-                            />
-                            Published
-                          </label>
-                          <button
-                            onClick={() => handleSave(subject.id)}
-                            className="bg-leaf text-white px-4 py-1 rounded-lg text-sm font-bold"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditing(null)}
-                            className="text-text-light text-sm"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">{subject.emoji}</span>
-                          <div>
-                            <span className="font-bold text-text-dark text-sm">{subject.title_en}</span>
-                            <span className="font-sarabun text-xs text-text-mid ml-2">{subject.title_th}</span>
-                          </div>
-                          {!subject.is_published && (
-                            <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">Draft</span>
-                          )}
-                        </div>
-                        <button
-                          onClick={() => startEdit(subject)}
-                          className="text-sky-dark text-sm font-bold hover:underline"
-                        >
-                          Edit
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ))}
-            </div>
-          </div>
-        ))}
+      <div className="max-w-5xl mx-auto px-4 mt-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {cards.map((card) => (
+            <Link
+              key={card.href}
+              href={card.href}
+              className="group rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md
+                         border border-gray-100 dark:border-gray-700
+                         p-5 transition-all hover:-translate-y-0.5"
+            >
+              <div className="text-3xl mb-3">{card.emoji}</div>
+              <h2 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-tight">
+                {card.title}
+              </h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-snug">
+                {card.description}
+              </p>
+              {card.countKey && counts[card.countKey] !== undefined && (
+                <div className="mt-3 text-xs font-mono text-sky-600 dark:text-sky-400">
+                  {counts[card.countKey]} {card.countKey === "catalog" ? "images" : card.countKey === "subjects" ? "subjects" : "items"}
+                </div>
+              )}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );

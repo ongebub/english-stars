@@ -23,6 +23,23 @@ export default async function SubjectPage({
   if (!data) notFound();
   const subject = data as Subject;
 
+  // Content counts (not user-specific) — used to hide empty tiles
+  const [{ count: pictureQuizCount }, { count: ebookPageCount }] = await Promise.all([
+    supabase
+      .from("picture_quiz_questions")
+      .select("id", { count: "exact", head: true })
+      .eq("subject_id", subject.id),
+    supabase
+      .from("ebook_pages")
+      .select("id", { count: "exact", head: true })
+      .eq("subject_id", subject.id)
+      .eq("page_type", "storybook"),
+  ]);
+
+  const hasPictureQuiz = (pictureQuizCount ?? 0) > 0;
+  const hasStorybook = (ebookPageCount ?? 0) > 0;
+  const showStorybook = hasStorybook || subject.storybook_planned;
+
   const { data: { user } } = await supabase.auth.getUser();
 
   // Quiz stats
@@ -127,7 +144,7 @@ export default async function SubjectPage({
     ? bestScore >= (bestTotal * 0.9) ? 3 : bestScore >= (bestTotal * 0.7) ? 2 : 1
     : 0;
 
-  const MODULES = [
+  const ALL_MODULES = [
     { emoji: "🃏", titleEn: "Flashcards", titleTh: "บัตรคำศัพท์", path: "flashcards", bg: "bg-sun/30", border: "#F9A825", step: 1 },
     { emoji: "📖", titleEn: "Storybook", titleTh: "หนังสือนิทาน", path: "ebook", bg: "bg-leaf/20", border: "#66BB6A", step: 2 },
     { emoji: "📚", titleEn: "Lesson Book", titleTh: "หนังสือบทเรียน", path: "lesson", bg: "bg-sky/20", border: "#0288D1", step: 3 },
@@ -135,6 +152,12 @@ export default async function SubjectPage({
     { emoji: "🖼️", titleEn: "Picture Quiz", titleTh: "แบบทดสอบรูปภาพ", path: "picture-quiz", bg: "bg-coral/30", border: "#E64A19", step: 5 },
     { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20", border: "#CE93D8", step: 6 },
   ];
+
+  const MODULES = ALL_MODULES.filter((mod) => {
+    if (mod.path === "picture-quiz" && !hasPictureQuiz) return false;
+    if (mod.path === "ebook" && !showStorybook) return false;
+    return true;
+  });
 
   return (
     <section className="flex flex-col items-center pt-4">
@@ -171,63 +194,91 @@ export default async function SubjectPage({
       )}
 
       <div className="mt-8 w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {MODULES.map((mod) => (
-          <Link
-            key={mod.path + mod.titleEn}
-            href={`/learn/${slug}/${mod.path}`}
-            className={`flex items-center gap-4 rounded-xl p-4 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 ${mod.bg}`}
-            style={{ borderBottom: `4px solid ${mod.border}` }}
-          >
-            <span className="text-4xl flex-shrink-0">{mod.emoji}</span>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-nunito text-base font-bold text-text-dark dark:text-gray-100">
-                  {mod.titleEn}
+        {MODULES.map((mod) => {
+          const isComingSoon = mod.path === "ebook" && !hasStorybook && subject.storybook_planned;
+          const tileContent = (
+            <>
+              <span className="text-4xl flex-shrink-0">{mod.emoji}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-nunito text-base font-bold text-text-dark dark:text-gray-100">
+                    {mod.titleEn}
+                  </span>
+                  <span className="text-xs text-text-light font-nunito">Step {mod.step}</span>
+                </div>
+                <span className="font-sarabun text-sm text-text-mid dark:text-gray-400">
+                  {mod.titleTh}
                 </span>
-                <span className="text-xs text-text-light font-nunito">Step {mod.step}</span>
+                {/* Progress info */}
+                {isComingSoon && (
+                  <span className="text-xs text-text-mid block italic">
+                    Coming Soon / เร็วๆ นี้
+                  </span>
+                )}
+                {mod.path === "ebook" && ebookTotalPages > 0 && (
+                  <span className="text-xs text-text-mid block">
+                    {ebookComplete ? (
+                      <span className="text-leaf font-bold">📗 Complete! / อ่านจบแล้ว!</span>
+                    ) : ebookLastPage > 0 ? (
+                      <>Page {ebookLastPage} of {ebookTotalPages}</>
+                    ) : (
+                      <>Start Reading / เริ่มอ่าน</>
+                    )}
+                  </span>
+                )}
+                {mod.path === "flashcards" && flashcardTotal > 0 && (
+                  <span className="text-xs text-text-mid block">
+                    {flashcardsComplete ? (
+                      <span className="text-leaf font-bold">✅ Complete / ครบแล้ว</span>
+                    ) : (
+                      <>{flashcardViewed} of {flashcardTotal} viewed</>
+                    )}
+                  </span>
+                )}
+                {mod.path === "quiz" && attemptCount > 0 && (
+                  <span className="text-xs text-text-mid block">
+                    {quizMedal === "gold" && "🥇 "}
+                    {quizMedal === "silver" && "🥈 "}
+                    {quizMedal === "bronze" && "🥉 "}
+                    Best: {bestScore}/{bestTotal} {"⭐".repeat(stars)}
+                  </span>
+                )}
+                {mod.path === "picture-quiz" && pictureQuizAttempts > 0 && (
+                  <span className="text-xs text-text-mid block">
+                    Best: {pictureQuizBest}/10{" "}
+                    {"⭐".repeat(pictureQuizBest !== null ? (pictureQuizBest >= 9 ? 3 : pictureQuizBest >= 7 ? 2 : 1) : 0)}
+                  </span>
+                )}
               </div>
-              <span className="font-sarabun text-sm text-text-mid dark:text-gray-400">
-                {mod.titleTh}
-              </span>
-              {/* Progress info */}
-              {mod.path === "ebook" && ebookTotalPages > 0 && (
-                <span className="text-xs text-text-mid block">
-                  {ebookComplete ? (
-                    <span className="text-leaf font-bold">📗 Complete! / อ่านจบแล้ว!</span>
-                  ) : ebookLastPage > 0 ? (
-                    <>Page {ebookLastPage} of {ebookTotalPages}</>
-                  ) : (
-                    <>Start Reading / เริ่มอ่าน</>
-                  )}
-                </span>
+              {!isComingSoon && (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0 text-text-light"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
               )}
-              {mod.path === "flashcards" && flashcardTotal > 0 && (
-                <span className="text-xs text-text-mid block">
-                  {flashcardsComplete ? (
-                    <span className="text-leaf font-bold">✅ Complete / ครบแล้ว</span>
-                  ) : (
-                    <>{flashcardViewed} of {flashcardTotal} viewed</>
-                  )}
-                </span>
-              )}
-              {mod.path === "quiz" && attemptCount > 0 && (
-                <span className="text-xs text-text-mid block">
-                  {quizMedal === "gold" && "🥇 "}
-                  {quizMedal === "silver" && "🥈 "}
-                  {quizMedal === "bronze" && "🥉 "}
-                  Best: {bestScore}/{bestTotal} {"⭐".repeat(stars)}
-                </span>
-              )}
-              {mod.path === "picture-quiz" && pictureQuizAttempts > 0 && (
-                <span className="text-xs text-text-mid block">
-                  Best: {pictureQuizBest}/10{" "}
-                  {"⭐".repeat(pictureQuizBest !== null ? (pictureQuizBest >= 9 ? 3 : pictureQuizBest >= 7 ? 2 : 1) : 0)}
-                </span>
-              )}
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0 text-text-light"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-          </Link>
-        ))}
+            </>
+          );
+
+          if (isComingSoon) {
+            return (
+              <div
+                key={mod.path + mod.titleEn}
+                className={`flex items-center gap-4 rounded-xl p-4 shadow-md opacity-60 dark:bg-gray-800 ${mod.bg}`}
+                style={{ borderBottom: `4px solid ${mod.border}` }}
+              >
+                {tileContent}
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={mod.path + mod.titleEn}
+              href={`/learn/${slug}/${mod.path}`}
+              className={`flex items-center gap-4 rounded-xl p-4 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 ${mod.bg}`}
+              style={{ borderBottom: `4px solid ${mod.border}` }}
+            >
+              {tileContent}
+            </Link>
+          );
+        })}
       </div>
 
       <Link

@@ -34,3 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+English_Stars_Ebook_Review.zip
+*.zip
+public/audio/
+public/ebook-images/
+public/flashcard-images/
