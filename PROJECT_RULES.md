@@ -67,6 +67,9 @@ but the three humans/owl must remain central.
 - **Grandma** (Nong Fah's human grandmother — NOT Grandma Owl): "Grandma, an elderly
   Thai woman with silver hair in a neat bun, warm dark eyes and gentle wrinkles,
   wearing a soft green blouse and a long grey skirt, walking gently"
+- **Grandpa** (Nong Fah's human grandfather): "Grandpa, an elderly Thai man with
+  silver hair, gentle wrinkles, warm smile, wearing a light blue button-up shirt
+  and khaki trousers, standing warmly"
 - **Grandma Owl** (Ollie's grandmother): "an elderly grey-brown owl with small round
   spectacles and a soft pink flowered shawl around her shoulders"
 - **Bua** (Thawan's younger sister, 3 years old): "Bua, a 3-year-old Thai girl with
