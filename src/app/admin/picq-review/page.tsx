@@ -31,6 +31,7 @@ type Question = {
   options: Option[];
   difficulty: number;
   flagged: boolean;
+  flag_notes: string | null;
 };
 
 export default function PicqReviewPage() {
@@ -92,15 +93,21 @@ export default function PicqReviewPage() {
 
   async function toggleFlag(question: Question) {
     const newVal = !question.flagged;
-    setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, flagged: newVal } : q)));
+    const notes = newVal ? (prompt('Correction notes (what needs fixing):') || '') : null;
+    setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, flagged: newVal, flag_notes: notes } : q)));
     const { error } = await supabase
       .from('picture_quiz_questions')
-      .update({ flagged: newVal })
+      .update({ flagged: newVal, flag_notes: notes })
       .eq('id', question.id);
     if (error) {
       setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, flagged: !newVal } : q)));
       alert(`Failed: ${error.message}`);
     }
+  }
+
+  async function updateNotes(question: Question, notes: string) {
+    setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, flag_notes: notes } : q)));
+    await supabase.from('picture_quiz_questions').update({ flag_notes: notes }).eq('id', question.id);
   }
 
   function playAudio(url: string, questionId: string) {
@@ -212,6 +219,19 @@ export default function PicqReviewPage() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Flag notes */}
+                  {q.flagged && (
+                    <div className="mt-2 mb-3">
+                      <textarea
+                        value={q.flag_notes || ''}
+                        onChange={(e) => updateNotes(q, e.target.value)}
+                        placeholder="Correction notes — what needs fixing..."
+                        className="w-full rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-red-500"
+                        rows={2}
+                      />
+                    </div>
+                  )}
 
                   {/* 2x2 option grid */}
                   <div className="grid grid-cols-2 gap-3">

@@ -15,6 +15,8 @@ type Flashcard = {
   word_th: string;
   image_url: string | null;
   audio_url: string | null;
+  flagged: boolean;
+  flag_notes: string | null;
 };
 
 const PAGE_SIZE = 30;
@@ -77,6 +79,18 @@ export default function FlashcardsAdminPage() {
     audio.play();
   }
 
+  async function toggleFlag(card: Flashcard) {
+    const newVal = !card.flagged;
+    const notes = newVal ? (prompt('Correction notes (what needs fixing):') || '') : null;
+    setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, flagged: newVal, flag_notes: notes } : c)));
+    await supabase.from('flashcards').update({ flagged: newVal, flag_notes: notes }).eq('id', card.id);
+  }
+
+  async function updateNotes(card: Flashcard, notes: string) {
+    setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, flag_notes: notes } : c)));
+    await supabase.from('flashcards').update({ flag_notes: notes }).eq('id', card.id);
+  }
+
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   if (loading) return <main className="p-8 text-gray-500 dark:text-gray-400">Loading subjects...</main>;
@@ -115,7 +129,11 @@ export default function FlashcardsAdminPage() {
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
               {cards.map((card) => (
-                <div key={card.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+                <div key={card.id} className={`rounded-xl border shadow-sm overflow-hidden ${
+                  card.flagged
+                    ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                }`}>
                   {/* Image */}
                   {card.image_url ? (
                     <div className="relative aspect-square bg-gray-50 dark:bg-gray-700">
@@ -135,7 +153,20 @@ export default function FlashcardsAdminPage() {
                   )}
                   {/* Info */}
                   <div className="p-2">
-                    <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{card.word_en}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{card.word_en}</p>
+                      <button
+                        onClick={() => toggleFlag(card)}
+                        className={`rounded px-1.5 py-0.5 text-xs ${
+                          card.flagged
+                            ? 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200'
+                            : 'text-gray-400 hover:text-red-600'
+                        }`}
+                        title={card.flagged ? 'Unflag' : 'Flag for correction'}
+                      >
+                        {'\uD83D\uDEA9'}
+                      </button>
+                    </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{card.word_th}</p>
                     {card.audio_url && (
                       <button
@@ -148,6 +179,15 @@ export default function FlashcardsAdminPage() {
                       >
                         {playingId === card.id ? '\u23F8' : '\u25B6'} Audio
                       </button>
+                    )}
+                    {card.flagged && (
+                      <textarea
+                        value={card.flag_notes || ''}
+                        onChange={(e) => updateNotes(card, e.target.value)}
+                        placeholder="Notes..."
+                        className="mt-1 w-full rounded border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 px-2 py-1 text-xs text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-red-500"
+                        rows={2}
+                      />
                     )}
                   </div>
                 </div>

@@ -15,6 +15,8 @@ type EbookPage = {
   text_en: string;
   image_url: string | null;
   audio_url: string | null;
+  flagged: boolean;
+  flag_notes: string | null;
 };
 
 const PAGE_SIZE = 10;
@@ -87,6 +89,18 @@ export default function SubjectBooksPage() {
     audio.play();
   }
 
+  async function toggleFlag(ep: EbookPage) {
+    const newVal = !ep.flagged;
+    const notes = newVal ? (prompt('Correction notes (what needs fixing):') || '') : null;
+    setPages((prev) => prev.map((p) => (p.id === ep.id ? { ...p, flagged: newVal, flag_notes: notes } : p)));
+    await supabase.from('ebook_pages').update({ flagged: newVal, flag_notes: notes }).eq('id', ep.id);
+  }
+
+  async function updateNotes(ep: EbookPage, notes: string) {
+    setPages((prev) => prev.map((p) => (p.id === ep.id ? { ...p, flag_notes: notes } : p)));
+    await supabase.from('ebook_pages').update({ flag_notes: notes }).eq('id', ep.id);
+  }
+
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   if (loading) return <main className="p-8 text-gray-500 dark:text-gray-400">Loading subjects...</main>;
@@ -125,7 +139,11 @@ export default function SubjectBooksPage() {
             </p>
             <div className="space-y-4">
               {pages.map((p) => (
-                <div key={p.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm">
+                <div key={p.id} className={`rounded-xl border p-4 shadow-sm ${
+                  p.flagged
+                    ? 'border-red-300 bg-red-50 dark:bg-red-900/20 dark:border-red-700'
+                    : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                }`}>
                   <div className="flex gap-4">
                     {/* Image */}
                     {p.image_url && (
@@ -158,10 +176,29 @@ export default function SubjectBooksPage() {
                             {playingId === p.id ? '\u23F8 Pause' : '\u25B6 Play'}
                           </button>
                         )}
+                        <button
+                          onClick={() => toggleFlag(p)}
+                          className={`rounded-lg px-3 py-1 text-xs transition-colors ${
+                            p.flagged
+                              ? 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200'
+                              : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 hover:bg-red-100 hover:text-red-700'
+                          }`}
+                        >
+                          {p.flagged ? '\uD83D\uDEA9 Flagged' : '\uD83D\uDEA9 Flag'}
+                        </button>
                       </div>
                       <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-3">
                         {p.text_en}
                       </p>
+                      {p.flagged && (
+                        <textarea
+                          value={p.flag_notes || ''}
+                          onChange={(e) => updateNotes(p, e.target.value)}
+                          placeholder="Correction notes — what needs fixing..."
+                          className="mt-2 w-full rounded-lg border border-red-300 dark:border-red-700 bg-red-50 dark:bg-red-900/10 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-red-500"
+                          rows={2}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
