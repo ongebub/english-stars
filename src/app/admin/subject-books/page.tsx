@@ -17,6 +17,7 @@ type EbookPage = {
   audio_url: string | null;
   flagged: boolean;
   flag_notes: string | null;
+  reviewed: boolean;
 };
 
 const PAGE_SIZE = 10;
@@ -101,6 +102,11 @@ export default function SubjectBooksPage() {
     await supabase.from('ebook_pages').update({ flag_notes: notes }).eq('id', ep.id);
   }
 
+  async function markReviewed(ep: EbookPage) {
+    setPages((prev) => prev.map((p) => (p.id === ep.id ? { ...p, reviewed: true } : p)));
+    await supabase.from('ebook_pages').update({ reviewed: true }).eq('id', ep.id);
+  }
+
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   if (loading) return <main className="p-8 text-gray-500 dark:text-gray-400">Loading subjects...</main>;
@@ -175,6 +181,19 @@ export default function SubjectBooksPage() {
                           >
                             {playingId === p.id ? '\u23F8 Pause' : '\u25B6 Play'}
                           </button>
+                        )}
+                        {!p.reviewed && p.image_url && (
+                          <button
+                            onClick={() => markReviewed(p)}
+                            className="rounded-lg px-3 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 transition-colors"
+                          >
+                            Mark Reviewed
+                          </button>
+                        )}
+                        {p.reviewed && (
+                          <span className="rounded-lg px-3 py-1 text-xs bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                            Reviewed
+                          </span>
                         )}
                         <button
                           onClick={() => toggleFlag(p)}

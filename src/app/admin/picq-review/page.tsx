@@ -32,6 +32,7 @@ type Question = {
   difficulty: number;
   flagged: boolean;
   flag_notes: string | null;
+  reviewed: boolean;
 };
 
 export default function PicqReviewPage() {
@@ -108,6 +109,11 @@ export default function PicqReviewPage() {
   async function updateNotes(question: Question, notes: string) {
     setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, flag_notes: notes } : q)));
     await supabase.from('picture_quiz_questions').update({ flag_notes: notes }).eq('id', question.id);
+  }
+
+  async function markReviewed(question: Question) {
+    setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, reviewed: true } : q)));
+    await supabase.from('picture_quiz_questions').update({ reviewed: true }).eq('id', question.id);
   }
 
   function playAudio(url: string, questionId: string) {
@@ -206,6 +212,19 @@ export default function PicqReviewPage() {
                         >
                           {playingId === q.id ? '\u23F8 Pause' : '\u25B6 Play'}
                         </button>
+                      )}
+                      {!q.reviewed && (
+                        <button
+                          onClick={() => markReviewed(q)}
+                          className="rounded-lg px-3 py-1.5 text-sm bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 transition-colors"
+                        >
+                          Reviewed
+                        </button>
+                      )}
+                      {q.reviewed && (
+                        <span className="rounded-lg px-3 py-1.5 text-sm bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                          Done
+                        </span>
                       )}
                       <button
                         onClick={() => toggleFlag(q)}

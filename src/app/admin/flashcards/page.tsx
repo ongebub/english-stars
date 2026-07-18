@@ -17,6 +17,7 @@ type Flashcard = {
   audio_url: string | null;
   flagged: boolean;
   flag_notes: string | null;
+  reviewed: boolean;
 };
 
 const PAGE_SIZE = 30;
@@ -89,6 +90,11 @@ export default function FlashcardsAdminPage() {
   async function updateNotes(card: Flashcard, notes: string) {
     setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, flag_notes: notes } : c)));
     await supabase.from('flashcards').update({ flag_notes: notes }).eq('id', card.id);
+  }
+
+  async function markReviewed(card: Flashcard) {
+    setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, reviewed: true } : c)));
+    await supabase.from('flashcards').update({ reviewed: true }).eq('id', card.id);
   }
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
@@ -179,6 +185,17 @@ export default function FlashcardsAdminPage() {
                       >
                         {playingId === card.id ? '\u23F8' : '\u25B6'} Audio
                       </button>
+                    )}
+                    {!card.reviewed && card.image_url && (
+                      <button
+                        onClick={() => markReviewed(card)}
+                        className="mt-1 w-full rounded px-2 py-0.5 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 hover:bg-green-200 transition-colors"
+                      >
+                        Mark Reviewed
+                      </button>
+                    )}
+                    {card.reviewed && (
+                      <span className="mt-1 block text-center text-xs text-green-600 dark:text-green-400">Reviewed</span>
                     )}
                     {card.flagged && (
                       <textarea

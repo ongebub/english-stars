@@ -7,13 +7,14 @@ type CardDef = {
   description: string;
   emoji: string;
   countKey: string;
+  reviewKey?: string;
 };
 
 const cards: CardDef[] = [
   { href: "/admin/reader-review", title: "Reader Books (L1-L3)", description: "Review reader book pages, images, and audio", emoji: "\uD83D\uDCD6", countKey: "readerBooks" },
-  { href: "/admin/subject-books", title: "Subject Storybooks", description: "Browse ebook pages by subject", emoji: "\uD83D\uDCDA", countKey: "subjectBooks" },
-  { href: "/admin/picq-review", title: "Picture Quizzes", description: "Review and flag picture quiz questions", emoji: "\uD83D\uDDBC\uFE0F", countKey: "pictureQuizzes" },
-  { href: "/admin/flashcards", title: "Flashcards", description: "Browse flashcard images and audio", emoji: "\uD83C\uDCCF", countKey: "flashcards" },
+  { href: "/admin/subject-books", title: "Subject Storybooks", description: "Browse ebook pages by subject", emoji: "\uD83D\uDCDA", countKey: "subjectBooks", reviewKey: "unreviewedEbooks" },
+  { href: "/admin/picq-review", title: "Picture Quizzes", description: "Review and flag picture quiz questions", emoji: "\uD83D\uDDBC\uFE0F", countKey: "pictureQuizzes", reviewKey: "unreviewedPicq" },
+  { href: "/admin/flashcards", title: "Flashcards", description: "Browse flashcard images and audio", emoji: "\uD83C\uDCCF", countKey: "flashcards", reviewKey: "unreviewedFlashcards" },
   { href: "/admin/catalog", title: "Image Catalog", description: "Search and review all cataloged images", emoji: "\uD83D\uDDC2\uFE0F", countKey: "catalog" },
   { href: "/admin/subjects", title: "Subject Editor", description: "Edit subject titles, emoji, and publish status", emoji: "\u2699\uFE0F", countKey: "subjects" },
   { href: "/punchlist", title: "Punchlist / Roadmap", description: "Launch tracker and task list", emoji: "\uD83D\uDCCB", countKey: "" },
@@ -22,7 +23,8 @@ const cards: CardDef[] = [
 async function getCounts() {
   const supabase = await createClient();
 
-  const [readerBooks, ebookSubjects, picqSubjects, publishedSubjects, catalogImages, totalSubjects] =
+  const [readerBooks, ebookSubjects, picqSubjects, publishedSubjects, catalogImages, totalSubjects,
+    unreviewedEbooks, unreviewedPicq, unreviewedFlashcards] =
     await Promise.all([
       supabase.from("reader_books").select("id", { count: "exact", head: true }),
       supabase.from("ebook_pages").select("subject_id", { count: "exact", head: false }).then(async (res) => {
@@ -36,6 +38,9 @@ async function getCounts() {
       supabase.from("subjects").select("id", { count: "exact", head: true }).eq("is_published", true),
       supabase.from("image_catalog").select("id", { count: "exact", head: true }),
       supabase.from("subjects").select("id", { count: "exact", head: true }),
+      supabase.from("ebook_pages").select("id", { count: "exact", head: true }).eq("reviewed", false).not("image_url", "is", null),
+      supabase.from("picture_quiz_questions").select("id", { count: "exact", head: true }).eq("reviewed", false),
+      supabase.from("flashcards").select("id", { count: "exact", head: true }).eq("reviewed", false).not("image_url", "is", null),
     ]);
 
   return {
@@ -45,6 +50,9 @@ async function getCounts() {
     flashcards: publishedSubjects.count ?? 0,
     catalog: catalogImages.count ?? 0,
     subjects: totalSubjects.count ?? 0,
+    unreviewedEbooks: unreviewedEbooks.count ?? 0,
+    unreviewedPicq: unreviewedPicq.count ?? 0,
+    unreviewedFlashcards: unreviewedFlashcards.count ?? 0,
   } as Record<string, number>;
 }
 
@@ -69,10 +77,15 @@ export default async function AdminHubPage() {
             <Link
               key={card.href}
               href={card.href}
-              className="group rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md
+              className="group relative rounded-xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md
                          border border-gray-100 dark:border-gray-700
                          p-5 transition-all hover:-translate-y-0.5"
             >
+              {card.reviewKey && counts[card.reviewKey] > 0 && (
+                <span className="absolute -top-2 -right-2 flex h-6 min-w-6 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-bold text-white shadow">
+                  {counts[card.reviewKey]}
+                </span>
+              )}
               <div className="text-3xl mb-3">{card.emoji}</div>
               <h2 className="font-bold text-gray-900 dark:text-gray-100 text-sm leading-tight">
                 {card.title}
