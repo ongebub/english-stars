@@ -74,6 +74,10 @@ but the three humans/owl must remain central.
   spectacles and a soft pink flowered shawl around her shoulders"
 - **Bua** (Thawan's younger sister, 3 years old): "Bua, a 3-year-old Thai girl with
   chin-length straight black hair and side bangs, wearing a pink t-shirt and white shorts"
+- **Teacher Julie** (Thawan's interviewing teacher, Western/American): "Teacher Julie,
+  a friendly Western woman in her thirties with medium-length light brown hair, warm
+  green eyes, and a kind smile, wearing a soft blue button-up blouse and dark slacks,
+  seated at a desk or standing warmly"
 - Generic one-off humans (mail carrier, little boy at kite festival): describe fully
   inline, friendly cartoon adults/children, never resembling the locked kids.
 
@@ -82,7 +86,7 @@ but the three humans/owl must remain central.
 - **Bua**: Thawan's younger sister, 3 years old. **Boon**: Thawan's older brother, 12 years old.
 - Nong Fah has an unnamed brother and sister (per Family Tree / Clothes specs).
 - Future recurring humans (design-locked before first generation, not before):
-  Emily (American classmate from the USA), Teacher Julie.
+  Emily (American classmate from the USA).
 
 ## IMAGE GENERATION
 

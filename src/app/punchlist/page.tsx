@@ -17,6 +17,7 @@ type SubjectRow = {
   grade_band: string;
   sort_order: number;
   storybook_planned: boolean;
+  quiz_target: number;
   flashcard_count: number;
   quiz_count: number;
   picture_quiz_count: number;
@@ -35,7 +36,7 @@ type RoadmapItem = {
   phase: number | null;
 };
 
-type CheckField = 'matt_checked' | 'chris_checked' | 'done';
+type CheckField = 'done';
 
 /* ---------- helpers ---------- */
 
@@ -49,7 +50,7 @@ function gradeLabel(g: string) {
 
 function isComplete(s: SubjectRow) {
   const fc = s.flashcard_count > 0;
-  const quiz = s.quiz_count >= 60;
+  const quiz = s.quiz_count >= s.quiz_target;
   const pq = s.picture_quiz_count >= 20;
   const sb = s.storybook_planned ? s.ebook_page_count > 0 : true; // N/A counts as done
   return fc && quiz && pq && sb;
@@ -64,54 +65,25 @@ export default function PunchlistPage() {
   const [loadingRoadmap, setLoadingRoadmap] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /* ---- load subjects with counts ---- */
+  /* ---- load subjects with counts (via server-side RPC — no truncation) ---- */
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      const { data, error: err } = await supabase.rpc('get_subject_completeness');
+      // Fetch subjects + counts in parallel
+      const [{ data: subData, error: subErr }, { data: counts, error: cErr }] = await Promise.all([
+        supabase.from('subjects').select('id, title_en, grade_band, sort_order, storybook_planned, quiz_target').eq('is_published', true).order('sort_order'),
+        supabase.rpc('subject_completion_counts'),
+      ]);
       if (cancelled) return;
-      if (err) {
-        // Fallback: manual query if RPC doesn't exist
-        const { data: fallbackData, error: fallbackErr } = await supabase
-          .from('subjects')
-          .select('id, title_en, grade_band, sort_order, storybook_planned')
-          .eq('is_published', true)
-          .order('sort_order');
-        if (fallbackErr) { setError(fallbackErr.message); setLoadingSubjects(false); return; }
+      if (subErr || cErr) { setError((subErr || cErr)!.message); setLoadingSubjects(false); return; }
 
-        // Fetch counts separately
-        const subjectIds = (fallbackData ?? []).map((s: { id: string }) => s.id);
-        const [fcRes, qqRes, pqRes, epRes] = await Promise.all([
-          supabase.from('flashcards').select('subject_id', { count: 'exact', head: false }).in('subject_id', subjectIds),
-          supabase.from('quiz_questions').select('subject_id', { count: 'exact', head: false }).in('subject_id', subjectIds),
-          supabase.from('picture_quiz_questions').select('subject_id', { count: 'exact', head: false }).in('subject_id', subjectIds),
-          supabase.from('ebook_pages').select('subject_id', { count: 'exact', head: false }).in('subject_id', subjectIds),
-        ]);
-
-        const countBySubject = (rows: { subject_id: string }[] | null) => {
-          const map: Record<string, number> = {};
-          for (const r of rows ?? []) {
-            map[r.subject_id] = (map[r.subject_id] || 0) + 1;
-          }
-          return map;
-        };
-
-        const fcMap = countBySubject(fcRes.data as { subject_id: string }[] | null);
-        const qqMap = countBySubject(qqRes.data as { subject_id: string }[] | null);
-        const pqMap = countBySubject(pqRes.data as { subject_id: string }[] | null);
-        const epMap = countBySubject(epRes.data as { subject_id: string }[] | null);
-
-        const merged: SubjectRow[] = (fallbackData ?? []).map((s: { id: string; title_en: string; grade_band: string; sort_order: number; storybook_planned: boolean }) => ({
-          ...s,
-          flashcard_count: fcMap[s.id] || 0,
-          quiz_count: qqMap[s.id] || 0,
-          picture_quiz_count: pqMap[s.id] || 0,
-          ebook_page_count: epMap[s.id] || 0,
-        }));
-        setSubjects(merged);
-      } else {
-        setSubjects((data as SubjectRow[]) ?? []);
-      }
+      type CountRow = { subject_id: string; flashcard_count: number; quiz_count: number; picture_quiz_count: number; ebook_page_count: number };
+      const countMap = new Map((counts as CountRow[] ?? []).map((c) => [c.subject_id, c]));
+      const merged: SubjectRow[] = (subData ?? []).map((s: { id: string; title_en: string; grade_band: string; sort_order: number; storybook_planned: boolean; quiz_target: number }) => {
+        const c = countMap.get(s.id);
+        return { ...s, flashcard_count: Number(c?.flashcard_count ?? 0), quiz_count: Number(c?.quiz_count ?? 0), picture_quiz_count: Number(c?.picture_quiz_count ?? 0), ebook_page_count: Number(c?.ebook_page_count ?? 0) };
+      });
+      setSubjects(merged);
       setLoadingSubjects(false);
     }
     load();
@@ -266,7 +238,7 @@ export default function PunchlistPage() {
                       </span>
                     </td>
                     <CellCount value={s.flashcard_count} threshold={1} />
-                    <CellCount value={s.quiz_count} threshold={60} label={`${s.quiz_count}/60`} />
+                    <CellCount value={s.quiz_count} threshold={s.quiz_target} label={`${s.quiz_count}/${s.quiz_target}`} />
                     <CellCount value={s.picture_quiz_count} threshold={20} label={`${s.picture_quiz_count}/20`} />
                     <StorybookCell subject={s} onToggle={toggleStorybookPlanned} />
                   </tr>
@@ -297,7 +269,7 @@ export default function PunchlistPage() {
                 </div>
                 <div className="grid grid-cols-4 gap-2 text-xs text-center">
                   <MobileCell label="FC" value={s.flashcard_count} threshold={1} />
-                  <MobileCell label="Quiz" value={s.quiz_count} threshold={60} display={`${s.quiz_count}/60`} />
+                  <MobileCell label="Quiz" value={s.quiz_count} threshold={s.quiz_target} display={`${s.quiz_count}/${s.quiz_target}`} />
                   <MobileCell label="PQ" value={s.picture_quiz_count} threshold={20} display={`${s.picture_quiz_count}/20`} />
                   <MobileStorybookCell subject={s} onToggle={toggleStorybookPlanned} />
                 </div>
@@ -354,18 +326,6 @@ export default function PunchlistPage() {
                         )}
                       </div>
                       <div className="flex shrink-0 items-center gap-4 pt-1">
-                        <Check
-                          label="Matt"
-                          checked={item.matt_checked}
-                          color="accent-blue-600"
-                          onChange={() => toggleRoadmap(item, 'matt_checked')}
-                        />
-                        <Check
-                          label="Chris"
-                          checked={item.chris_checked}
-                          color="accent-purple-600"
-                          onChange={() => toggleRoadmap(item, 'chris_checked')}
-                        />
                         <Check
                           label="Done"
                           checked={item.done}
