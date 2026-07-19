@@ -112,6 +112,12 @@ export default function SubjectBooksPage() {
     await supabase.from('ebook_pages').update({ reviewed: true }).eq('id', ep.id);
   }
 
+  async function markAllReviewed() {
+    if (!selectedSubjectId || !confirm('Mark all pages in this subject as reviewed?')) return;
+    setPages((prev) => prev.map((p) => ({ ...p, reviewed: true })));
+    await supabase.from('ebook_pages').update({ reviewed: true }).eq('subject_id', selectedSubjectId);
+  }
+
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   if (loading) return <main className="p-8 text-gray-500 dark:text-gray-400">Loading subjects...</main>;
@@ -145,9 +151,19 @@ export default function SubjectBooksPage() {
           <p className="text-gray-500 dark:text-gray-400">Loading pages...</p>
         ) : pages.length > 0 ? (
           <>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              {totalCount} pages total &middot; Showing {page * PAGE_SIZE + 1}&ndash;{Math.min((page + 1) * PAGE_SIZE, totalCount)}
-            </p>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {totalCount} pages total &middot; Showing {page * PAGE_SIZE + 1}&ndash;{Math.min((page + 1) * PAGE_SIZE, totalCount)}
+              </p>
+              {pages.some(p => !p.reviewed && p.image_url) && (
+                <button
+                  onClick={markAllReviewed}
+                  className="rounded-lg px-4 py-2 text-sm font-bold bg-green-500 text-white hover:bg-green-600 transition-colors"
+                >
+                  Mark All Reviewed
+                </button>
+              )}
+            </div>
             <div className="space-y-4">
               {pages.map((p) => (
                 <div key={p.id} className={`rounded-xl border p-4 shadow-sm ${

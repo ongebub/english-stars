@@ -123,6 +123,12 @@ export default function PicqReviewPage() {
     await supabase.from('picture_quiz_questions').update({ reviewed: true }).eq('id', question.id);
   }
 
+  async function markAllReviewed() {
+    if (!selectedSubjectId || !confirm('Mark all questions in this subject as reviewed?')) return;
+    setQuestions((prev) => prev.map((q) => ({ ...q, reviewed: true })));
+    await supabase.from('picture_quiz_questions').update({ reviewed: true }).eq('subject_id', selectedSubjectId);
+  }
+
   function playAudio(url: string, questionId: string) {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -175,9 +181,19 @@ export default function PicqReviewPage() {
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">
               {selectedSubject.emoji} {selectedSubject.title_en}
             </h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {flaggedCount} flagged / {questions.length} total
-            </p>
+            <div className="flex items-center justify-between mt-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {flaggedCount} flagged / {questions.length} total
+              </p>
+              {questions.some(q => !q.reviewed) && (
+                <button
+                  onClick={markAllReviewed}
+                  className="rounded-lg px-4 py-2 text-sm font-bold bg-green-500 text-white hover:bg-green-600 transition-colors"
+                >
+                  Mark All Reviewed
+                </button>
+              )}
+            </div>
           </div>
 
           {loadingQuestions ? (
