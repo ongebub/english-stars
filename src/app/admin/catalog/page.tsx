@@ -7,10 +7,9 @@ import Image from 'next/image';
 const supabase = createClient();
 
 type CatalogImage = {
-  id: string;
   storage_path: string;
   description: string | null;
-  characters: string | null;
+  characters: string[] | null;
   quality_flag: string | null;
 };
 
@@ -47,7 +46,7 @@ export default function CatalogPage() {
 
       let query = supabase
         .from('image_catalog')
-        .select('id, storage_path, description, characters, quality_flag', { count: 'exact' })
+        .select('storage_path, description, characters, quality_flag', { count: 'exact' })
         .order('storage_path')
         .range(from, to);
 
@@ -117,7 +116,7 @@ export default function CatalogPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-3">
               {images.map((img) => (
                 <div
-                  key={img.id}
+                  key={img.storage_path}
                   className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden"
                 >
                   {/* Thumbnail */}
@@ -145,17 +144,17 @@ export default function CatalogPage() {
                     {img.description && (
                       <p
                         className={`text-xs text-gray-600 dark:text-gray-400 mt-0.5 cursor-pointer ${
-                          expandedId === img.id ? '' : 'line-clamp-2'
+                          expandedId === img.storage_path ? '' : 'line-clamp-2'
                         }`}
-                        onClick={() => setExpandedId(expandedId === img.id ? null : img.id)}
+                        onClick={() => setExpandedId(expandedId === img.storage_path ? null : img.storage_path)}
                         title="Click to expand"
                       >
                         {img.description}
                       </p>
                     )}
-                    {img.characters && (
+                    {img.characters && img.characters.length > 0 && (
                       <p className="text-[10px] text-purple-600 dark:text-purple-400 mt-0.5 truncate">
-                        {img.characters}
+                        {img.characters.join(", ")}
                       </p>
                     )}
                   </div>
