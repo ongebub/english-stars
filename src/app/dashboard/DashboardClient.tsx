@@ -240,6 +240,31 @@ export default function DashboardClient({
         </Link>
       </div>
 
+      {/* Restart Tutorial */}
+      <section>
+        <h2 className="text-xl font-bold text-text-dark dark:text-gray-100 font-nunito mb-3">
+          Settings <span className="font-sarabun text-text-mid font-normal text-base">ตั้งค่า</span>
+        </h2>
+        <button
+          onClick={async () => {
+            // Clear DB state
+            const { createClient } = await import('@/lib/supabase/client');
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              await supabase.from('user_tutorial_state').delete().eq('user_id', user.id);
+            }
+            // Clear localStorage state
+            try { localStorage.removeItem('ea_tutorial_state'); } catch {}
+            router.push('/learn');
+          }}
+          className="rounded-xl border-2 border-sky-dark/30 bg-white dark:bg-gray-800 px-5 py-3 min-h-[48px]
+                     font-nunito text-sm font-bold text-sky-dark hover:bg-sky-dark/10 transition-colors"
+        >
+          Restart Tutorial / <span className="font-sarabun">เริ่มบทแนะนำใหม่</span>
+        </button>
+      </section>
+
       {/* Children section (family plan) */}
       {planType === 'family' && (
         <section>

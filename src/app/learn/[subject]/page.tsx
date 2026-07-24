@@ -153,6 +153,13 @@ export default async function SubjectPage({
     { emoji: "✏️", titleEn: "Writing", titleTh: "ฝึกเขียน", path: "writing", bg: "bg-purple/20", border: "#CE93D8", step: 6 },
   ];
 
+  const TUTORIAL_ATTR: Record<string, string> = {
+    flashcards: "tile-flashcards",
+    quiz: "tile-quiz",
+    "picture-quiz": "tile-picture-quiz",
+    ebook: "tile-ebook",
+  };
+
   const MODULES = ALL_MODULES.filter((mod) => {
     if (mod.path === "picture-quiz" && !hasPictureQuiz) return false;
     if (mod.path === "ebook" && !showStorybook) return false;
@@ -193,7 +200,7 @@ export default async function SubjectPage({
         </div>
       )}
 
-      <div className="mt-8 w-full grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="mt-8 w-full grid grid-cols-1 sm:grid-cols-2 gap-3" data-tutorial="module-grid">
         {MODULES.map((mod) => {
           const isComingSoon = mod.path === "ebook" && !hasStorybook && subject.storybook_planned;
           const tileContent = (
@@ -260,6 +267,7 @@ export default async function SubjectPage({
             return (
               <div
                 key={mod.path + mod.titleEn}
+                data-tutorial={TUTORIAL_ATTR[mod.path]}
                 className={`flex items-center gap-4 rounded-xl p-4 shadow-md opacity-60 dark:bg-gray-800 ${mod.bg}`}
                 style={{ borderBottom: `4px solid ${mod.border}` }}
               >
@@ -271,6 +279,7 @@ export default async function SubjectPage({
           return (
             <Link
               key={mod.path + mod.titleEn}
+              data-tutorial={TUTORIAL_ATTR[mod.path]}
               href={`/learn/${slug}/${mod.path}`}
               className={`flex items-center gap-4 rounded-xl p-4 shadow-md transition-shadow hover:shadow-lg dark:bg-gray-800 ${mod.bg}`}
               style={{ borderBottom: `4px solid ${mod.border}` }}

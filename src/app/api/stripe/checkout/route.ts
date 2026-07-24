@@ -4,83 +4,63 @@ import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
-function calculateFamilyPrice(childCount: number): number {
-  if (childCount <= 1) return 75000;
-  if (childCount === 2) return 100000;
-  if (childCount === 3) return 125000;
-  return 150000; // 4+ children capped
-}
-
-function calculateSchoolPrice(studentCount: number): number {
-  if (studentCount <= 35) return studentCount * 25000;
-  return studentCount * 20000; // 36+ gets lower rate on ALL
-}
-
 export async function POST(req: NextRequest) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: "2026-05-27.dahlia" as const,
+      apiVersion: "2026-06-24.dahlia" as const,
     });
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    let planType = "family";
-    let childCount = 1;
-    let schoolName = "";
+    const body = await req.json();
+    const tier: string = body.tier;
+    const seatCount: number | undefined = body.seat_count;
 
-    try {
-      const body = await req.json();
-      if (body.plan_type === "school") planType = "school";
-      if (typeof body.child_count === "number" && body.child_count >= 1) {
-        childCount = body.child_count;
+    if (tier !== "individual" && tier !== "tutor") {
+      return NextResponse.json(
+        { error: "Invalid tier. Must be 'individual' or 'tutor'" },
+        { status: 400 }
+      );
+    }
+
+    if (tier === "tutor") {
+      if (!seatCount || seatCount < 5) {
+        return NextResponse.json(
+          { error: "Tutor plan requires minimum 5 seats" },
+          { status: 400 }
+        );
       }
-      if (typeof body.student_count === "number" && body.student_count >= 5) {
-        childCount = body.student_count;
-      }
-      if (body.school_name) schoolName = body.school_name;
-    } catch {
-      // No body - defaults
     }
 
-    // For family plans, ensure child_count reflects actual children
-    if (planType === "family") {
-      const { count } = await supabase
-        .from("profiles")
-        .select("id", { count: "exact", head: true })
-        .eq("parent_id", user.id)
-        .eq("role", "child");
-      childCount = Math.max(childCount, count || 0, 1);
+    // Check for existing active/trialing subscription
+    const { data: existingSub } = await supabase
+      .from("subscriptions")
+      .select("status")
+      .eq("user_id", user.id)
+      .in("status", ["active", "trialing"])
+      .single();
+
+    if (existingSub) {
+      return NextResponse.json(
+        { error: "You already have an active subscription" },
+        { status: 409 }
+      );
     }
-
-    // Validate school plan minimum
-    if (planType === "school" && childCount < 5) {
-      return NextResponse.json({ error: "School plan requires minimum 5 students" }, { status: 400 });
-    }
-
-    const totalPrice = planType === "family"
-      ? calculateFamilyPrice(childCount)
-      : calculateSchoolPrice(childCount);
-
-    const productName = planType === "family"
-      ? "English Allstars Family Plan"
-      : "English Allstars School Plan";
-
-    const description = planType === "family"
-      ? `Family plan – ${childCount} child${childCount > 1 ? "ren" : ""}`
-      : `School plan – ${childCount} students${schoolName ? ` (${schoolName})` : ""}`;
 
     // Get or create Stripe customer
-    const { data: subscription } = await supabase
+    const { data: subRow } = await supabase
       .from("subscriptions")
       .select("stripe_customer_id")
       .eq("user_id", user.id)
       .single();
 
-    let customerId = subscription?.stripe_customer_id;
+    let customerId = subRow?.stripe_customer_id;
 
     if (!customerId) {
       const customer = await stripe.customers.create({
@@ -90,35 +70,44 @@ export async function POST(req: NextRequest) {
       customerId = customer.id;
     }
 
+    const origin =
+      process.env.NEXT_PUBLIC_SITE_URL || "https://englishallstars.com";
+
+    const priceId =
+      tier === "individual"
+        ? process.env.STRIPE_PRICE_INDIVIDUAL!
+        : process.env.STRIPE_PRICE_TUTOR!;
+
+    const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = {
+      price: priceId,
+      quantity: tier === "tutor" ? seatCount! : 1,
+    };
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       mode: "subscription",
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "thb",
-            product_data: { name: productName, description },
-            unit_amount: totalPrice,
-            recurring: { interval: "month" },
-          },
-          quantity: 1,
-        },
-      ],
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://englishallstars.com"}/${planType === "school" ? "school" : "learn"}?subscribed=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL || "https://englishallstars.com"}/subscribe`,
+      line_items: [lineItem],
+      subscription_data: {
+        trial_period_days: 7,
+      },
+      success_url: `${origin}/welcome?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/subscribe`,
+      client_reference_id: user.id,
       metadata: {
         supabase_user_id: user.id,
-        plan_type: planType,
-        child_count: String(childCount),
-        school_name: schoolName,
+        tier,
+        seat_count: tier === "tutor" ? String(seatCount) : "",
       },
     });
 
     return NextResponse.json({ url: session.url });
   } catch (error: unknown) {
     console.error("Stripe checkout error:", error);
-    const message = error instanceof Error ? error.message : "Failed to create checkout session";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to create checkout session";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,97 +1,112 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import Stripe from "stripe";
 
 export const dynamic = "force-dynamic";
 
-function calculateFamilyPrice(childCount: number): number {
-  if (childCount <= 1) return 75000;
-  if (childCount === 2) return 100000;
-  if (childCount === 3) return 125000;
-  return 150000; // 4+ cap
-}
-
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-      apiVersion: "2026-05-27.dahlia" as const,
+      apiVersion: "2026-06-24.dahlia" as const,
     });
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
+    const body = await req.json();
+    const newSeatCount: number = body.seat_count;
+
+    if (!newSeatCount || newSeatCount < 5) {
+      return NextResponse.json(
+        { error: "Minimum 5 seats required" },
+        { status: 400 }
+      );
+    }
+
+    // Get current subscription
     const { data: subscription } = await supabase
       .from("subscriptions")
-      .select("stripe_customer_id, child_count, plan_type")
+      .select(
+        "stripe_customer_id, stripe_subscription_id, tier, seat_count"
+      )
       .eq("user_id", user.id)
-      .eq("status", "active")
+      .in("status", ["active", "trialing"])
       .single();
 
-    if (!subscription?.stripe_customer_id) {
-      return NextResponse.json({ error: "No active subscription" }, { status: 400 });
+    if (!subscription?.stripe_subscription_id) {
+      return NextResponse.json(
+        { error: "No active subscription found" },
+        { status: 400 }
+      );
     }
 
-    // Only auto-update for family plans
-    if (subscription.plan_type !== "family") {
-      return NextResponse.json({ error: "Auto-update only for family plans" }, { status: 400 });
+    if (subscription.tier !== "tutor") {
+      return NextResponse.json(
+        { error: "Seat updates are only available for tutor plans" },
+        { status: 400 }
+      );
     }
 
-    const { count: childCount } = await supabase
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("parent_id", user.id)
-      .eq("role", "child");
+    // Validate seat_count >= current active student count
+    const { count: activeStudents } = await supabase
+      .from("tutor_students")
+      .select("student_user_id", { count: "exact", head: true })
+      .eq("tutor_user_id", user.id)
+      .is("removed_at", null);
 
-    const newChildCount = Math.max(childCount || 0, 1);
-    const newPrice = calculateFamilyPrice(newChildCount);
-
-    const subscriptions = await stripe.subscriptions.list({
-      customer: subscription.stripe_customer_id,
-      status: "active",
-      limit: 1,
-    });
-
-    if (subscriptions.data.length === 0) {
-      return NextResponse.json({ error: "No active Stripe subscription found" }, { status: 400 });
+    if (activeStudents && newSeatCount < activeStudents) {
+      return NextResponse.json(
+        {
+          error: `Cannot reduce below current student count (${activeStudents})`,
+        },
+        { status: 400 }
+      );
     }
 
-    const stripeSub = subscriptions.data[0];
+    // Update Stripe subscription quantity
+    const stripeSub = await stripe.subscriptions.retrieve(
+      subscription.stripe_subscription_id
+    );
     const itemId = stripeSub.items.data[0].id;
 
     await stripe.subscriptions.update(stripeSub.id, {
       items: [
         {
           id: itemId,
-          price_data: {
-            currency: "thb",
-            product: stripeSub.items.data[0].price.product as string,
-            unit_amount: newPrice,
-            recurring: { interval: "month" },
-          },
+          quantity: newSeatCount,
         },
       ],
-      metadata: { child_count: String(newChildCount) },
       proration_behavior: "create_prorations",
     });
 
+    // Update DB
     await supabase
       .from("subscriptions")
       .update({
-        child_count: newChildCount,
+        seat_count: newSeatCount,
+        child_count: newSeatCount,
+        max_students: newSeatCount,
         updated_at: new Date().toISOString(),
       })
       .eq("user_id", user.id);
 
+    const monthlyTotal = (newSeatCount * 25000) / 100; // 250 THB per seat
+
     return NextResponse.json({
-      child_count: newChildCount,
-      monthly_total: newPrice / 100,
+      seat_count: newSeatCount,
+      monthly_total: monthlyTotal,
     });
   } catch (error: unknown) {
     console.error("Subscription update error:", error);
-    const message = error instanceof Error ? error.message : "Failed to update subscription";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to update subscription";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -109,7 +109,7 @@ export default async function LearnPage() {
             <h2 className="font-nunito text-xl font-bold text-text-dark dark:text-gray-100">{label.en}</h2>
             <p className="font-sarabun text-sm text-text-mid dark:text-gray-400">{label.th}</p>
 
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3" data-tutorial="subject-grid">
               {items.map((subject) => {
                 const isFree = subject.slug === FREE_SLUG;
                 const isLocked = !isSubscribed && !isFree;

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ChildSessionGuard } from "@/components/ChildSessionGuard";
 import { AppFooter } from "@/components/AppFooter";
+import TutorialOverlay from "@/components/TutorialOverlay";
 
 export default function LearnLayout({
   children,
@@ -57,6 +58,7 @@ export default function LearnLayout({
       <main className="mx-auto max-w-4xl px-4 py-6 relative">
         <ChildSessionGuard>{children}</ChildSessionGuard>
       </main>
+      <TutorialOverlay />
       <AppFooter />
     </div>
   );
