@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 /* ─── Constants ─────────────────────────────────────────── */
@@ -456,6 +457,18 @@ export default function TutorialOverlay() {
             ))}
           </div>
         </div>
+
+        {/* Ollie illustration for welcome (step 1) and wrap-up (step 9) */}
+        {step === 1 && (
+          <div className="flex justify-center mb-3">
+            <Image src="/tutorial/ollie-wave.png" alt="Ollie waving" width={120} height={120} className="rounded-xl" />
+          </div>
+        )}
+        {step === TOTAL_STEPS && (
+          <div className="flex justify-center mb-3">
+            <Image src="/tutorial/ollie-thumbs-up.png" alt="Ollie thumbs up" width={120} height={120} className="rounded-xl" />
+          </div>
+        )}
 
         {currentStep.title && (
           <h2
