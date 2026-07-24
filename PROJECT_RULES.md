@@ -75,9 +75,12 @@ but the three humans/owl must remain central.
 - **Bua** (Thawan's younger sister, 3 years old): "Bua, a 3-year-old Thai girl with
   chin-length straight black hair and side bangs, wearing a pink t-shirt and white shorts"
 - **Teacher Julie** (Thawan's interviewing teacher, Western/American): "Teacher Julie,
-  a friendly Western woman in her thirties with medium-length light brown hair, warm
-  green eyes, and a kind smile, wearing a soft blue button-up blouse and dark slacks,
-  seated at a desk or standing warmly"
+  a friendly American woman about 32 years old with SHOULDER-LENGTH WAVY LIGHT BROWN
+  HAIR pulled back on the LEFT side with a small SILVER BARRETTE clip. WARM GREEN EYES
+  with slight crinkles when smiling. Oval face with LIGHT FRECKLES across the nose.
+  Wearing a POWDER BLUE button-up blouse with a small pointed collar, DARK GREY SLACKS,
+  silver stud earrings, and a SMALL SILVER GLOBE PIN on her left blouse pocket. Kind
+  gentle smile."
 - Generic one-off humans (mail carrier, little boy at kite festival): describe fully
   inline, friendly cartoon adults/children, never resembling the locked kids.
 
