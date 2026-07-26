@@ -59,26 +59,32 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
   }, [pages]);
 
   const wordTimings = page.word_timings;
+  const validTimings = useMemo(() => {
+    if (!Array.isArray(wordTimings) || wordTimings.length === 0) return null;
+    const ok = wordTimings.every(
+      (wt) => wt && typeof wt.word === "string" && typeof wt.start === "number" && typeof wt.end === "number"
+    );
+    return ok ? wordTimings : null;
+  }, [wordTimings]);
+
   const words = useMemo(() => {
-    if (wordTimings && wordTimings.length > 0) {
-      return wordTimings.map((wt) => wt.word);
-    }
-    return page.text_en.split(/\s+/).filter(Boolean);
-  }, [wordTimings, page.text_en]);
+    if (validTimings) return validTimings.map((wt) => wt.word);
+    return (page.text_en ?? "").split(/\s+/).filter(Boolean);
+  }, [validTimings, page.text_en]);
 
   const indexAt = useCallback(
     (t: number) => {
-      if (!wordTimings || wordTimings.length === 0) return -1;
-      let lo = 0, hi = wordTimings.length - 1, ans = -1;
+      if (!validTimings) return -1;
+      let lo = 0, hi = validTimings.length - 1, ans = -1;
       while (lo <= hi) {
         const mid = (lo + hi) >> 1;
-        if (wordTimings[mid].start <= t) { ans = mid; lo = mid + 1; }
+        if (validTimings[mid].start <= t) { ans = mid; lo = mid + 1; }
         else { hi = mid - 1; }
       }
-      if (ans === wordTimings.length - 1 && ans >= 0 && t > wordTimings[ans].end + 0.15) return -1;
+      if (ans === validTimings.length - 1 && ans >= 0 && t > validTimings[ans].end + 0.15) return -1;
       return ans;
     },
-    [wordTimings]
+    [validTimings]
   );
 
   // Save progress
@@ -166,7 +172,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
         // Resume from where we left off
         a.play().then(() => {
           setIsPlaying(true);
-          if (wordTimings && wordTimings.length > 0) startLoop();
+          if (validTimings) startLoop();
         }).catch(() => {});
       } else {
         // No audio ref (between pages) — turn off auto-play
@@ -175,7 +181,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
     } else {
       setIsAutoPlaying(true);
     }
-  }, [isAutoPlaying, wordTimings, startLoop, stopLoop]);
+  }, [isAutoPlaying, validTimings, startLoop, stopLoop]);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => { touchStartRef.current = e.touches[0].clientX; }, []);
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
@@ -224,9 +230,9 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
 
     audio.play().then(() => {
       setIsPlaying(true);
-      if (wordTimings && wordTimings.length > 0) startLoop();
+      if (validTimings) startLoop();
     }).catch(() => {});
-  }, [page.audio_url, words.length, wordTimings, playbackRate, totalPages, currentPage, stopAudio, startLoop, stopLoop]);
+  }, [page.audio_url, words.length, validTimings, playbackRate, totalPages, currentPage, stopAudio, startLoop, stopLoop]);
 
   // Keep playAudio ref in sync so auto-play effect always calls the latest version
   playAudioRef.current = playAudio;
@@ -242,7 +248,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
   }, [isAutoPlaying, currentPage]);
 
   const jumpTo = useCallback((i: number) => {
-    if (!wordTimings || !wordTimings[i]) return;
+    if (!validTimings || !validTimings[i]) return;
     const a = audioRef.current;
     if (!a) {
       if (!page.audio_url) return;
@@ -253,15 +259,15 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
         setHighlightIndex(words.length - 1);
         setTimeout(() => { setIsPlaying(false); setHighlightIndex(-1); stopLoop(); }, 600);
       };
-      audio.currentTime = wordTimings[i].start + 0.001;
+      audio.currentTime = validTimings[i].start + 0.001;
       audio.play().then(() => { setIsPlaying(true); startLoop(); }).catch(() => {});
       return;
     }
-    a.currentTime = wordTimings[i].start + 0.001;
+    a.currentTime = validTimings[i].start + 0.001;
     if (a.paused) {
       a.play().then(() => { setIsPlaying(true); startLoop(); }).catch(() => {});
     }
-  }, [wordTimings, page.audio_url, words.length, playbackRate, startLoop, stopLoop]);
+  }, [validTimings, page.audio_url, words.length, playbackRate, startLoop, stopLoop]);
 
   // Don't turn off auto-play on last page — let audio finish and show completion
   useEffect(() => { return () => { stopAudio(); }; }, [stopAudio]);
@@ -424,7 +430,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
             } else if (a && a.paused && a.currentTime > 0) {
               a.play().then(() => {
                 setIsPlaying(true);
-                if (wordTimings && wordTimings.length > 0) startLoop();
+                if (validTimings) startLoop();
               }).catch(() => {});
             } else {
               playAudio();
