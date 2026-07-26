@@ -28,6 +28,28 @@ html.dark .text-text-mid { color: #D1D5DB !important; }
 html.dark .text-text-light { color: #9CA3AF !important; }
 html.dark .text-\[\#1A237E\] { color: #F3F4F6 !important; }
 
+/* Dark mode fallback for standard Tailwind grays.
+   Only applies when the element has no explicit dark: text override. */
+html.dark [class*="text-gray-900"]:not([class*="dark:text-"]) { color: #F3F4F6 !important; }
+html.dark [class*="text-gray-800"]:not([class*="dark:text-"]) { color: #E5E7EB !important; }
+html.dark [class*="text-gray-700"]:not([class*="dark:text-"]) { color: #D1D5DB !important; }
+html.dark [class*="text-gray-600"]:not([class*="dark:text-"]) { color: #9CA3AF !important; }
+html.dark [class*="text-black"]:not([class*="dark:text-"])    { color: #F3F4F6 !important; }
+
+/* Same guard for scales not currently used, so future code cannot reintroduce this. */
+html.dark [class*="text-slate-900"]:not([class*="dark:text-"]),
+html.dark [class*="text-neutral-900"]:not([class*="dark:text-"]),
+html.dark [class*="text-stone-900"]:not([class*="dark:text-"]),
+html.dark [class*="text-zinc-900"]:not([class*="dark:text-"])   { color: #F3F4F6 !important; }
+html.dark [class*="text-slate-700"]:not([class*="dark:text-"]),
+html.dark [class*="text-neutral-700"]:not([class*="dark:text-"]),
+html.dark [class*="text-stone-700"]:not([class*="dark:text-"]),
+html.dark [class*="text-zinc-700"]:not([class*="dark:text-"])   { color: #D1D5DB !important; }
+html.dark [class*="text-slate-600"]:not([class*="dark:text-"]),
+html.dark [class*="text-neutral-600"]:not([class*="dark:text-"]),
+html.dark [class*="text-stone-600"]:not([class*="dark:text-"]),
+html.dark [class*="text-zinc-600"]:not([class*="dark:text-"])   { color: #9CA3AF !important; }
+
 /* Inputs — dark background with white text */
 html.dark input,
 html.dark textarea,
