@@ -24,7 +24,13 @@ export default async function SubjectPage({
   const subject = data as Subject;
 
   // Content counts (not user-specific) — used to hide empty tiles
-  const [{ count: pictureQuizCount }, { count: ebookPageCount }] = await Promise.all([
+  const [
+    { count: pictureQuizCount },
+    { count: ebookPageCount },
+    { count: flashcardCount },
+    { count: quizCount },
+    { count: lessonPageCount },
+  ] = await Promise.all([
     supabase
       .from("picture_quiz_questions")
       .select("id", { count: "exact", head: true })
@@ -34,11 +40,27 @@ export default async function SubjectPage({
       .select("id", { count: "exact", head: true })
       .eq("subject_id", subject.id)
       .eq("page_type", "storybook"),
+    supabase
+      .from("flashcards")
+      .select("id", { count: "exact", head: true })
+      .eq("subject_id", subject.id),
+    supabase
+      .from("quiz_questions")
+      .select("id", { count: "exact", head: true })
+      .eq("subject_id", subject.id),
+    supabase
+      .from("ebook_pages")
+      .select("id", { count: "exact", head: true })
+      .eq("subject_id", subject.id)
+      .eq("page_type", "lesson"),
   ]);
 
+  const hasFlashcards = (flashcardCount ?? 0) > 0;
   const hasPictureQuiz = (pictureQuizCount ?? 0) > 0;
   const hasStorybook = (ebookPageCount ?? 0) > 0;
-  const showStorybook = hasStorybook || subject.storybook_planned;
+  const hasQuiz = (quizCount ?? 0) > 0;
+  const hasLessonBook = (lessonPageCount ?? 0) > 0;
+  const hasPrintable = Boolean(subject.printable_url);
 
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -161,9 +183,18 @@ export default async function SubjectPage({
   };
 
   const MODULES = ALL_MODULES.filter((mod) => {
-    if (mod.path === "picture-quiz" && !hasPictureQuiz) return false;
-    if (mod.path === "ebook" && !showStorybook) return false;
-    return true;
+    switch (mod.path) {
+      case "flashcards":   return hasFlashcards;
+      case "ebook":        return hasStorybook;
+      // Lesson Book: content-driven, but the /lesson route does not exist yet (Phase 4).
+      // Do NOT insert ebook_pages rows with page_type = 'lesson' until that route ships,
+      // or this tile will render and 404.
+      case "lesson":       return hasLessonBook;
+      case "quiz":         return hasQuiz;
+      case "picture-quiz": return hasPictureQuiz;
+      case "writing":      return hasPrintable;
+      default:             return true;
+    }
   });
 
   return (
@@ -202,7 +233,6 @@ export default async function SubjectPage({
 
       <div className="mt-8 w-full grid grid-cols-1 sm:grid-cols-2 gap-3" data-tutorial="module-grid">
         {MODULES.map((mod) => {
-          const isComingSoon = mod.path === "ebook" && !hasStorybook && subject.storybook_planned;
           const tileContent = (
             <>
               <span className="text-4xl flex-shrink-0">{mod.emoji}</span>
@@ -217,11 +247,6 @@ export default async function SubjectPage({
                   {mod.titleTh}
                 </span>
                 {/* Progress info */}
-                {isComingSoon && (
-                  <span className="text-xs text-text-mid block italic">
-                    Coming Soon / เร็วๆ นี้
-                  </span>
-                )}
                 {mod.path === "ebook" && ebookTotalPages > 0 && (
                   <span className="text-xs text-text-mid block">
                     {ebookComplete ? (
@@ -257,24 +282,9 @@ export default async function SubjectPage({
                   </span>
                 )}
               </div>
-              {!isComingSoon && (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0 text-text-light"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-              )}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="flex-shrink-0 text-text-light"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
             </>
           );
-
-          if (isComingSoon) {
-            return (
-              <div
-                key={mod.path + mod.titleEn}
-                data-tutorial={TUTORIAL_ATTR[mod.path]}
-                className={`flex items-center gap-4 rounded-xl p-4 shadow-md opacity-60 dark:bg-gray-800 ${mod.bg}`}
-                style={{ borderBottom: `4px solid ${mod.border}` }}
-              >
-                {tileContent}
-              </div>
-            );
-          }
 
           return (
             <Link

@@ -15,6 +15,7 @@ export interface Subject {
   sort_order: number;
   is_published: boolean;
   storybook_planned: boolean;
+  printable_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +43,7 @@ export interface EbookPage {
   id: string;
   subject_id: string;
   page_number: number;
-  page_type: "storybook" | "reader";
+  page_type: "storybook" | "reader" | "lesson";
   text_en: string;
   image_url: string | null;
   audio_url: string | null;
