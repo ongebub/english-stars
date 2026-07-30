@@ -9,9 +9,13 @@ export function AppFooter() {
       <p className="font-sarabun mt-0.5">
         เนื้อหาทั้งหมดเป็นทรัพย์สินของ English Allstars LLC สงวนลิขสิทธิ์
       </p>
-      <div className="mt-1 flex items-center justify-center gap-3">
+      <div className="mt-1 flex items-center justify-center gap-3 flex-wrap">
         <Link href="/terms" className="hover:underline text-sky-dark">
           Terms & Conditions
+        </Link>
+        <span>·</span>
+        <Link href="/privacy" className="hover:underline text-sky-dark">
+          Privacy Policy
         </Link>
         <span>·</span>
         <a href="mailto:info@englishallstars.com" className="hover:underline text-sky-dark">

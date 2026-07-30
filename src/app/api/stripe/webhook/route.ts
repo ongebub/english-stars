@@ -94,6 +94,17 @@ export async function POST(req: NextRequest) {
 
         if (error)
           console.error("Failed to upsert subscription on checkout:", error);
+
+        // Also set profiles.account_type from the chosen plan
+        const accountType = tier === "tutor" ? "tutor" : "family";
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ account_type: accountType })
+          .eq("id", userId)
+          .eq("role", "parent");
+
+        if (profileError)
+          console.error("Failed to set account_type on checkout:", profileError);
       }
       break;
     }

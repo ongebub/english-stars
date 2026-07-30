@@ -5,7 +5,7 @@ const protectedRoutes = ["/dashboard", "/gradebook", "/school", "/tutor", "/sett
 const semiProtectedRoutes = ["/learn"];
 
 // Routes that should never be subscription-gated
-const subscriptionExemptPaths = ["/subscribe", "/welcome", "/join", "/api"];
+const subscriptionExemptPaths = ["/subscribe", "/signup", "/welcome", "/join", "/api"];
 
 /** 3-day grace period in ms for past_due subscriptions */
 const PAST_DUE_GRACE_MS = 3 * 24 * 60 * 60 * 1000;

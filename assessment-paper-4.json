@@ -1,0 +1,270 @@
+{
+  "kind": "final_test",
+  "title_en": "Final Test — Paper 4",
+  "title_th": "สอบปลายภาค — ฉบับที่ 4",
+  "paper_number": 4,
+  "section": null,
+  "grade_band": null,
+  "total_points": 100,
+  "time_limit_minutes": 90,
+  "is_published": true,
+  "passages": [
+    {
+      "sort_order": 1,
+      "title_en": "The Tea Party",
+      "body_en": "Nong Fah invited Ollie to a tea party.\n\n\"If we are going to have a tea party,\" said Ollie, \"we must use polite words.\"\n\nNong Fah arranged the tea set. When Ollie arrived she said, \"Hello, Ollie. How are you today?\"\n\n\"I am very well, thank you,\" said Ollie.\n\n\"Please come in and have a seat. There is a place next to Miss Bunny.\" Miss Bunny is a toy rabbit. She did not answer, because she is very shy.\n\nNong Fah brought a plate of cookies. \"Would you like a cookie, Ollie?\" \"Yes, please,\" said Ollie. \"Thank you.\"\n\nThen Nong Fah poured the tea. The cup slipped and fell into Ollie's lap. \"I am so sorry!\" said Nong Fah.\n\n\"That is quite all right,\" said Ollie kindly. \"Could you please pass me a napkin?\""
+    },
+    {
+      "sort_order": 2,
+      "title_en": "Nong Fah's Day",
+      "body_en": "Nong Fah woke up at six o'clock in the morning. The sun was shining through her curtains.\n\nShe washed, put on her school clothes, and ate her breakfast. At half past seven it was time for school.\n\nShe arrived at school at eight o'clock, just as the bell rang.\n\nAt half past eleven the teacher said, \"It is lunchtime.\" Nong Fah ate rice and vegetables.\n\nAt twelve o'clock it was noon. After lunch she played with her friends until one o'clock.\n\nSchool finished at four o'clock. She walked home.\n\nThe family ate dinner at half past five in the evening.\n\nAt eight o'clock at night, Nong Fah brushed her teeth and went to bed."
+    },
+    {
+      "sort_order": 3,
+      "title_en": "My Five Senses",
+      "body_en": "Ollie taught Nong Fah about the five senses.\n\n\"You use your eyes to see,\" he said. Nong Fah looked at a red flower.\n\n\"You use your ears to hear.\" Nong Fah listened to a bird singing in the tree.\n\n\"You use your nose to smell.\" Nong Fah smelled the flower. It was sweet.\n\n\"You use your tongue to taste.\" Nong Fah tasted a slice of orange. It was sour!\n\n\"And you use your hands to touch.\" Nong Fah touched a smooth stone and a rough rock.\n\n\"Five senses!\" said Nong Fah. \"Now I know them all.\""
+    }
+  ],
+  "questions": [
+    {
+      "item_number": 1, "part": "expression", "points": 1.6,
+      "situation_en": "Arriving at the tea party",
+      "dialogue_en": "Nong Fah: Hello, Ollie. _____(1)_____\nOllie: I am very well, thank you.\nNong Fah: Please come in and _____(2)_____.\nOllie: Thank you, I will.",
+      "prompt_en": "What should Nong Fah say in blank (1)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "How are you today?"}, {"text_en": "How old are you?"}, {"text_en": "What is your name?"}, {"text_en": "Where do you live?"}, {"text_en": "What time is it?"}]
+    },
+    {
+      "item_number": 2, "part": "expression", "points": 1.6,
+      "situation_en": "Arriving at the tea party",
+      "dialogue_en": "Nong Fah: Hello, Ollie. _____(1)_____\nOllie: I am very well, thank you.\nNong Fah: Please come in and _____(2)_____.\nOllie: Thank you, I will.",
+      "prompt_en": "What should Nong Fah say in blank (2)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "have a seat"}, {"text_en": "go home"}, {"text_en": "run fast"}, {"text_en": "wash the dishes"}, {"text_en": "go to sleep"}]
+    },
+    {
+      "item_number": 3, "part": "expression", "points": 1.6,
+      "situation_en": "Sharing cookies",
+      "dialogue_en": "Nong Fah: Would you like a cookie?\nOllie: _____(3)_____",
+      "prompt_en": "What should Ollie say in blank (3)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Yes, please."}, {"text_en": "Goodnight."}, {"text_en": "Excuse me."}, {"text_en": "I am sorry."}, {"text_en": "Nice to meet you."}]
+    },
+    {
+      "item_number": 4, "part": "expression", "points": 1.6,
+      "situation_en": "A spilled drink",
+      "dialogue_en": "Nong Fah: Oh no! I spilled the tea. _____(4)_____\nOllie: That is quite all right.",
+      "prompt_en": "What should Nong Fah say in blank (4)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "I am so sorry!"}, {"text_en": "Thank you!"}, {"text_en": "Good morning!"}, {"text_en": "Nice to meet you!"}, {"text_en": "Have a good day!"}]
+    },
+    {
+      "item_number": 5, "part": "expression", "points": 1.6,
+      "situation_en": "Asking for a napkin",
+      "dialogue_en": "Ollie: _____(5)_____ pass me a napkin?\nNong Fah: Of course. Here you are.\nOllie: Thank you.\nNong Fah: _____(6)_____",
+      "prompt_en": "What should Ollie say in blank (5)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Could you please"}, {"text_en": "Where did you"}, {"text_en": "Who can"}, {"text_en": "Why do you"}, {"text_en": "When did you"}]
+    },
+    {
+      "item_number": 6, "part": "expression", "points": 1.6,
+      "situation_en": "Asking for a napkin",
+      "dialogue_en": "Ollie: _____(5)_____ pass me a napkin?\nNong Fah: Of course. Here you are.\nOllie: Thank you.\nNong Fah: _____(6)_____",
+      "prompt_en": "What should Nong Fah say in blank (6)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "You are welcome."}, {"text_en": "I am sorry."}, {"text_en": "Goodnight."}, {"text_en": "How are you?"}, {"text_en": "Excuse me."}]
+    },
+    {
+      "item_number": 7, "part": "expression", "points": 1.6,
+      "situation_en": "The school interview",
+      "dialogue_en": "Teacher Julie: Hello. My name is Teacher Julie. _____(7)_____\nThawan: My name is Thawan.\nTeacher Julie: _____(8)_____ grade are you in?\nThawan: I am in first grade.",
+      "prompt_en": "What should Teacher Julie say in blank (7)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "What is your name?"}, {"text_en": "How are you?"}, {"text_en": "Where is your book?"}, {"text_en": "What time is it?"}, {"text_en": "Who is your friend?"}]
+    },
+    {
+      "item_number": 8, "part": "expression", "points": 1.6,
+      "situation_en": "The school interview",
+      "dialogue_en": "Teacher Julie: Hello. My name is Teacher Julie. _____(7)_____\nThawan: My name is Thawan.\nTeacher Julie: _____(8)_____ grade are you in?\nThawan: I am in first grade.",
+      "prompt_en": "What should Teacher Julie say in blank (8)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "What"}, {"text_en": "Who"}, {"text_en": "Where"}, {"text_en": "When"}, {"text_en": "How many"}]
+    },
+    {
+      "item_number": 9, "part": "expression", "points": 1.6,
+      "situation_en": "End of the interview",
+      "dialogue_en": "Teacher Julie: Very good, Thawan. You may go now.\nThawan: _____(9)_____",
+      "prompt_en": "What should Thawan say in blank (9)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Thank you, teacher."}, {"text_en": "Good morning, teacher."}, {"text_en": "Excuse me, teacher."}, {"text_en": "How are you, teacher?"}, {"text_en": "I am sorry, teacher."}]
+    },
+    {
+      "item_number": 10, "part": "expression", "points": 1.6,
+      "situation_en": "Leaving the tea party",
+      "dialogue_en": "Ollie: _____(10)_____ for having me, Nong Fah.\nNong Fah: You are welcome! Come again soon.",
+      "prompt_en": "What should Ollie say in blank (10)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Thank you"}, {"text_en": "Excuse me"}, {"text_en": "I am sorry"}, {"text_en": "Goodnight"}, {"text_en": "How are you"}]
+    },
+    {
+      "item_number": 11, "part": "reading", "points": 2.4, "prompt_en": "Who did Nong Fah invite to the tea party?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Ollie"}, {"text_en": "Thawan"}, {"text_en": "Bua"}, {"text_en": "Emily"}, {"text_en": "Teacher Julie"}]
+    },
+    {
+      "item_number": 12, "part": "reading", "points": 2.4, "prompt_en": "Who is Miss Bunny?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A toy rabbit"}, {"text_en": "Nong Fah's sister"}, {"text_en": "A real rabbit"}, {"text_en": "A teacher"}, {"text_en": "A toy frog"}]
+    },
+    {
+      "item_number": 13, "part": "reading", "points": 2.4, "prompt_en": "Why did Miss Bunny not answer?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "She is very shy."}, {"text_en": "She was asleep."}, {"text_en": "She did not hear."}, {"text_en": "She was outside."}, {"text_en": "She was eating."}]
+    },
+    {
+      "item_number": 14, "part": "reading", "points": 2.4, "prompt_en": "What did Nong Fah spill?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "The tea"}, {"text_en": "The cookies"}, {"text_en": "The sugar"}, {"text_en": "The milk"}, {"text_en": "The juice"}]
+    },
+    {
+      "item_number": 15, "part": "reading", "points": 2.4, "prompt_en": "How did Ollie react when the tea spilled?", "passage_sort_order": 1, "answer_type": "multiple_choice", "is_inference": true,
+      "options": [{"text_en": "He was kind and not angry."}, {"text_en": "He shouted at Nong Fah."}, {"text_en": "He went home at once."}, {"text_en": "He started to cry."}, {"text_en": "He laughed loudly."}]
+    },
+    {
+      "item_number": 16, "part": "reading", "points": 2.4, "prompt_en": "What time did Nong Fah wake up?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Six o'clock"}, {"text_en": "Seven o'clock"}, {"text_en": "Eight o'clock"}, {"text_en": "Half past seven"}, {"text_en": "Half past six"}]
+    },
+    {
+      "item_number": 17, "part": "reading", "points": 2.4, "prompt_en": "What did Nong Fah eat for lunch?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Rice and vegetables"}, {"text_en": "Bread and eggs"}, {"text_en": "Rice and eggs"}, {"text_en": "Soup and bread"}, {"text_en": "Fruit and milk"}]
+    },
+    {
+      "item_number": 18, "part": "reading", "points": 2.4, "prompt_en": "What time did school finish?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Four o'clock"}, {"text_en": "Three o'clock"}, {"text_en": "Five o'clock"}, {"text_en": "Half past four"}, {"text_en": "One o'clock"}]
+    },
+    {
+      "item_number": 19, "part": "reading", "points": 2.4, "prompt_en": "When did the family eat dinner?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Half past five"}, {"text_en": "Half past four"}, {"text_en": "Six o'clock"}, {"text_en": "Eight o'clock"}, {"text_en": "Noon"}]
+    },
+    {
+      "item_number": 20, "part": "reading", "points": 2.4, "prompt_en": "What did Nong Fah do just before she went to bed?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "She brushed her teeth."}, {"text_en": "She ate dinner."}, {"text_en": "She played outside."}, {"text_en": "She read a book."}, {"text_en": "She walked home."}]
+    },
+    {
+      "item_number": 21, "part": "reading", "points": 2.4, "prompt_en": "What did Nong Fah look at?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A red flower"}, {"text_en": "A yellow bird"}, {"text_en": "A green tree"}, {"text_en": "A blue stone"}, {"text_en": "An orange"}]
+    },
+    {
+      "item_number": 22, "part": "reading", "points": 2.4, "prompt_en": "What did Nong Fah hear?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A bird singing"}, {"text_en": "Ollie laughing"}, {"text_en": "The wind blowing"}, {"text_en": "A dog barking"}, {"text_en": "A bell ringing"}]
+    },
+    {
+      "item_number": 23, "part": "reading", "points": 2.4, "prompt_en": "How did the orange taste?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Sour"}, {"text_en": "Sweet"}, {"text_en": "Warm"}, {"text_en": "Smooth"}, {"text_en": "Rough"}]
+    },
+    {
+      "item_number": 24, "part": "reading", "points": 2.4, "prompt_en": "What did Nong Fah touch?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A smooth stone and a rough rock"}, {"text_en": "A soft blanket"}, {"text_en": "A red flower"}, {"text_en": "A slice of orange"}, {"text_en": "A bird's wing"}]
+    },
+    {
+      "item_number": 25, "part": "reading", "points": 2.4, "prompt_en": "What was Ollie teaching Nong Fah about?", "passage_sort_order": 3, "answer_type": "multiple_choice", "is_inference": true,
+      "options": [{"text_en": "The five senses"}, {"text_en": "The weather"}, {"text_en": "The parts of a plant"}, {"text_en": "Telling time"}, {"text_en": "Colours"}]
+    },
+    {
+      "item_number": 26, "part": "structure", "points": 2.2, "prompt_en": "The book is ____ the bag, and the pencil is ____ the desk.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "in / on"}, {"text_en": "on / in"}, {"text_en": "under / in"}, {"text_en": "in / under"}, {"text_en": "on / under"}]
+    },
+    {
+      "item_number": 27, "part": "structure", "points": 2.2, "prompt_en": "She has three ____ and two ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "dresses / hats"}, {"text_en": "dress / hat"}, {"text_en": "dresses / hat"}, {"text_en": "dress / hats"}, {"text_en": "dresss / hats"}]
+    },
+    {
+      "item_number": 28, "part": "structure", "points": 2.2, "prompt_en": "____ is my grandmother. ____ house is near ours.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "She / Her"}, {"text_en": "He / His"}, {"text_en": "She / His"}, {"text_en": "They / Their"}, {"text_en": "It / Its"}]
+    },
+    {
+      "item_number": 29, "part": "structure", "points": 2.2, "prompt_en": "Last Sunday, the family ____ lunch together.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "ate"}, {"text_en": "eats"}, {"text_en": "eat"}, {"text_en": "will eat"}, {"text_en": "eating"}]
+    },
+    {
+      "item_number": 30, "part": "structure", "points": 2.2, "prompt_en": "Look! Bua ____ a picture.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "is drawing"}, {"text_en": "draw"}, {"text_en": "drew"}, {"text_en": "will draw"}, {"text_en": "draws"}]
+    },
+    {
+      "item_number": 31, "part": "structure", "points": 2.2, "prompt_en": "____ some water in the glass.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "There is"}, {"text_en": "There are"}, {"text_en": "They are"}, {"text_en": "It are"}, {"text_en": "Here are"}]
+    },
+    {
+      "item_number": 32, "part": "structure", "points": 2.2, "prompt_en": "____ book in my hand is mine.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "This"}, {"text_en": "These"}, {"text_en": "Those"}, {"text_en": "Them"}, {"text_en": "They"}]
+    },
+    {
+      "item_number": 33, "part": "structure", "points": 2.2, "prompt_en": "A mouse is ____ than a cat.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "smaller"}, {"text_en": "small"}, {"text_en": "smallest"}, {"text_en": "more small"}, {"text_en": "most small"}]
+    },
+    {
+      "item_number": 34, "part": "structure", "points": 2.2, "prompt_en": "Grandpa ____ stories every evening.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "tells"}, {"text_en": "tell"}, {"text_en": "telling"}, {"text_en": "are telling"}, {"text_en": "have told"}]
+    },
+    {
+      "item_number": 35, "part": "structure", "points": 2.2, "prompt_en": "I want ____ egg and ____ banana.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "an / a"}, {"text_en": "a / an"}, {"text_en": "a / a"}, {"text_en": "an / an"}, {"text_en": "the / an"}]
+    },
+    {
+      "item_number": 36, "part": "structure", "points": 2.2, "prompt_en": "How ____ books do you have?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "many"}, {"text_en": "much"}, {"text_en": "little"}, {"text_en": "some"}, {"text_en": "any"}]
+    },
+    {
+      "item_number": 37, "part": "structure", "points": 2.2, "prompt_en": "____ I please have some water?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "May"}, {"text_en": "Did"}, {"text_en": "Was"}, {"text_en": "Am"}, {"text_en": "Have"}]
+    },
+    {
+      "item_number": 38, "part": "structure", "points": 2.2, "prompt_en": "Tomorrow Thawan ____ nine years old.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "will be"}, {"text_en": "was"}, {"text_en": "is being"}, {"text_en": "been"}, {"text_en": "were"}]
+    },
+    {
+      "item_number": 39, "part": "structure", "points": 2.2, "prompt_en": "The cat washed ____ face.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "its"}, {"text_en": "his"}, {"text_en": "her"}, {"text_en": "their"}, {"text_en": "our"}]
+    },
+    {
+      "item_number": 40, "part": "structure", "points": 2.2, "prompt_en": "Which word rhymes with \"day\"?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "play"}, {"text_en": "dog"}, {"text_en": "sit"}, {"text_en": "cup"}, {"text_en": "big"}]
+    },
+    {
+      "item_number": 41, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "rice"}, {"text_en": "school"}, {"text_en": "store"}, {"text_en": "hospital"}, {"text_en": "bank"}]
+    },
+    {
+      "item_number": 42, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "shirt"}, {"text_en": "car"}, {"text_en": "bicycle"}, {"text_en": "bus"}, {"text_en": "train"}]
+    },
+    {
+      "item_number": 43, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "chair"}, {"text_en": "cold"}, {"text_en": "warm"}, {"text_en": "hot"}, {"text_en": "cool"}]
+    },
+    {
+      "item_number": 44, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "March"}, {"text_en": "Monday"}, {"text_en": "Friday"}, {"text_en": "Sunday"}, {"text_en": "Tuesday"}]
+    },
+    {
+      "item_number": 45, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "apple"}, {"text_en": "ears"}, {"text_en": "nose"}, {"text_en": "eyes"}, {"text_en": "tongue"}]
+    },
+    {
+      "item_number": 46, "part": "vocabulary", "points": 1.5, "prompt_en": "We use our eyes to ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "see"}, {"text_en": "hear"}, {"text_en": "smell"}, {"text_en": "taste"}, {"text_en": "walk"}]
+    },
+    {
+      "item_number": 47, "part": "vocabulary", "points": 1.5, "prompt_en": "A nurse works in a ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "hospital"}, {"text_en": "farm"}, {"text_en": "school"}, {"text_en": "park"}, {"text_en": "store"}]
+    },
+    {
+      "item_number": 48, "part": "vocabulary", "points": 1.5, "prompt_en": "Ice is very ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "cold"}, {"text_en": "hot"}, {"text_en": "sweet"}, {"text_en": "loud"}, {"text_en": "soft"}]
+    },
+    {
+      "item_number": 49, "part": "vocabulary", "points": 1.5, "prompt_en": "We eat dinner in the ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "evening"}, {"text_en": "morning"}, {"text_en": "noon"}, {"text_en": "sunrise"}, {"text_en": "lunchtime"}]
+    },
+    {
+      "item_number": 50, "part": "vocabulary", "points": 1.5, "prompt_en": "The opposite of \"old\" is ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "new"}, {"text_en": "big"}, {"text_en": "slow"}, {"text_en": "sad"}, {"text_en": "quiet"}]
+    }
+  ]
+}

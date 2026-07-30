@@ -1,0 +1,270 @@
+{
+  "kind": "final_test",
+  "title_en": "Final Test — Paper 5",
+  "title_th": "สอบปลายภาค — ฉบับที่ 5",
+  "paper_number": 5,
+  "section": null,
+  "grade_band": null,
+  "total_points": 100,
+  "time_limit_minutes": 90,
+  "is_published": true,
+  "passages": [
+    {
+      "sort_order": 1,
+      "title_en": "A Day at the Farm",
+      "body_en": "Ollie and Nong Fah went to the farm.\n\nFirst they saw a big brown cow. It was eating grass. \"Moo!\" said the cow.\n\nNext they saw three small white sheep. Their wool was soft.\n\nA grey cat slept in the sun. It did not move at all.\n\nIn the pond, six yellow ducks were swimming. They were very noisy.\n\nA red hen walked past with her chicks. Nong Fah counted eight chicks.\n\n\"The cow is the biggest animal here,\" said Nong Fah. \"And the chicks are the smallest.\"\n\n\"Every animal is different,\" said Ollie. \"That is what makes the farm wonderful.\""
+    },
+    {
+      "sort_order": 2,
+      "title_en": "A Tour of My House",
+      "body_en": "Nong Fah gave Emily a tour of her house.\n\n\"This is the kitchen. We cook and eat here. There is a table and four chairs.\"\n\n\"This is the living room. There is a sofa and a television. We sit here in the evening.\"\n\n\"This is my bedroom. My bed is by the window. My books are on the shelf.\"\n\n\"This is the bathroom. I brush my teeth here every morning and every night.\"\n\n\"And this is the garden. My grandmother grows flowers here. There are red and yellow flowers.\"\n\n\"Your house is lovely!\" said Emily."
+    },
+    {
+      "sort_order": 3,
+      "title_en": "When I Grow Up",
+      "body_en": "\"What do you want to be when you grow up?\" Ollie asked.\n\n\"I want to be a doctor,\" said Nong Fah. \"Doctors work in a hospital. They help sick people.\"\n\n\"I want to be a teacher,\" said Emily. \"Teachers work in a school. They help children learn.\"\n\n\"I want to be a farmer,\" said Thawan. \"Farmers work on a farm. They grow food.\"\n\n\"And I am already a teacher,\" said Ollie. \"I teach you English every day!\"\n\nEverybody laughed."
+    }
+  ],
+  "questions": [
+    {
+      "item_number": 1, "part": "expression", "points": 1.6,
+      "situation_en": "First day at a new school",
+      "dialogue_en": "Teacher Julie: Good morning. Welcome to our class.\nNong Fah: _____(1)_____\nTeacher Julie: _____(2)_____ your name?\nNong Fah: My name is Nong Fah.",
+      "prompt_en": "What should Nong Fah say in blank (1)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Good morning, teacher."}, {"text_en": "Goodnight, teacher."}, {"text_en": "Good evening, teacher."}, {"text_en": "Goodbye, teacher."}, {"text_en": "I am sorry, teacher."}]
+    },
+    {
+      "item_number": 2, "part": "expression", "points": 1.6,
+      "situation_en": "First day at a new school",
+      "dialogue_en": "Teacher Julie: Good morning. Welcome to our class.\nNong Fah: _____(1)_____\nTeacher Julie: _____(2)_____ your name?\nNong Fah: My name is Nong Fah.",
+      "prompt_en": "What should Teacher Julie say in blank (2)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "What is"}, {"text_en": "Who is"}, {"text_en": "Where is"}, {"text_en": "When is"}, {"text_en": "How is"}]
+    },
+    {
+      "item_number": 3, "part": "expression", "points": 1.6,
+      "situation_en": "Making a friend",
+      "dialogue_en": "Emily: Hi! I am Emily. Do you want to play?\nNong Fah: _____(3)_____",
+      "prompt_en": "What should Nong Fah say in blank (3)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Yes, I would love to!"}, {"text_en": "Goodnight!"}, {"text_en": "I am sorry!"}, {"text_en": "Excuse me!"}, {"text_en": "You are welcome!"}]
+    },
+    {
+      "item_number": 4, "part": "expression", "points": 1.6,
+      "situation_en": "Borrowing something",
+      "dialogue_en": "Thawan: _____(4)_____ borrow your crayons?\nNong Fah: Yes, of course.\nThawan: _____(5)_____",
+      "prompt_en": "What should Thawan say in blank (4)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "May I"}, {"text_en": "Where did I"}, {"text_en": "Who can I"}, {"text_en": "Why do I"}, {"text_en": "When did I"}]
+    },
+    {
+      "item_number": 5, "part": "expression", "points": 1.6,
+      "situation_en": "Borrowing something",
+      "dialogue_en": "Thawan: _____(4)_____ borrow your crayons?\nNong Fah: Yes, of course.\nThawan: _____(5)_____",
+      "prompt_en": "What should Thawan say in blank (5)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Thank you."}, {"text_en": "I am sorry."}, {"text_en": "Goodnight."}, {"text_en": "How are you?"}, {"text_en": "Excuse me."}]
+    },
+    {
+      "item_number": 6, "part": "expression", "points": 1.6,
+      "situation_en": "At the doctor",
+      "dialogue_en": "Doctor: Good afternoon. How do you feel?\nBua: _____(6)_____",
+      "prompt_en": "What should Bua say in blank (6)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "I do not feel well."}, {"text_en": "Nice to meet you."}, {"text_en": "I am six years old."}, {"text_en": "Thank you very much."}, {"text_en": "Goodnight."}]
+    },
+    {
+      "item_number": 7, "part": "expression", "points": 1.6,
+      "situation_en": "In the classroom",
+      "dialogue_en": "Thawan: _____(7)_____, teacher. I do not understand.\nTeacher Julie: That is all right. I will help you.",
+      "prompt_en": "What should Thawan say in blank (7)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Excuse me"}, {"text_en": "Goodnight"}, {"text_en": "You are welcome"}, {"text_en": "Have a good day"}, {"text_en": "Nice to meet you"}]
+    },
+    {
+      "item_number": 8, "part": "expression", "points": 1.6,
+      "situation_en": "A kind act",
+      "dialogue_en": "Nong Fah: You dropped your book. Here it is.\nEmily: _____(8)_____\nNong Fah: _____(9)_____",
+      "prompt_en": "What should Emily say in blank (8)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Thank you very much!"}, {"text_en": "Goodnight!"}, {"text_en": "Excuse me!"}, {"text_en": "I am sorry!"}, {"text_en": "How old are you!"}]
+    },
+    {
+      "item_number": 9, "part": "expression", "points": 1.6,
+      "situation_en": "A kind act",
+      "dialogue_en": "Nong Fah: You dropped your book. Here it is.\nEmily: _____(8)_____\nNong Fah: _____(9)_____",
+      "prompt_en": "What should Nong Fah say in blank (9)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "You are welcome."}, {"text_en": "I am sorry."}, {"text_en": "Goodnight."}, {"text_en": "Nice weather."}, {"text_en": "How are you?"}]
+    },
+    {
+      "item_number": 10, "part": "expression", "points": 1.6,
+      "situation_en": "Going home",
+      "dialogue_en": "Teacher Julie: Goodbye, children. _____(10)_____\nChildren: Goodbye, teacher!",
+      "prompt_en": "What should Teacher Julie say in blank (10)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Have a good day!"}, {"text_en": "Good morning!"}, {"text_en": "Nice to meet you!"}, {"text_en": "I am sorry!"}, {"text_en": "Excuse me!"}]
+    },
+    {
+      "item_number": 11, "part": "reading", "points": 2.4, "prompt_en": "What colour was the cow?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Brown"}, {"text_en": "White"}, {"text_en": "Grey"}, {"text_en": "Yellow"}, {"text_en": "Red"}]
+    },
+    {
+      "item_number": 12, "part": "reading", "points": 2.4, "prompt_en": "How many ducks were in the pond?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Six"}, {"text_en": "Three"}, {"text_en": "Eight"}, {"text_en": "Five"}, {"text_en": "Two"}]
+    },
+    {
+      "item_number": 13, "part": "reading", "points": 2.4, "prompt_en": "What did the grey cat do?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "It slept in the sun."}, {"text_en": "It chased the ducks."}, {"text_en": "It ate the grass."}, {"text_en": "It swam in the pond."}, {"text_en": "It ran to the hen."}]
+    },
+    {
+      "item_number": 14, "part": "reading", "points": 2.4, "prompt_en": "How many chicks did Nong Fah count?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Eight"}, {"text_en": "Six"}, {"text_en": "Three"}, {"text_en": "Ten"}, {"text_en": "Five"}]
+    },
+    {
+      "item_number": 15, "part": "reading", "points": 2.4, "prompt_en": "Which animals were the smallest?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "The chicks"}, {"text_en": "The sheep"}, {"text_en": "The ducks"}, {"text_en": "The cat"}, {"text_en": "The hen"}]
+    },
+    {
+      "item_number": 16, "part": "reading", "points": 2.4, "prompt_en": "How many chairs are in the kitchen?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Four"}, {"text_en": "Two"}, {"text_en": "Three"}, {"text_en": "Five"}, {"text_en": "Six"}]
+    },
+    {
+      "item_number": 17, "part": "reading", "points": 2.4, "prompt_en": "What is in the living room?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A sofa and a television"}, {"text_en": "A bed and a shelf"}, {"text_en": "A table and chairs"}, {"text_en": "Flowers"}, {"text_en": "Books"}]
+    },
+    {
+      "item_number": 18, "part": "reading", "points": 2.4, "prompt_en": "Where is Nong Fah's bed?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "By the window"}, {"text_en": "In the living room"}, {"text_en": "Next to the shelf"}, {"text_en": "In the garden"}, {"text_en": "Near the door"}]
+    },
+    {
+      "item_number": 19, "part": "reading", "points": 2.4, "prompt_en": "Who grows the flowers?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Her grandmother"}, {"text_en": "Her mother"}, {"text_en": "Emily"}, {"text_en": "Her father"}, {"text_en": "Her sister"}]
+    },
+    {
+      "item_number": 20, "part": "reading", "points": 2.4, "prompt_en": "What did Emily think of the house?", "passage_sort_order": 2, "answer_type": "multiple_choice", "is_inference": true,
+      "options": [{"text_en": "She thought it was lovely."}, {"text_en": "She thought it was too small."}, {"text_en": "She did not like it."}, {"text_en": "She thought it was noisy."}, {"text_en": "She thought it was cold."}]
+    },
+    {
+      "item_number": 21, "part": "reading", "points": 2.4, "prompt_en": "What does Nong Fah want to be?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A doctor"}, {"text_en": "A teacher"}, {"text_en": "A farmer"}, {"text_en": "A nurse"}, {"text_en": "An owl"}]
+    },
+    {
+      "item_number": 22, "part": "reading", "points": 2.4, "prompt_en": "Where do teachers work?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "In a school"}, {"text_en": "In a hospital"}, {"text_en": "On a farm"}, {"text_en": "In a store"}, {"text_en": "At home"}]
+    },
+    {
+      "item_number": 23, "part": "reading", "points": 2.4, "prompt_en": "What do farmers do?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "They grow food."}, {"text_en": "They help sick people."}, {"text_en": "They teach children."}, {"text_en": "They build houses."}, {"text_en": "They drive buses."}]
+    },
+    {
+      "item_number": 24, "part": "reading", "points": 2.4, "prompt_en": "What does Ollie say he already is?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A teacher"}, {"text_en": "A doctor"}, {"text_en": "A farmer"}, {"text_en": "A student"}, {"text_en": "A friend"}]
+    },
+    {
+      "item_number": 25, "part": "reading", "points": 2.4, "prompt_en": "Why did everybody laugh?", "passage_sort_order": 3, "answer_type": "multiple_choice", "is_inference": true,
+      "options": [{"text_en": "Ollie teaches them English, so he is already a teacher."}, {"text_en": "Thawan told a funny joke."}, {"text_en": "Nong Fah fell over."}, {"text_en": "Emily made a funny face."}, {"text_en": "Ollie could not fly."}]
+    },
+    {
+      "item_number": 26, "part": "structure", "points": 2.2, "prompt_en": "The cat is ____ the roof, and the dog is ____ the house.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "on / in"}, {"text_en": "in / on"}, {"text_en": "under / on"}, {"text_en": "on / under"}, {"text_en": "in / in"}]
+    },
+    {
+      "item_number": 27, "part": "structure", "points": 2.2, "prompt_en": "I have four ____ and one ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "brushes / brush"}, {"text_en": "brush / brushes"}, {"text_en": "brushes / brushes"}, {"text_en": "brush / brush"}, {"text_en": "brushs / brush"}]
+    },
+    {
+      "item_number": 28, "part": "structure", "points": 2.2, "prompt_en": "____ are my friends. ____ names are Emily and Thawan.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "They / Their"}, {"text_en": "He / His"}, {"text_en": "She / Her"}, {"text_en": "It / Its"}, {"text_en": "We / Our"}]
+    },
+    {
+      "item_number": 29, "part": "structure", "points": 2.2, "prompt_en": "Yesterday Bua ____ her new dress.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "wore"}, {"text_en": "wears"}, {"text_en": "wear"}, {"text_en": "will wear"}, {"text_en": "wearing"}]
+    },
+    {
+      "item_number": 30, "part": "structure", "points": 2.2, "prompt_en": "Listen! Grandpa ____ a story.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "is telling"}, {"text_en": "tell"}, {"text_en": "told"}, {"text_en": "will tell"}, {"text_en": "tells"}]
+    },
+    {
+      "item_number": 31, "part": "structure", "points": 2.2, "prompt_en": "____ five ducks in the pond.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "There are"}, {"text_en": "There is"}, {"text_en": "It is"}, {"text_en": "He is"}, {"text_en": "Here is"}]
+    },
+    {
+      "item_number": 32, "part": "structure", "points": 2.2, "prompt_en": "____ flowers here are red, and ____ flowers there are yellow.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "These / those"}, {"text_en": "This / that"}, {"text_en": "Those / these"}, {"text_en": "That / this"}, {"text_en": "These / this"}]
+    },
+    {
+      "item_number": 33, "part": "structure", "points": 2.2, "prompt_en": "An elephant is ____ than a cat.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "bigger"}, {"text_en": "big"}, {"text_en": "biggest"}, {"text_en": "more big"}, {"text_en": "most big"}]
+    },
+    {
+      "item_number": 34, "part": "structure", "points": 2.2, "prompt_en": "Mom ____ dinner every evening.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "cooks"}, {"text_en": "cook"}, {"text_en": "cooking"}, {"text_en": "are cooking"}, {"text_en": "have cooked"}]
+    },
+    {
+      "item_number": 35, "part": "structure", "points": 2.2, "prompt_en": "I ate ____ apple and ____ sandwich.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "an / a"}, {"text_en": "a / an"}, {"text_en": "a / a"}, {"text_en": "an / an"}, {"text_en": "the / a"}]
+    },
+    {
+      "item_number": 36, "part": "structure", "points": 2.2, "prompt_en": "How ____ milk is in the glass?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "much"}, {"text_en": "many"}, {"text_en": "few"}, {"text_en": "some"}, {"text_en": "any"}]
+    },
+    {
+      "item_number": 37, "part": "structure", "points": 2.2, "prompt_en": "____ you please open the window?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Could"}, {"text_en": "Did"}, {"text_en": "Was"}, {"text_en": "Have"}, {"text_en": "Am"}]
+    },
+    {
+      "item_number": 38, "part": "structure", "points": 2.2, "prompt_en": "That bag is ____. It belongs to Bua.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "hers"}, {"text_en": "her"}, {"text_en": "she"}, {"text_en": "his"}, {"text_en": "their"}]
+    },
+    {
+      "item_number": 39, "part": "structure", "points": 2.2, "prompt_en": "The dog wagged ____ tail.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "its"}, {"text_en": "his"}, {"text_en": "her"}, {"text_en": "their"}, {"text_en": "our"}]
+    },
+    {
+      "item_number": 40, "part": "structure", "points": 2.2, "prompt_en": "Which word rhymes with \"tree\"?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "bee"}, {"text_en": "cat"}, {"text_en": "sun"}, {"text_en": "book"}, {"text_en": "hat"}]
+    },
+    {
+      "item_number": 41, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "brother"}, {"text_en": "teacher"}, {"text_en": "farmer"}, {"text_en": "doctor"}, {"text_en": "nurse"}]
+    },
+    {
+      "item_number": 42, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "banana"}, {"text_en": "kitchen"}, {"text_en": "bedroom"}, {"text_en": "bathroom"}, {"text_en": "garden"}]
+    },
+    {
+      "item_number": 43, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "bus"}, {"text_en": "cow"}, {"text_en": "sheep"}, {"text_en": "duck"}, {"text_en": "hen"}]
+    },
+    {
+      "item_number": 44, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Monday"}, {"text_en": "spring"}, {"text_en": "summer"}, {"text_en": "autumn"}, {"text_en": "winter"}]
+    },
+    {
+      "item_number": 45, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "table"}, {"text_en": "small"}, {"text_en": "tall"}, {"text_en": "big"}, {"text_en": "short"}]
+    },
+    {
+      "item_number": 46, "part": "vocabulary", "points": 1.5, "prompt_en": "We use our tongue to ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "taste"}, {"text_en": "see"}, {"text_en": "hear"}, {"text_en": "smell"}, {"text_en": "walk"}]
+    },
+    {
+      "item_number": 47, "part": "vocabulary", "points": 1.5, "prompt_en": "Flowers grow in a ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "garden"}, {"text_en": "hospital"}, {"text_en": "bus"}, {"text_en": "shoe"}, {"text_en": "book"}]
+    },
+    {
+      "item_number": 48, "part": "vocabulary", "points": 1.5, "prompt_en": "Fire is very ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "hot"}, {"text_en": "cold"}, {"text_en": "wet"}, {"text_en": "quiet"}, {"text_en": "soft"}]
+    },
+    {
+      "item_number": 49, "part": "vocabulary", "points": 1.5, "prompt_en": "The first meal of the day is ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "breakfast"}, {"text_en": "lunch"}, {"text_en": "dinner"}, {"text_en": "snack"}, {"text_en": "dessert"}]
+    },
+    {
+      "item_number": 50, "part": "vocabulary", "points": 1.5, "prompt_en": "The opposite of \"fast\" is ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "slow"}, {"text_en": "big"}, {"text_en": "new"}, {"text_en": "happy"}, {"text_en": "loud"}]
+    }
+  ]
+}

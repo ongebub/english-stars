@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
@@ -9,16 +9,29 @@ import { getDeviceFingerprint } from '@/lib/device-fingerprint';
 import { AppFooter } from '@/components/AppFooter';
 
 export default function LoginPage() {
-  const router = useRouter();
-  const supabase = createClient();
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="text-xl text-text-mid animate-pulse">Loading...</div>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
+  );
+}
 
-  const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
+function LoginContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const supabase = createClient();
+  const redirectTo = searchParams.get('redirect') || searchParams.get('redirectTo');
+
+  const [mode, setMode] = useState<'login' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,33 +52,7 @@ export default function LoginPage() {
         return;
       }
 
-      if (mode === 'signup') {
-        if (!agreedToTerms) {
-          setError('Please agree to the Terms & Conditions to create an account.\nกรุณายอมรับข้อกำหนดและเงื่อนไขเพื่อสร้างบัญชี');
-          return;
-        }
-        const { error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/api/auth/callback`,
-          },
-        });
-
-        if (signUpError) {
-          if (signUpError.message.includes('already registered')) {
-            setError('This email is already registered. Please log in instead.\nอีเมลนี้ลงทะเบียนแล้ว กรุณาเข้าสู่ระบบ');
-          } else if (signUpError.message.includes('password')) {
-            setError('Password must be at least 6 characters.\nรหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
-          } else {
-            setError(`Something went wrong. Please try again.\nเกิดข้อผิดพลาด กรุณาลองใหม่`);
-          }
-          return;
-        }
-
-        setSuccess('Account created! Redirecting...\nสร้างบัญชีสำเร็จ! กำลังเปลี่ยนหน้า...');
-        router.push('/dashboard');
-      } else {
+      {
         const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -97,7 +84,7 @@ export default function LoginPage() {
 
         // Device is trusted — set cookie and proceed
         document.cookie = `es_device_id=${device_hash}; path=/; max-age=${30 * 24 * 60 * 60}; samesite=lax`;
-        router.push('/learn');
+        router.push(redirectTo || '/learn');
       }
     } catch {
       setError('Something went wrong. Please try again.\nเกิดข้อผิดพลาด กรุณาลองใหม่');
@@ -126,35 +113,11 @@ export default function LoginPage() {
 
         {/* Card */}
         <div className="bg-white rounded-xl shadow-lg p-8">
-          {/* Mode toggle */}
-          <div className="flex rounded-xl overflow-hidden mb-6 border-2 border-sky-dark">
-            <button
-              type="button"
-              onClick={() => { setMode('login'); setError(null); setSuccess(null); }}
-              className={`flex-1 py-3 text-center font-bold transition-colors min-h-[48px] ${
-                mode === 'login'
-                  ? 'bg-sky-dark text-white'
-                  : 'bg-white text-sky-dark hover:bg-sky-dark/10'
-              }`}
-            >
-              <span className="font-nunito">Log In</span>
-              <br />
-              <span className="font-sarabun text-sm">เข้าสู่ระบบ</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMode('signup'); setError(null); setSuccess(null); }}
-              className={`flex-1 py-3 text-center font-bold transition-colors min-h-[48px] ${
-                mode === 'signup'
-                  ? 'bg-sky-dark text-white'
-                  : 'bg-white text-sky-dark hover:bg-sky-dark/10'
-              }`}
-            >
-              <span className="font-nunito">Sign Up</span>
-              <br />
-              <span className="font-sarabun text-sm">สมัครสมาชิก</span>
-            </button>
-          </div>
+          {/* Header */}
+          <h2 className="text-center text-xl font-bold text-text-dark font-nunito mb-1">
+            Log In <span className="font-sarabun text-text-mid font-normal text-base">เข้าสู่ระบบ</span>
+          </h2>
+          <div className="h-px bg-gray-200 mb-6" />
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
@@ -204,31 +167,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Terms checkbox (signup only) */}
-            {mode === 'signup' && (
-              <label className="flex items-start gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="mt-1 h-5 w-5 rounded border-gray-300 text-sky-dark focus:ring-sky-dark/30 flex-shrink-0"
-                />
-                <span className="text-sm text-text-mid">
-                  I agree to the{' '}
-                  <Link href="/terms" target="_blank" className="text-sky-dark font-semibold hover:underline">
-                    Terms & Conditions
-                  </Link>
-                  <br />
-                  <span className="font-sarabun">
-                    ฉันยอมรับ{' '}
-                    <Link href="/terms" target="_blank" className="text-sky-dark font-semibold hover:underline">
-                      ข้อกำหนดและเงื่อนไข
-                    </Link>
-                  </span>
-                </span>
-              </label>
-            )}
-
             {/* Error message */}
             {error && (
               <div className="bg-coral/20 border-2 border-coral rounded-xl p-4 text-sm text-text-dark whitespace-pre-line">
@@ -258,22 +196,17 @@ export default function LoginPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  <span>{mode === 'forgot' ? 'Sending...' : mode === 'login' ? 'Logging in...' : 'Creating account...'}</span>
+                  <span>{mode === 'forgot' ? 'Sending...' : 'Logging in...'}</span>
                 </span>
               ) : mode === 'forgot' ? (
                 <span>
                   <span className="font-nunito">Send Reset Link</span>{' '}
                   <span className="font-sarabun">ส่งลิงก์รีเซ็ต</span>
                 </span>
-              ) : mode === 'login' ? (
+              ) : (
                 <span>
                   <span className="font-nunito">Log In</span>{' '}
                   <span className="font-sarabun">เข้าสู่ระบบ</span>
-                </span>
-              ) : (
-                <span>
-                  <span className="font-nunito">Sign Up</span>{' '}
-                  <span className="font-sarabun">สมัครสมาชิก</span>
                 </span>
               )}
             </button>
@@ -300,11 +233,20 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Join class link */}
+        {/* Sign up link */}
         <div className="text-center mt-6">
+          <Link href="/signup"
+            className="inline-block w-full max-w-md text-center bg-white border-2 border-sky-dark text-sky-dark font-bold text-lg py-3 rounded-xl hover:bg-sky-dark/10 transition-colors">
+            <span className="font-nunito">Sign Up</span>{' '}
+            <span className="font-sarabun">สมัครสมาชิก</span>
+          </Link>
+        </div>
+
+        {/* Join class link */}
+        <div className="text-center mt-4">
           <Link href="/join"
             className="inline-flex items-center gap-2 text-sky-dark font-bold text-sm hover:underline">
-            🏫 Join a class / เข้าร่วมชั้นเรียน →
+            Join a class / เข้าร่วมชั้นเรียน
           </Link>
         </div>
 

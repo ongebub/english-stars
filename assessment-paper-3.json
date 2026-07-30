@@ -1,0 +1,270 @@
+{
+  "kind": "final_test",
+  "title_en": "Final Test — Paper 3",
+  "title_th": "สอบปลายภาค — ฉบับที่ 3",
+  "paper_number": 3,
+  "section": null,
+  "grade_band": null,
+  "total_points": 100,
+  "time_limit_minutes": 90,
+  "is_published": true,
+  "passages": [
+    {
+      "sort_order": 1,
+      "title_en": "Opposites at the Zoo",
+      "body_en": "On Saturday, Mom took Nong Fah, Thawan, and Bua to the zoo.\n\nFirst they saw a big elephant. Next to it was a small mouse.\n\nA tall giraffe stretched its long neck up high. A short cat sat on a rock.\n\nThe rabbits ran fast. The turtle walked slowly.\n\nIn the reptile house, the lizards liked it hot. The penguins swam in cold water.\n\nBua's shirt was clean, but after she chased a duck near a puddle, her shorts were dirty.\n\nThey bought popcorn. The bag was full. After everyone shared, the bag was empty.\n\n\"So many opposites today!\" said Bua."
+    },
+    {
+      "sort_order": 2,
+      "title_en": "A Wonderful Day",
+      "body_en": "Nong Fah woke up. Her pillow was soft and her blanket was warm.\n\nIn the kitchen she ate a sweet cupcake. Then she tasted a lemon. It was very sour!\n\nAt school her teacher gave the children round oranges and flat pancakes.\n\nThawan showed her a rough brown rock and a smooth blue marble.\n\nAt recess a small boy fell off the swing. Nong Fah helped him up. \"You are very kind,\" said his mother.\n\nIn class the maths problems were hard, but Ollie helped them. \"You are so smart!\" said Thawan.\n\nThat night Nong Fah went to bed under her soft blanket. It had been a wonderful day."
+    },
+    {
+      "sort_order": 3,
+      "title_en": "My Family Tree",
+      "body_en": "My name is Nong Fah. Let me tell you about my family.\n\nMy parents are my mother and my father. My mother is kind and gentle. My father works in an office.\n\nMy mother's parents are my grandmother and my grandfather. They live near us. My grandmother bakes sweet cookies. My grandfather tells stories about when he was a boy.\n\nI have one big brother and one little sister. We share our toys.\n\nMy mother has a sister. She is my aunt. Her son is my cousin. We are the same age!\n\nEvery Sunday the whole family eats lunch together at one big table."
+    }
+  ],
+  "questions": [
+    {
+      "item_number": 1, "part": "expression", "points": 1.6,
+      "situation_en": "A birthday party",
+      "dialogue_en": "Nong Fah: Happy birthday, Bua!\nBua: _____(1)_____\nNong Fah: _____(2)_____ are you today?\nBua: I am five years old!",
+      "prompt_en": "What should Bua say in blank (1)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Thank you!"}, {"text_en": "Goodnight!"}, {"text_en": "Excuse me!"}, {"text_en": "I am sorry!"}, {"text_en": "Nice weather!"}]
+    },
+    {
+      "item_number": 2, "part": "expression", "points": 1.6,
+      "situation_en": "A birthday party",
+      "dialogue_en": "Nong Fah: Happy birthday, Bua!\nBua: _____(1)_____\nNong Fah: _____(2)_____ are you today?\nBua: I am five years old!",
+      "prompt_en": "What should Nong Fah say in blank (2)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "How old"}, {"text_en": "How many"}, {"text_en": "How much"}, {"text_en": "What time"}, {"text_en": "Where"}]
+    },
+    {
+      "item_number": 3, "part": "expression", "points": 1.6,
+      "situation_en": "Visiting grandparents",
+      "dialogue_en": "Grandma: Hello, Thawan! Come and sit down.\nThawan: _____(3)_____, Grandma.\nGrandpa: _____(4)_____ your family?\nThawan: They are all well, thank you.",
+      "prompt_en": "What should Thawan say in blank (3)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Thank you"}, {"text_en": "Goodnight"}, {"text_en": "Excuse me"}, {"text_en": "I am sorry"}, {"text_en": "Goodbye"}]
+    },
+    {
+      "item_number": 4, "part": "expression", "points": 1.6,
+      "situation_en": "Visiting grandparents",
+      "dialogue_en": "Grandma: Hello, Thawan! Come and sit down.\nThawan: _____(3)_____, Grandma.\nGrandpa: _____(4)_____ your family?\nThawan: They are all well, thank you.",
+      "prompt_en": "What should Grandpa say in blank (4)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "How is"}, {"text_en": "How old is"}, {"text_en": "What is"}, {"text_en": "Where is"}, {"text_en": "Who is"}]
+    },
+    {
+      "item_number": 5, "part": "expression", "points": 1.6,
+      "situation_en": "A lost book",
+      "dialogue_en": "Thawan: Teacher Julie, I cannot find my book.\nTeacher Julie: _____(5)_____ did you put it?\nThawan: I put it on my desk.",
+      "prompt_en": "What should Teacher Julie say in blank (5)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Where"}, {"text_en": "Who"}, {"text_en": "What"}, {"text_en": "When"}, {"text_en": "Why"}]
+    },
+    {
+      "item_number": 6, "part": "expression", "points": 1.6,
+      "situation_en": "In the library",
+      "dialogue_en": "Librarian: Please be quiet in the library.\nNong Fah: _____(6)_____",
+      "prompt_en": "What should Nong Fah say in blank (6)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "I am sorry."}, {"text_en": "Thank you."}, {"text_en": "Goodnight."}, {"text_en": "Nice to meet you."}, {"text_en": "You are welcome."}]
+    },
+    {
+      "item_number": 7, "part": "expression", "points": 1.6,
+      "situation_en": "Helping at home",
+      "dialogue_en": "Mom: Could you please help me wash the dishes?\nNong Fah: _____(7)_____",
+      "prompt_en": "What should Nong Fah say in blank (7)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Yes, of course."}, {"text_en": "Goodnight, Mom."}, {"text_en": "Nice to meet you."}, {"text_en": "How old are you?"}, {"text_en": "Excuse me."}]
+    },
+    {
+      "item_number": 8, "part": "expression", "points": 1.6,
+      "situation_en": "At the park",
+      "dialogue_en": "Emily: _____(8)_____ is your favourite hobby?\nThawan: I like playing football.",
+      "prompt_en": "What should Emily say in blank (8)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "What"}, {"text_en": "Who"}, {"text_en": "Where"}, {"text_en": "When"}, {"text_en": "How many"}]
+    },
+    {
+      "item_number": 9, "part": "expression", "points": 1.6,
+      "situation_en": "Talking about the weather",
+      "dialogue_en": "Nong Fah: _____(9)_____ is the weather today?\nOllie: It is sunny and warm.",
+      "prompt_en": "What should Nong Fah say in blank (9)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "How"}, {"text_en": "Who"}, {"text_en": "What time"}, {"text_en": "How many"}, {"text_en": "Which"}]
+    },
+    {
+      "item_number": 10, "part": "expression", "points": 1.6,
+      "situation_en": "End of the day",
+      "dialogue_en": "Ollie: It is nighttime. I must fly home.\nNong Fah: _____(10)_____",
+      "prompt_en": "What should Nong Fah say in blank (10)?",
+      "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Goodnight, Ollie."}, {"text_en": "Good morning, Ollie."}, {"text_en": "Good afternoon, Ollie."}, {"text_en": "Hello, Ollie."}, {"text_en": "Nice to meet you, Ollie."}]
+    },
+    {
+      "item_number": 11, "part": "reading", "points": 2.4, "prompt_en": "Who took the children to the zoo?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Mom"}, {"text_en": "Grandma"}, {"text_en": "Ollie"}, {"text_en": "Teacher Julie"}, {"text_en": "Grandpa"}]
+    },
+    {
+      "item_number": 12, "part": "reading", "points": 2.4, "prompt_en": "What was next to the big elephant?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A small mouse"}, {"text_en": "A tall giraffe"}, {"text_en": "A short cat"}, {"text_en": "A turtle"}, {"text_en": "A penguin"}]
+    },
+    {
+      "item_number": 13, "part": "reading", "points": 2.4, "prompt_en": "Which animal walked slowly?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "The turtle"}, {"text_en": "The rabbit"}, {"text_en": "The giraffe"}, {"text_en": "The cat"}, {"text_en": "The duck"}]
+    },
+    {
+      "item_number": 14, "part": "reading", "points": 2.4, "prompt_en": "Why were Bua's shorts dirty?", "passage_sort_order": 1, "answer_type": "multiple_choice",
+      "options": [{"text_en": "She chased a duck near a puddle."}, {"text_en": "She fell off a rock."}, {"text_en": "She spilled her popcorn."}, {"text_en": "She swam in the pool."}, {"text_en": "She sat on the grass."}]
+    },
+    {
+      "item_number": 15, "part": "reading", "points": 2.4, "prompt_en": "What happened to the popcorn?", "passage_sort_order": 1, "answer_type": "multiple_choice", "is_inference": true,
+      "options": [{"text_en": "Everyone shared it until the bag was empty."}, {"text_en": "Bua dropped it in the water."}, {"text_en": "They gave it to the animals."}, {"text_en": "They forgot to buy it."}, {"text_en": "The elephant ate it."}]
+    },
+    {
+      "item_number": 16, "part": "reading", "points": 2.4, "prompt_en": "What did Nong Fah eat in the kitchen?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A sweet cupcake"}, {"text_en": "A sour lemon"}, {"text_en": "A round orange"}, {"text_en": "A flat pancake"}, {"text_en": "A cookie"}]
+    },
+    {
+      "item_number": 17, "part": "reading", "points": 2.4, "prompt_en": "How did the lemon taste?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Sour"}, {"text_en": "Sweet"}, {"text_en": "Warm"}, {"text_en": "Soft"}, {"text_en": "Smooth"}]
+    },
+    {
+      "item_number": 18, "part": "reading", "points": 2.4, "prompt_en": "What did Thawan show Nong Fah?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "A rough rock and a smooth marble"}, {"text_en": "A round orange"}, {"text_en": "A soft blanket"}, {"text_en": "A flat pancake"}, {"text_en": "A blue crayon"}]
+    },
+    {
+      "item_number": 19, "part": "reading", "points": 2.4, "prompt_en": "Why did the boy's mother call Nong Fah kind?", "passage_sort_order": 2, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Nong Fah helped the boy stand up."}, {"text_en": "Nong Fah gave the boy a cupcake."}, {"text_en": "Nong Fah shared her marble."}, {"text_en": "Nong Fah answered the maths problem."}, {"text_en": "Nong Fah walked him home."}]
+    },
+    {
+      "item_number": 20, "part": "reading", "points": 2.4, "prompt_en": "How did Nong Fah feel about her day?", "passage_sort_order": 2, "answer_type": "multiple_choice", "is_inference": true,
+      "options": [{"text_en": "She thought it was wonderful."}, {"text_en": "She thought it was boring."}, {"text_en": "She was angry."}, {"text_en": "She was frightened."}, {"text_en": "She was sad."}]
+    },
+    {
+      "item_number": 21, "part": "reading", "points": 2.4, "prompt_en": "Who bakes cookies?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Her grandmother"}, {"text_en": "Her mother"}, {"text_en": "Her aunt"}, {"text_en": "Her sister"}, {"text_en": "Her cousin"}]
+    },
+    {
+      "item_number": 22, "part": "reading", "points": 2.4, "prompt_en": "Where does Nong Fah's father work?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "In an office"}, {"text_en": "On a farm"}, {"text_en": "At a school"}, {"text_en": "In a hospital"}, {"text_en": "At a store"}]
+    },
+    {
+      "item_number": 23, "part": "reading", "points": 2.4, "prompt_en": "Who is the same age as Nong Fah?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Her cousin"}, {"text_en": "Her brother"}, {"text_en": "Her sister"}, {"text_en": "Her aunt"}, {"text_en": "Her friend"}]
+    },
+    {
+      "item_number": 24, "part": "reading", "points": 2.4, "prompt_en": "When does the whole family eat together?", "passage_sort_order": 3, "answer_type": "multiple_choice",
+      "options": [{"text_en": "Every Sunday"}, {"text_en": "Every Monday"}, {"text_en": "Every morning"}, {"text_en": "Every night"}, {"text_en": "Once a year"}]
+    },
+    {
+      "item_number": 25, "part": "reading", "points": 2.4, "prompt_en": "How many brothers and sisters does Nong Fah have?", "passage_sort_order": 3, "answer_type": "multiple_choice", "is_inference": true,
+      "options": [{"text_en": "One brother and one sister"}, {"text_en": "Two brothers"}, {"text_en": "Two sisters"}, {"text_en": "Three sisters"}, {"text_en": "No brothers or sisters"}]
+    },
+    {
+      "item_number": 26, "part": "structure", "points": 2.2, "prompt_en": "The ball is ____ the chair, and the cat is ____ the chair.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "under / on"}, {"text_en": "on / under"}, {"text_en": "in / in"}, {"text_en": "under / under"}, {"text_en": "on / on"}]
+    },
+    {
+      "item_number": 27, "part": "structure", "points": 2.2, "prompt_en": "I see two ____ and one ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "buses / bus"}, {"text_en": "bus / buses"}, {"text_en": "buses / buses"}, {"text_en": "bus / bus"}, {"text_en": "busses / bus"}]
+    },
+    {
+      "item_number": 28, "part": "structure", "points": 2.2, "prompt_en": "____ is my brother. ____ name is Boon.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "He / His"}, {"text_en": "She / Her"}, {"text_en": "He / Her"}, {"text_en": "They / Their"}, {"text_en": "It / Its"}]
+    },
+    {
+      "item_number": 29, "part": "structure", "points": 2.2, "prompt_en": "Yesterday we ____ to the zoo.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "went"}, {"text_en": "go"}, {"text_en": "goes"}, {"text_en": "will go"}, {"text_en": "going"}]
+    },
+    {
+      "item_number": 30, "part": "structure", "points": 2.2, "prompt_en": "Listen! The birds ____ in the tree.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "are singing"}, {"text_en": "sings"}, {"text_en": "sang"}, {"text_en": "will sing"}, {"text_en": "sing"}]
+    },
+    {
+      "item_number": 31, "part": "structure", "points": 2.2, "prompt_en": "____ two apples in the basket.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "There are"}, {"text_en": "There is"}, {"text_en": "It is"}, {"text_en": "He is"}, {"text_en": "Here is"}]
+    },
+    {
+      "item_number": 32, "part": "structure", "points": 2.2, "prompt_en": "____ shoes over there are mine.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Those"}, {"text_en": "This"}, {"text_en": "That"}, {"text_en": "These"}, {"text_en": "It"}]
+    },
+    {
+      "item_number": 33, "part": "structure", "points": 2.2, "prompt_en": "A car is ____ than a bicycle.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "faster"}, {"text_en": "fast"}, {"text_en": "fastest"}, {"text_en": "more fast"}, {"text_en": "most fast"}]
+    },
+    {
+      "item_number": 34, "part": "structure", "points": 2.2, "prompt_en": "Bua ____ a picture every day.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "draws"}, {"text_en": "draw"}, {"text_en": "drawing"}, {"text_en": "drew"}, {"text_en": "are drawing"}]
+    },
+    {
+      "item_number": 35, "part": "structure", "points": 2.2, "prompt_en": "Would you like ____ orange or ____ apple?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "an / an"}, {"text_en": "a / a"}, {"text_en": "an / a"}, {"text_en": "a / an"}, {"text_en": "the / a"}]
+    },
+    {
+      "item_number": 36, "part": "structure", "points": 2.2, "prompt_en": "How ____ rice do you want?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "much"}, {"text_en": "many"}, {"text_en": "few"}, {"text_en": "some"}, {"text_en": "any"}]
+    },
+    {
+      "item_number": 37, "part": "structure", "points": 2.2, "prompt_en": "____ you help me, please?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "Could"}, {"text_en": "Did"}, {"text_en": "Was"}, {"text_en": "Have"}, {"text_en": "Am"}]
+    },
+    {
+      "item_number": 38, "part": "structure", "points": 2.2, "prompt_en": "This book is ____. It belongs to me.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "mine"}, {"text_en": "my"}, {"text_en": "me"}, {"text_en": "I"}, {"text_en": "myself"}]
+    },
+    {
+      "item_number": 39, "part": "structure", "points": 2.2, "prompt_en": "Ollie flapped ____ wings.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "his"}, {"text_en": "her"}, {"text_en": "their"}, {"text_en": "our"}, {"text_en": "your"}]
+    },
+    {
+      "item_number": 40, "part": "structure", "points": 2.2, "prompt_en": "Which word rhymes with \"book\"?", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "look"}, {"text_en": "bike"}, {"text_en": "ball"}, {"text_en": "bed"}, {"text_en": "bus"}]
+    },
+    {
+      "item_number": 41, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "chair"}, {"text_en": "dog"}, {"text_en": "cow"}, {"text_en": "cat"}, {"text_en": "bird"}]
+    },
+    {
+      "item_number": 42, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "happy"}, {"text_en": "green"}, {"text_en": "blue"}, {"text_en": "red"}, {"text_en": "yellow"}]
+    },
+    {
+      "item_number": 43, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "bread"}, {"text_en": "hat"}, {"text_en": "shoes"}, {"text_en": "shirt"}, {"text_en": "socks"}]
+    },
+    {
+      "item_number": 44, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "doctor"}, {"text_en": "uncle"}, {"text_en": "aunt"}, {"text_en": "mother"}, {"text_en": "cousin"}]
+    },
+    {
+      "item_number": 45, "part": "vocabulary", "points": 1.5, "prompt_en": "Choose the word that does not belong with the others.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "table"}, {"text_en": "jump"}, {"text_en": "swim"}, {"text_en": "run"}, {"text_en": "walk"}]
+    },
+    {
+      "item_number": 46, "part": "vocabulary", "points": 1.5, "prompt_en": "We use our nose to ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "smell"}, {"text_en": "see"}, {"text_en": "hear"}, {"text_en": "taste"}, {"text_en": "touch"}]
+    },
+    {
+      "item_number": 47, "part": "vocabulary", "points": 1.5, "prompt_en": "A farmer works on a ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "farm"}, {"text_en": "school"}, {"text_en": "hospital"}, {"text_en": "store"}, {"text_en": "bank"}]
+    },
+    {
+      "item_number": 48, "part": "vocabulary", "points": 1.5, "prompt_en": "Snow is very ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "cold"}, {"text_en": "hot"}, {"text_en": "warm"}, {"text_en": "sweet"}, {"text_en": "loud"}]
+    },
+    {
+      "item_number": 49, "part": "vocabulary", "points": 1.5, "prompt_en": "We eat lunch at ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "noon"}, {"text_en": "night"}, {"text_en": "bedtime"}, {"text_en": "sunrise"}, {"text_en": "breakfast"}]
+    },
+    {
+      "item_number": 50, "part": "vocabulary", "points": 1.5, "prompt_en": "The opposite of \"happy\" is ____.", "answer_type": "multiple_choice", "passage_sort_order": null,
+      "options": [{"text_en": "sad"}, {"text_en": "kind"}, {"text_en": "tall"}, {"text_en": "fast"}, {"text_en": "new"}]
+    }
+  ]
+}
