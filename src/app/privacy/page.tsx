@@ -170,14 +170,14 @@ export default function PrivacyPage() {
             <h2 className="font-nunito text-lg font-bold mb-2">10. Contact Us / ติดต่อเรา</h2>
             <p>
               If you have questions about this Privacy Policy or wish to exercise your data rights, please contact us at:{" "}
-              <a href="mailto:privacy@englishallstars.com" className="text-sky-dark hover:underline">
-                privacy@englishallstars.com
+              <a href="mailto:info@englishallstars.com" className="text-sky-dark hover:underline">
+                info@englishallstars.com
               </a>
             </p>
             <p className="font-sarabun text-text-mid mt-2">
               หากคุณมีคำถามเกี่ยวกับนโยบายความเป็นส่วนตัวนี้หรือต้องการใช้สิทธิ์ข้อมูลของคุณ กรุณาติดต่อเราที่:{" "}
-              <a href="mailto:privacy@englishallstars.com" className="text-sky-dark hover:underline">
-                privacy@englishallstars.com
+              <a href="mailto:info@englishallstars.com" className="text-sky-dark hover:underline">
+                info@englishallstars.com
               </a>
             </p>
           </section>
