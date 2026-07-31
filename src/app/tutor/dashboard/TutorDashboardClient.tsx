@@ -11,7 +11,6 @@ interface Student {
 }
 
 interface InviteCode {
-  id: string;
   code: string;
   created_at: string;
   revoked: boolean;
@@ -54,7 +53,10 @@ export default function TutorDashboardClient({
         setError(data.error || "Could not generate code");
         return;
       }
-      setCodes((prev) => [data.invite, ...prev]);
+      setCodes((prev) => [
+        { code: data.code, created_at: new Date().toISOString(), revoked: false },
+        ...prev,
+      ]);
     } catch {
       setError("Something went wrong. กรุณาลองใหม่");
     } finally {
@@ -62,13 +64,13 @@ export default function TutorDashboardClient({
     }
   }
 
-  async function revokeCode(codeId: string) {
+  async function revokeCode(code: string) {
     setError("");
     try {
       const res = await fetch("/api/tutor/revoke-invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ invite_id: codeId }),
+        body: JSON.stringify({ code }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -76,7 +78,7 @@ export default function TutorDashboardClient({
         return;
       }
       setCodes((prev) =>
-        prev.map((c) => (c.id === codeId ? { ...c, revoked: true } : c))
+        prev.map((c) => (c.code === code ? { ...c, revoked: true } : c))
       );
     } catch {
       setError("Something went wrong. กรุณาลองใหม่");
@@ -89,7 +91,7 @@ export default function TutorDashboardClient({
       const res = await fetch("/api/tutor/remove-student", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student_id: studentId }),
+        body: JSON.stringify({ student_user_id: studentId }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -256,7 +258,7 @@ export default function TutorDashboardClient({
             <div className="space-y-3">
               {activeCodes.map((invite) => (
                 <div
-                  key={invite.id}
+                  key={invite.code}
                   className="flex items-center gap-3 p-3 rounded-xl bg-leaf/5 border border-leaf/20"
                 >
                   <div className="flex-1 min-w-0">
@@ -273,13 +275,13 @@ export default function TutorDashboardClient({
                     </p>
                   </div>
                   <button
-                    onClick={() => copyCode(invite.code, invite.id)}
+                    onClick={() => copyCode(invite.code, invite.code)}
                     className="bg-sky-dark text-white font-bold px-3 py-2 rounded-xl text-xs hover:bg-sky-dark/90 transition-colors min-h-[36px]"
                   >
-                    {copiedId === invite.id ? "Copied!" : "Copy"}
+                    {copiedId === invite.code ? "Copied!" : "Copy"}
                   </button>
                   <button
-                    onClick={() => revokeCode(invite.id)}
+                    onClick={() => revokeCode(invite.code)}
                     className="bg-red-50 text-red-500 font-bold px-3 py-2 rounded-xl text-xs hover:bg-red-100 transition-colors min-h-[36px]"
                   >
                     Revoke
@@ -288,7 +290,7 @@ export default function TutorDashboardClient({
               ))}
               {revokedCodes.map((invite) => (
                 <div
-                  key={invite.id}
+                  key={invite.code}
                   className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 opacity-50"
                 >
                   <div className="flex-1 min-w-0">

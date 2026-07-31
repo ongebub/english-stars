@@ -14,11 +14,11 @@ export default async function JoinPage({ params }: Props) {
   // Look up invite code
   const { data: invite } = await supabase
     .from("tutor_invites")
-    .select("id, code, tutor_id, revoked")
+    .select("code, tutor_user_id, revoked_at")
     .eq("code", code)
     .single();
 
-  if (!invite || invite.revoked) {
+  if (!invite || invite.revoked_at) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 py-8">
         <div className="max-w-md w-full text-center">
@@ -53,7 +53,7 @@ export default async function JoinPage({ params }: Props) {
   const { data: tutorProfile } = await supabase
     .from("profiles")
     .select("display_name")
-    .eq("id", invite.tutor_id)
+    .eq("id", invite.tutor_user_id)
     .single();
 
   const tutorName = tutorProfile?.display_name || "your tutor";

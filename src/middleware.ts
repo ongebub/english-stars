@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { updateSession } from "@/lib/supabase/middleware";
 
 const protectedRoutes = ["/dashboard", "/gradebook", "/school", "/tutor", "/settings"];
@@ -134,7 +135,13 @@ async function checkSubscriptionAccess(
   }
 
   // 2. Check if user is a student of a tutor who has a subscription
-  const { data: tutorLinks } = await supabase
+  //    Use service_role client to bypass RLS (student can't read tutor's subscription)
+  const serviceSupabase = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: tutorLinks } = await serviceSupabase
     .from("tutor_students")
     .select("tutor_user_id")
     .eq("student_user_id", userId)
@@ -143,7 +150,7 @@ async function checkSubscriptionAccess(
   if (tutorLinks && tutorLinks.length > 0) {
     const tutorIds = tutorLinks.map((t) => t.tutor_user_id);
 
-    const { data: tutorSubs } = await supabase
+    const { data: tutorSubs } = await serviceSupabase
       .from("subscriptions")
       .select("status, current_period_end")
       .in("user_id", tutorIds)

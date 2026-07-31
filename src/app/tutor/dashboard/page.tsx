@@ -26,19 +26,34 @@ export default async function TutorDashboardPage() {
   const seatCount = sub.max_students || sub.child_count || 5;
   const periodEnd = sub.current_period_end || null;
 
-  // Fetch students linked to this tutor
-  const { data: students } = await supabase
-    .from("profiles")
-    .select("id, display_name, avatar_emoji, created_at")
-    .eq("parent_id", user.id)
-    .eq("role", "child")
-    .order("created_at", { ascending: true });
+  // Fetch students linked to this tutor via tutor_students join table
+  const { data: tutorStudentRows } = await supabase
+    .from("tutor_students")
+    .select("student_user_id, joined_at")
+    .eq("tutor_user_id", user.id)
+    .is("removed_at", null)
+    .order("joined_at", { ascending: true });
 
-  // Fetch invite codes
+  // Fetch profile details for each student
+  let students: { id: string; display_name: string; avatar_emoji: string | null; created_at: string }[] = [];
+  if (tutorStudentRows && tutorStudentRows.length > 0) {
+    const studentIds = tutorStudentRows.map((r) => r.student_user_id);
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("id, display_name, avatar_emoji, created_at")
+      .in("id", studentIds);
+    students = (profiles || []).map((p) => ({
+      ...p,
+      // Use joined_at from tutor_students as the relevant date
+      created_at: tutorStudentRows.find((r) => r.student_user_id === p.id)?.joined_at || p.created_at,
+    }));
+  }
+
+  // Fetch invite codes (PK is `code`, not `id`)
   const { data: inviteCodes } = await supabase
     .from("tutor_invites")
-    .select("id, code, created_at, revoked")
-    .eq("tutor_id", user.id)
+    .select("code, created_at, revoked_at")
+    .eq("tutor_user_id", user.id)
     .order("created_at", { ascending: false });
 
   return (
@@ -48,8 +63,9 @@ export default async function TutorDashboardPage() {
       students={students || []}
       inviteCodes={
         (inviteCodes || []).map((c) => ({
-          ...c,
-          revoked: c.revoked ?? false,
+          code: c.code,
+          created_at: c.created_at,
+          revoked: c.revoked_at !== null,
         }))
       }
     />
