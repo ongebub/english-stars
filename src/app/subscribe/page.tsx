@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -16,7 +16,23 @@ import PlanCards, { type PlanChoice } from "@/components/PlanCards";
  * - UI "Tutor"  => DB tier = 'tutor'
  */
 export default function SubscribePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-xl text-text-mid animate-pulse">Loading...</div>
+        </div>
+      }
+    >
+      <SubscribeContent />
+    </Suspense>
+  );
+}
+
+function SubscribeContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isTutorIssue = searchParams.get("tutor_issue") === "1";
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -99,6 +115,44 @@ export default function SubscribePage() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-xl text-text-mid animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  // Tutor lapsed — show a distinct message, no pricing
+  if (isTutorIssue) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-8">
+        <div className="max-w-md w-full text-center">
+          <Image
+            src="/logo-small.png"
+            alt="English Allstars"
+            width={120}
+            height={120}
+            className="mx-auto mb-3"
+          />
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
+            <p className="text-4xl mb-3">📚</p>
+            <h1 className="text-xl font-bold text-text-dark dark:text-white font-nunito mb-2">
+              Your class access has ended
+            </h1>
+            <p className="font-sarabun text-text-mid dark:text-gray-300 mb-1">
+              การเข้าถึงชั้นเรียนของคุณสิ้นสุดลงแล้ว
+            </p>
+            <p className="text-sm text-text-mid dark:text-gray-400 mt-4 mb-6">
+              Please contact your tutor.
+            </p>
+            <p className="font-sarabun text-sm text-text-mid dark:text-gray-400 mb-6">
+              กรุณาติดต่อติวเตอร์ของคุณ
+            </p>
+            <Link
+              href="/"
+              className="inline-block bg-leaf text-white font-bold px-6 py-3 rounded-xl hover:bg-leaf-dark transition-colors"
+            >
+              Go Home / กลับหน้าแรก
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
