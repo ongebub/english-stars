@@ -84,7 +84,21 @@ function LoginContent() {
 
         // Device is trusted — set cookie and proceed
         document.cookie = `es_device_id=${device_hash}; path=/; max-age=${30 * 24 * 60 * 60}; samesite=lax`;
-        router.push(redirectTo || '/learn');
+
+        if (redirectTo) {
+          router.push(redirectTo);
+        } else {
+          // Check if user is a tutor — route to tutor dashboard
+          const { data: sub } = await supabase
+            .from('subscriptions')
+            .select('tier')
+            .single();
+          if (sub?.tier === 'tutor') {
+            router.push('/tutor/dashboard');
+          } else {
+            router.push('/learn');
+          }
+        }
       }
     } catch {
       setError('Something went wrong. Please try again.\nเกิดข้อผิดพลาด กรุณาลองใหม่');

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -14,6 +15,19 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const supabase = createClient();
+  const [isTutor, setIsTutor] = useState(false);
+
+  useEffect(() => {
+    async function checkTutor() {
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('tier')
+        .single();
+      if (sub?.tier === 'tutor') setIsTutor(true);
+    }
+    checkTutor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
@@ -65,6 +79,17 @@ export default function DashboardLayout({
               <span className="font-nunito text-sm font-bold">Gradebook</span>
               <span className="font-sarabun text-xs">สมุดเกรด</span>
             </Link>
+
+            {isTutor && (
+              <Link
+                href="/tutor/dashboard"
+                className="rounded-xl px-3 py-2 min-h-[48px] flex flex-col items-center justify-center
+                           text-text-mid dark:text-gray-300 hover:text-sky-dark dark:hover:text-sky hover:bg-sky-dark/10 dark:hover:bg-sky-dark/20 transition-colors"
+              >
+                <span className="font-nunito text-sm font-bold">Tutor</span>
+                <span className="font-sarabun text-xs">ติวเตอร์</span>
+              </Link>
+            )}
 
             <ThemeToggle variant="light-bg" />
 

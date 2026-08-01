@@ -25,6 +25,8 @@ export default async function TutorDashboardPage() {
 
   const seatCount = sub.max_students || sub.child_count || 5;
   const periodEnd = sub.current_period_end || null;
+  const trialEnd = sub.trial_end || null;
+  const isTrialing = sub.status === 'trialing';
 
   // Fetch students linked to this tutor via tutor_students join table
   const { data: tutorStudentRows } = await supabase
@@ -60,6 +62,8 @@ export default async function TutorDashboardPage() {
     <TutorDashboardClient
       seatCount={seatCount}
       periodEnd={periodEnd}
+      isTrialing={isTrialing}
+      trialEnd={trialEnd}
       students={students || []}
       inviteCodes={
         (inviteCodes || []).map((c) => ({

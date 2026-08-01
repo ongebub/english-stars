@@ -22,6 +22,7 @@ interface DashboardClientProps {
   childCount: number;
   schoolCode: string | null;
   schoolName: string | null;
+  isTutor?: boolean;
 }
 
 export default function DashboardClient({
@@ -32,6 +33,7 @@ export default function DashboardClient({
   childCount: initialChildCount,
   schoolCode,
   schoolName,
+  isTutor,
 }: DashboardClientProps) {
   const router = useRouter();
   const [children, setChildren] = useState<Profile[]>(initialChildren);
@@ -206,6 +208,25 @@ export default function DashboardClient({
             className="mt-3 block text-center bg-sky-dark text-white font-bold py-3 rounded-xl hover:bg-sky-dark/90 transition-colors">
             <span className="font-nunito">Open School Dashboard</span>{' '}
             <span className="font-sarabun">แดชบอร์ดโรงเรียน</span> →
+          </Link>
+        </div>
+      )}
+
+      {/* Tutor plan: cross-link to tutor dashboard */}
+      {isTutor && (
+        <div className="bg-sky-dark/10 border-2 border-sky-dark/30 rounded-xl p-5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <p className="font-nunito font-bold text-text-dark">Tutor Dashboard</p>
+              <p className="font-sarabun text-text-mid text-sm">
+                จัดการนักเรียนและรหัสเชิญ
+              </p>
+            </div>
+          </div>
+          <Link href="/tutor/dashboard"
+            className="mt-3 block text-center bg-sky-dark text-white font-bold py-3 rounded-xl hover:bg-sky-dark/90 transition-colors min-h-[48px]">
+            <span className="font-nunito">Open Tutor Dashboard</span>{' '}
+            <span className="font-sarabun">แดชบอร์ดติวเตอร์</span> →
           </Link>
         </div>
       )}

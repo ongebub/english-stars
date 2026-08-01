@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getDeviceLabel } from "@/lib/device-fingerprint";
+import { createClient } from "@/lib/supabase/client";
 
 export default function VerifyDevicePage() {
   const router = useRouter();
@@ -79,7 +80,17 @@ export default function VerifyDevicePage() {
         // Store device ID cookie
         document.cookie = `es_device_id=${device_hash}; path=/; max-age=${30 * 24 * 60 * 60}; samesite=lax`;
         sessionStorage.removeItem("es_pending_device_hash");
-        router.push("/learn");
+        // Check if user is a tutor — route to tutor dashboard
+        const supabase = createClient();
+        const { data: sub } = await supabase
+          .from("subscriptions")
+          .select("tier")
+          .single();
+        if (sub?.tier === "tutor") {
+          router.push("/tutor/dashboard");
+        } else {
+          router.push("/learn");
+        }
       } else {
         setError(data.error || "Invalid code");
         setDigits(["", "", "", "", "", ""]);

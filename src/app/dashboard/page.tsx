@@ -33,12 +33,13 @@ export default async function DashboardPage() {
   // Fetch subscription
   const { data: subscription } = await supabase
     .from('subscriptions')
-    .select('status, plan_type, child_count')
+    .select('status, plan_type, child_count, tier')
     .eq('user_id', user.id)
     .single();
 
-  const isSubscribed = subscription?.status === 'active';
+  const isSubscribed = subscription?.status === 'active' || subscription?.status === 'trialing';
   const planType = (subscription?.plan_type as 'family' | 'school') || 'family';
+  const isTutor = (subscription as Record<string, unknown>)?.tier === 'tutor';
   const childCount = subscription?.child_count ?? Math.max((children ?? []).length, 1);
 
   // Get school code if school plan
@@ -63,6 +64,7 @@ export default async function DashboardPage() {
       childCount={childCount}
       schoolCode={schoolCode}
       schoolName={schoolName}
+      isTutor={isTutor}
     />
   );
 }
