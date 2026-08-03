@@ -29,12 +29,16 @@ function JoinPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [step, setStep] = useState<"code" | "name">("code");
+  const [step, setStep] = useState<"code" | "name" | "tutor-profile">("code");
   const [code, setCode] = useState("");
   const [childName, setChildName] = useState("");
   const [avatar, setAvatar] = useState("🧒");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Tutor join profile fields
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
 
   // Pre-fill code from URL
   useEffect(() => {
@@ -88,7 +92,8 @@ function JoinPageContent() {
         return;
       }
 
-      router.push("/learn");
+      // Collect name before going to /learn
+      setStep("tutor-profile");
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -147,6 +152,36 @@ function JoinPageContent() {
         // Session registration failed — still allow access
       }
 
+      router.push("/learn");
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleTutorProfileSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!firstName.trim() || !lastName.trim()) {
+      setError("Please enter your first and last name. กรุณากรอกชื่อและนามสกุล");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/tutor/update-student-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Could not save profile");
+        return;
+      }
       router.push("/learn");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -230,7 +265,7 @@ function JoinPageContent() {
                 )}
               </button>
             </form>
-          ) : (
+          ) : step === "name" ? (
             <form onSubmit={handleSchoolJoin} className="space-y-5">
               <div className="text-center">
                 <span className="inline-block bg-sky-dark/10 text-sky-dark font-mono font-bold text-lg px-4 py-1 rounded-lg">
@@ -318,7 +353,78 @@ function JoinPageContent() {
                 ← Change code / เปลี่ยนรหัส
               </button>
             </form>
-          )}
+          ) : step === "tutor-profile" ? (
+            <form onSubmit={handleTutorProfileSubmit} className="space-y-5">
+              <div className="text-center mb-2">
+                <p className="text-4xl mb-2">🎉</p>
+                <p className="text-lg font-bold text-text-dark font-nunito">
+                  You&apos;re in! Tell us your name
+                </p>
+                <p className="font-sarabun text-text-mid text-sm">
+                  เข้าร่วมแล้ว! บอกชื่อของคุณ
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-text-dark mb-1 font-nunito">
+                  First Name <span className="font-sarabun text-text-mid font-normal">ชื่อ</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="First name / ชื่อ"
+                  className="w-full text-lg font-bold rounded-xl border-2 border-gray-200 px-4 py-3 text-text-dark
+                             focus:border-sky-dark focus:outline-none focus:ring-2 focus:ring-sky-dark/30"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold text-text-dark mb-1 font-nunito">
+                  Last Name <span className="font-sarabun text-text-mid font-normal">นามสกุล</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Last name / นามสกุล"
+                  className="w-full text-lg font-bold rounded-xl border-2 border-gray-200 px-4 py-3 text-text-dark
+                             focus:border-sky-dark focus:outline-none focus:ring-2 focus:ring-sky-dark/30"
+                />
+              </div>
+
+              {error && (
+                <div className="bg-coral/20 border-2 border-coral rounded-xl p-3 text-sm text-text-dark text-center">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-leaf text-white font-bold text-xl py-4 rounded-xl
+                           hover:bg-leaf-dark transition-colors shadow-lg disabled:opacity-50 min-h-[56px]"
+              >
+                {loading ? (
+                  <span className="inline-flex items-center gap-2 justify-center">
+                    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Saving...
+                  </span>
+                ) : (
+                  <>
+                    <span className="font-nunito">Start Learning!</span>{" "}
+                    <span className="font-sarabun">เริ่มเรียน!</span> 🎉
+                  </>
+                )}
+              </button>
+            </form>
+          ) : null}
         </div>
 
         <div className="text-center mt-6">

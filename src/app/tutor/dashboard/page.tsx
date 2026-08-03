@@ -28,28 +28,19 @@ export default async function TutorDashboardPage() {
   const trialEnd = sub.trial_end || null;
   const isTrialing = sub.status === 'trialing';
 
-  // Fetch students linked to this tutor via tutor_students join table
+  // Fetch students via SECURITY DEFINER function (bypasses RLS on profiles)
   const { data: tutorStudentRows } = await supabase
-    .from("tutor_students")
-    .select("student_user_id, joined_at")
-    .eq("tutor_user_id", user.id)
-    .is("removed_at", null)
-    .order("joined_at", { ascending: true });
+    .rpc("get_tutor_students", { p_tutor: user.id });
 
-  // Fetch profile details for each student
-  let students: { id: string; display_name: string; avatar_emoji: string | null; created_at: string }[] = [];
-  if (tutorStudentRows && tutorStudentRows.length > 0) {
-    const studentIds = tutorStudentRows.map((r) => r.student_user_id);
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("id, display_name, avatar_emoji, created_at")
-      .in("id", studentIds);
-    students = (profiles || []).map((p) => ({
-      ...p,
-      // Use joined_at from tutor_students as the relevant date
-      created_at: tutorStudentRows.find((r) => r.student_user_id === p.id)?.joined_at || p.created_at,
-    }));
-  }
+  const students = (tutorStudentRows || []).map((r: { student_user_id: string; display_name: string; first_name: string | null; last_name: string | null; avatar_emoji: string | null; joined_at: string; email: string | null }) => ({
+    id: r.student_user_id,
+    display_name: r.first_name && r.last_name
+      ? `${r.first_name} ${r.last_name}`
+      : r.display_name || r.email || "Student",
+    avatar_emoji: r.avatar_emoji,
+    created_at: r.joined_at,
+    email: r.email,
+  }));
 
   // Fetch invite codes (PK is `code`, not `id`)
   const { data: inviteCodes } = await supabase

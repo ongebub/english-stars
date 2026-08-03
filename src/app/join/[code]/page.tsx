@@ -83,7 +83,7 @@ export default async function JoinPage({ params }: Props) {
           </p>
 
           {user ? (
-            <JoinClient code={code} />
+            <JoinClient code={code} userEmail={user.email} />
           ) : (
             <div className="space-y-3">
               <Link

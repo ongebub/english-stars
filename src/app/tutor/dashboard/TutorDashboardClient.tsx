@@ -9,6 +9,7 @@ interface Student {
   display_name: string;
   avatar_emoji: string | null;
   created_at: string;
+  email: string | null;
 }
 
 interface InviteCode {
@@ -71,7 +72,8 @@ export default function TutorDashboardClient({
     setSelectedStudentId(studentId);
     const supabase = createClient();
 
-    const [subjectsRes, attemptsRes, trophiesRes] = await Promise.all([
+    // Subjects are public, but attempts/trophies need SECURITY DEFINER
+    const [subjectsRes, progressRes] = await Promise.all([
       supabase
         .from("subjects")
         .select("id, title_en, title_th, emoji")
@@ -79,23 +81,20 @@ export default function TutorDashboardClient({
         .order("module")
         .order("sort_order"),
       supabase
-        .from("quiz_attempts")
-        .select("subject_id, score, total, completed_at, created_at")
-        .eq("child_id", studentId)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("trophies")
-        .select("trophy_type, subject_id, earned_at")
-        .eq("child_id", studentId),
+        .rpc("get_tutor_student_progress", {
+          p_tutor: (await supabase.auth.getUser()).data.user?.id,
+          p_student: studentId,
+        }),
     ]);
 
-    const attempts = attemptsRes.data || [];
+    const progress = progressRes.data || { attempts: [], trophies: [] };
+    const attempts = progress.attempts || [];
     const lastActive = attempts.length > 0 ? attempts[0].created_at : null;
 
     setStudentGradebook({
       subjects: subjectsRes.data || [],
       attempts,
-      trophies: trophiesRes.data || [],
+      trophies: progress.trophies || [],
       lastActive,
     });
     setGradebookLoading(false);
@@ -318,7 +317,12 @@ export default function TutorDashboardClient({
                       <p className="font-bold text-text-dark dark:text-gray-100 font-nunito truncate">
                         {student.display_name}
                       </p>
-                      <p className="text-xs text-text-mid dark:text-gray-400">
+                      {student.email && (
+                        <p className="text-xs text-text-mid dark:text-gray-400 truncate">
+                          {student.email}
+                        </p>
+                      )}
+                      <p className="text-xs text-text-light dark:text-gray-500">
                         Joined:{" "}
                         {new Date(student.created_at).toLocaleDateString("en-GB", {
                           day: "numeric",
