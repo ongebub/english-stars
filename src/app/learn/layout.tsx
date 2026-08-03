@@ -11,15 +11,23 @@ export default function LearnLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#F5F7FA] dark:bg-gray-900 transition-colors relative">
-      {/* Background starfield */}
+    <div className="min-h-screen bg-white dark:bg-[#111827] transition-colors relative">
+      {/* Background starfield — light */}
       <div
-        className="fixed inset-0 z-0 pointer-events-none opacity-35 dark:opacity-15"
+        className="fixed inset-0 z-0 pointer-events-none dark:hidden"
         style={{
-          backgroundImage: "url(/starfield.png)",
+          backgroundImage: "url(/starfield-light.webp)",
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+        }}
+      />
+      {/* Background starfield — dark */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none hidden dark:block"
+        style={{
+          backgroundImage: "url(/starfield-dark.webp)",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       />
       {/* ── Sticky top nav ── */}
