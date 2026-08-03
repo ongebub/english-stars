@@ -5,9 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { setSchoolSession } from "@/lib/school-session";
 import { getDeviceFingerprint, getDeviceLabel } from "@/lib/device-fingerprint";
 import { setSessionId } from "@/components/ChildSessionGuard";
+import { isTutorCode, TUTOR_CODE_MAX_LENGTH } from "@/lib/tutor-code";
 import Link from "next/link";
 
 const AVATAR_EMOJIS = ["🧒", "👧", "👦", "🧒🏻", "👧🏽", "👦🏾", "🦸", "🧑‍🎓", "🐻", "🐰", "🦊", "🐼"];
+
+/** Max length for any join code (tutor codes are the longest at 10 chars) */
+const MAX_CODE_LENGTH = TUTOR_CODE_MAX_LENGTH;
 
 export default function JoinPage() {
   return (
@@ -41,23 +45,64 @@ function JoinPageContent() {
     }
   }, [searchParams]);
 
+  const codeIsTutor = isTutorCode(code);
+
   function handleCodeSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (code.trim().length < 4) {
-      setError("Please enter your class code. กรุณาใส่รหัสห้องเรียน");
+      setError("Please enter your code. กรุณาใส่รหัส");
       return;
     }
     setError("");
-    setStep("name");
+
+    if (codeIsTutor) {
+      // Tutor codes don't need name/avatar — go straight to join
+      handleTutorJoin();
+    } else {
+      setStep("name");
+    }
   }
 
-  async function handleJoin(e: React.FormEvent) {
+  async function handleTutorJoin() {
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/join", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: code.toUpperCase().trim(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.type === "tutor_auth_required") {
+          // Redirect to login with return URL
+          router.push(`/login?redirect=/join?code=${encodeURIComponent(code)}`);
+          return;
+        }
+        setError(data.error || "Could not join. Please try again.");
+        return;
+      }
+
+      router.push("/learn");
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSchoolJoin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/school/join", {
+      const res = await fetch("/api/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -138,13 +183,20 @@ function JoinPageContent() {
                 <input
                   type="text"
                   value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase().slice(0, 6))}
+                  onChange={(e) =>
+                    setCode(
+                      e.target.value
+                        .toUpperCase()
+                        .replace(/\s/g, "")
+                        .slice(0, MAX_CODE_LENGTH)
+                    )
+                  }
                   placeholder="ABC123"
-                  maxLength={6}
-                  className="w-full text-center text-4xl font-black tracking-[0.3em] rounded-xl
+                  maxLength={MAX_CODE_LENGTH}
+                  className="w-full text-center text-3xl font-black tracking-[0.2em] rounded-xl
                              border-3 border-sky-dark px-4 py-5 text-text-dark
                              focus:outline-none focus:ring-4 focus:ring-sky-dark/30
-                             placeholder:text-gray-300 placeholder:tracking-[0.3em]"
+                             placeholder:text-gray-300 placeholder:tracking-[0.2em]"
                   autoFocus
                 />
               </div>
@@ -157,15 +209,29 @@ function JoinPageContent() {
 
               <button
                 type="submit"
+                disabled={loading}
                 className="w-full bg-leaf text-white font-bold text-xl py-4 rounded-xl
-                           hover:bg-leaf-dark transition-colors shadow-lg min-h-[56px]"
+                           hover:bg-leaf-dark transition-colors shadow-lg disabled:opacity-50 min-h-[56px]"
               >
-                <span className="font-nunito">Next</span>{" "}
-                <span className="font-sarabun">ถัดไป</span> →
+                {loading ? (
+                  <span className="inline-flex items-center gap-2 justify-center">
+                    <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Joining...
+                  </span>
+                ) : (
+                  <>
+                    <span className="font-nunito">{codeIsTutor ? "Join!" : "Next"}</span>{" "}
+                    <span className="font-sarabun">{codeIsTutor ? "เข้าร่วม!" : "ถัดไป"}</span>{" "}
+                    {codeIsTutor ? "🎉" : "→"}
+                  </>
+                )}
               </button>
             </form>
           ) : (
-            <form onSubmit={handleJoin} className="space-y-5">
+            <form onSubmit={handleSchoolJoin} className="space-y-5">
               <div className="text-center">
                 <span className="inline-block bg-sky-dark/10 text-sky-dark font-mono font-bold text-lg px-4 py-1 rounded-lg">
                   {code}

@@ -1,16 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { generateTutorCode } from "@/lib/tutor-code";
 
 export const dynamic = "force-dynamic";
-
-function generateInviteCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "TCH-";
-  for (let i = 0; i < 6; i++) {
-    code += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return code;
-}
 
 export async function POST() {
   try {
@@ -59,7 +51,7 @@ export async function POST() {
     }
 
     // Generate unique code
-    let code = generateInviteCode();
+    let code = generateTutorCode();
     let attempts = 0;
     while (attempts < 10) {
       const { error: insertError } = await supabase
@@ -70,7 +62,7 @@ export async function POST() {
         });
 
       if (!insertError) break;
-      code = generateInviteCode();
+      code = generateTutorCode();
       attempts++;
     }
 
