@@ -57,6 +57,12 @@ export default function LearnLayout({
             >
               Dashboard / <span className="font-sarabun">แดชบอร์ด</span>
             </Link>
+            <Link
+              href="/settings/profile"
+              className="font-nunito text-sm font-semibold text-white/90 hover:text-white"
+            >
+              Profile / <span className="font-sarabun">โปรไฟล์</span>
+            </Link>
             <ThemeToggle />
           </div>
         </div>

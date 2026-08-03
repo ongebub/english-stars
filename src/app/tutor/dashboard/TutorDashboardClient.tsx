@@ -41,6 +41,10 @@ export default function TutorDashboardClient({
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
 
+  // Inline name editing
+  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+
   // Per-student gradebook state
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [studentGradebook, setStudentGradebook] = useState<{
@@ -186,6 +190,34 @@ export default function TutorDashboardClient({
     }
   }
 
+  async function renameStudent(studentId: string, newName: string) {
+    if (!newName.trim()) {
+      setError("Name cannot be empty");
+      return;
+    }
+    setError("");
+    try {
+      const res = await fetch("/api/tutor/update-student-profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ student_id: studentId, display_name: newName.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        setError(data.error || "Could not rename student");
+        return;
+      }
+      setStudents((prev) =>
+        prev.map((s) =>
+          s.id === studentId ? { ...s, display_name: newName.trim() } : s
+        )
+      );
+      setEditingStudentId(null);
+    } catch {
+      setError("Something went wrong. กรุณาลองใหม่");
+    }
+  }
+
   const siteUrl = typeof window !== "undefined" ? window.location.origin : "";
 
   function copyCode(code: string, id: string) {
@@ -314,9 +346,57 @@ export default function TutorDashboardClient({
                       {student.avatar_emoji || "🧒"}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-text-dark dark:text-gray-100 font-nunito truncate">
-                        {student.display_name}
-                      </p>
+                      {editingStudentId === student.id ? (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            renameStudent(student.id, editName);
+                          }}
+                          className="flex items-center gap-2"
+                        >
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="font-bold text-text-dark dark:text-gray-100 font-nunito text-sm
+                                       border-2 border-sky-dark rounded-lg px-2 py-1 w-full
+                                       focus:outline-none focus:ring-2 focus:ring-sky-dark/30
+                                       dark:bg-gray-700"
+                            autoFocus
+                          />
+                          <button
+                            type="submit"
+                            className="text-leaf font-bold text-xs px-2 py-1 rounded-lg hover:bg-leaf/10 min-h-[28px]"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingStudentId(null)}
+                            className="text-text-mid font-bold text-xs px-2 py-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 min-h-[28px]"
+                          >
+                            Cancel
+                          </button>
+                        </form>
+                      ) : (
+                        <div className="flex items-center gap-1">
+                          <p className="font-bold text-text-dark dark:text-gray-100 font-nunito truncate">
+                            {student.display_name}
+                          </p>
+                          <button
+                            onClick={() => {
+                              setEditingStudentId(student.id);
+                              setEditName(student.display_name);
+                            }}
+                            className="text-text-light hover:text-sky-dark p-1 rounded transition-colors flex-shrink-0"
+                            title="Edit name"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
                       {student.email && (
                         <p className="text-xs text-text-mid dark:text-gray-400 truncate">
                           {student.email}

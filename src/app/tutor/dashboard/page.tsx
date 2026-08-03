@@ -32,11 +32,9 @@ export default async function TutorDashboardPage() {
   const { data: tutorStudentRows } = await supabase
     .rpc("get_tutor_students", { p_tutor: user.id });
 
-  const students = (tutorStudentRows || []).map((r: { student_user_id: string; display_name: string; first_name: string | null; last_name: string | null; avatar_emoji: string | null; joined_at: string; email: string | null }) => ({
+  const students = (tutorStudentRows || []).map((r: { student_user_id: string; display_name: string; avatar_emoji: string | null; joined_at: string; email: string | null }) => ({
     id: r.student_user_id,
-    display_name: r.first_name && r.last_name
-      ? `${r.first_name} ${r.last_name}`
-      : r.display_name || r.email || "Student",
+    display_name: r.display_name || r.email || "Student",
     avatar_emoji: r.avatar_emoji,
     created_at: r.joined_at,
     email: r.email,
