@@ -39,3 +39,8 @@ English_Stars_Ebook_Review.zip
 public/audio/
 public/ebook-images/
 public/flashcard-images/
+
+# marketing video pipeline
+assets/marketing/raw/
+assets/marketing/audio/
+assets/marketing/out/
