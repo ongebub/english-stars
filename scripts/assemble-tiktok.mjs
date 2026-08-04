@@ -136,16 +136,24 @@ function assembleVideo(opts) {
   generateASS(overlays, assPath);
 
   // Build ffmpeg command
-  // Font directory for libass
-  const fontDir = resolve(__dirname, "../assets/fonts").replace(/\\/g, "/");
-  const assPathEscaped = assPath.replace(/\\/g, "/").replace(/:/g, "\\:");
+  // For the subtitles filter, copy ASS + font to a temp dir with no special chars
+  const tmpDir = resolve(process.env.TEMP || "/tmp", "tiktok-build").replace(/\\/g, "/");
+  execSync(`mkdir -p "${tmpDir}"`, { stdio: "ignore" });
+  const tmpAss = `${tmpDir}/subs.ass`;
+  const tmpFont = `${tmpDir}/NotoSansThai-Bold.ttf`;
+  execSync(`cp "${assPath}" "${tmpAss}"`, { stdio: "ignore" });
+  execSync(`cp "${FONT_PATH}" "${tmpFont}"`, { stdio: "ignore" });
+
+  // Escape for ffmpeg filter: colons need backslash-escaping on Windows
+  const tmpAssEsc = tmpAss.replace(/\\/g, "/").replace(/:/g, "\\:");
+  const tmpDirEsc = tmpDir.replace(/\\/g, "/").replace(/:/g, "\\:");
 
   const cmd = [
     "ffmpeg", "-y",
     "-i", video,
     "-i", audio,
     "-filter_complex",
-    `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,subtitles='${assPathEscaped}':fontsdir='${fontDir}'[v];[1:a]loudnorm=I=-14:TP=-1.5:LRA=11[a]`,
+    `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,subtitles='${tmpAssEsc}':fontsdir='${tmpDirEsc}'[v];[1:a]loudnorm=I=-14:TP=-1.5:LRA=11[a]`,
     "-map", "[v]", "-map", "[a]",
     "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
     "-c:a", "aac", "-b:a", "128k",
@@ -156,6 +164,9 @@ function assembleVideo(opts) {
 
   console.log("\nRunning ffmpeg...");
   execFileSync(cmd[0], cmd.slice(1), { stdio: "inherit" });
+
+  // Clean up temp
+  try { unlinkSync(tmpAss); unlinkSync(tmpFont); } catch {}
 
   // Clean up ASS file
   try { unlinkSync(assPath); } catch {}
