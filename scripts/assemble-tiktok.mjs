@@ -4,12 +4,15 @@
 //   Video mode:  node scripts/assemble-tiktok.mjs --video raw.mp4 --audio narration.mp3 --overlays config.json --out out.mp4
 //   Stills mode: node scripts/assemble-tiktok.mjs --stills config.json --audio narration.mp3 --out out.mp4
 //
-// Overlays JSON: [{ "text": "สวัสดี", "startSec": 0, "endSec": 3, "position": "top|center|bottom" }]
-// Stills JSON:   { "images": [{ "path": "img1.jpg", "duration": 3 }, ...], "overlays": [...] }
+// Overlays JSON: [{ "text": "...", "startSec": 0, "endSec": 3, "style": "thai|english" }]
+//   style "thai"    = parent-directed Thai hook line (88px, persistent)
+//   style "english" = English vocabulary word (104px, synced to speech)
+//   Default style is "thai" if omitted.
+//   All text renders in ONE fixed band above the TikTok bottom safe zone.
 
 import { execSync, execFileSync } from "child_process";
 import { readFileSync, writeFileSync, existsSync, unlinkSync, statSync } from "fs";
-import { resolve, dirname, basename } from "path";
+import { resolve, dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -17,13 +20,9 @@ const FONT_PATH = resolve(__dirname, "../assets/fonts/NotoSansThai-Bold.ttf");
 
 // TikTok safe zones (at 1080x1920)
 const SAFE = { top: 120, bottom: 320, right: 140 };
-
-// ASS position mapping (margin from edge, inside safe zones)
-const POSITIONS = {
-  top:    { alignment: 8, marginV: SAFE.top + 20 },       // top-center, below search bar
-  center: { alignment: 5, marginV: 0 },                    // true center
-  bottom: { alignment: 2, marginV: SAFE.bottom + 20 },    // bottom-center, above caption UI
-};
+// Fixed text band: above bottom safe zone with margin
+const TEXT_MARGIN_V = SAFE.bottom + 40;
+const MARGIN_R = SAFE.right + 20;
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -45,12 +44,10 @@ function checkFfmpeg() {
     const filters = execSync("ffmpeg -filters 2>&1", { encoding: "utf8" });
     if (!filters.includes("subtitles")) {
       console.error("ERROR: ffmpeg was not built with libass (subtitles filter missing).");
-      console.error("Install ffmpeg with libass support. On Windows: choco install ffmpeg-full");
       process.exit(1);
     }
   } catch {
     console.error("ERROR: ffmpeg not found on PATH.");
-    console.error("Install ffmpeg: https://ffmpeg.org/download.html");
     process.exit(1);
   }
 }
@@ -64,13 +61,18 @@ function getMediaDuration(filePath) {
 }
 
 /**
- * Generate an ASS subtitle file for Thai text overlays.
- * Uses libass for proper complex-script shaping (tone marks, vowels).
+ * Generate ASS subtitle file with two styles:
+ * - ThaiHook: 88px, white fill, black outline, for parent-directed Thai text
+ * - EnglishWord: 104px, white fill, black outline, larger for vocab words
+ * All text in ONE fixed band above TikTok bottom safe zone.
  */
 function generateASS(overlays, outputPath) {
   const fontName = "Noto Sans Thai";
-  const fontSize = 68;
-  const marginR = SAFE.right + 20;
+
+  // ASS color format: &HAABBGGRR (alpha, blue, green, red)
+  const white = "&H00FFFFFF";
+  const black = "&H00000000";
+  const shadowBg = "&H80000000";
 
   let ass = `[Script Info]
 Title: TikTok Overlays
@@ -81,21 +83,20 @@ WrapStyle: 0
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Top,${fontName},${fontSize},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,3,1,${POSITIONS.top.alignment},20,${marginR},${POSITIONS.top.marginV},1
-Style: Center,${fontName},${fontSize},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,3,1,${POSITIONS.center.alignment},20,${marginR},${POSITIONS.center.marginV},1
-Style: Bottom,${fontName},${fontSize},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,1,0,0,0,100,100,0,0,1,3,1,${POSITIONS.bottom.alignment},20,${marginR},${POSITIONS.bottom.marginV},1
+Style: ThaiHook,${fontName},88,${white},${white},${black},${shadowBg},1,0,0,0,100,100,0,0,1,5,2,2,20,${MARGIN_R},${TEXT_MARGIN_V + 120},1
+Style: EnglishWord,${fontName},104,${white},${white},${black},${shadowBg},1,0,0,0,100,100,0,0,1,5,2,2,20,${MARGIN_R},${TEXT_MARGIN_V},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 `;
 
   for (const ov of overlays) {
-    const style = ov.position === "top" ? "Top" : ov.position === "center" ? "Center" : "Bottom";
+    const style = ov.style === "english" ? "EnglishWord" : "ThaiHook";
+    const layer = ov.style === "english" ? 1 : 0;
     const start = formatASSTime(ov.startSec);
     const end = formatASSTime(ov.endSec);
-    // Escape special ASS characters
     const text = ov.text.replace(/\\/g, "\\\\").replace(/\n/g, "\\N");
-    ass += `Dialogue: 0,${start},${end},${style},,0,0,0,,${text}\n`;
+    ass += `Dialogue: ${layer},${start},${end},${style},,0,0,0,,${text}\n`;
   }
 
   writeFileSync(outputPath, ass, "utf8");
@@ -110,9 +111,6 @@ function formatASSTime(seconds) {
   return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
 }
 
-/**
- * Video mode: combine video + audio + Thai text overlays
- */
 function assembleVideo(opts) {
   const { video, audio, overlays, out } = opts;
 
@@ -135,29 +133,28 @@ function assembleVideo(opts) {
   const assPath = out.replace(/\.mp4$/i, ".ass");
   generateASS(overlays, assPath);
 
-  // Build ffmpeg command
-  // For the subtitles filter, copy ASS + font to a temp dir with no special chars
+  // Copy ASS + font to clean temp dir (avoids Windows path escaping issues)
   const tmpDir = resolve(process.env.TEMP || "/tmp", "tiktok-build").replace(/\\/g, "/");
-  execSync(`mkdir -p "${tmpDir}"`, { stdio: "ignore" });
+  try { execSync(`mkdir -p "${tmpDir}"`, { stdio: "ignore" }); } catch { /* exists */ }
   const tmpAss = `${tmpDir}/subs.ass`;
   const tmpFont = `${tmpDir}/NotoSansThai-Bold.ttf`;
-  execSync(`cp "${assPath}" "${tmpAss}"`, { stdio: "ignore" });
-  execSync(`cp "${FONT_PATH}" "${tmpFont}"`, { stdio: "ignore" });
+  try { execSync(`cp "${assPath}" "${tmpAss}"`, { stdio: "ignore" }); } catch { writeFileSync(tmpAss, readFileSync(assPath)); }
+  try { execSync(`cp "${FONT_PATH}" "${tmpFont}"`, { stdio: "ignore" }); } catch { writeFileSync(tmpFont, readFileSync(FONT_PATH)); }
 
-  // Escape for ffmpeg filter: colons need backslash-escaping on Windows
   const tmpAssEsc = tmpAss.replace(/\\/g, "/").replace(/:/g, "\\:");
   const tmpDirEsc = tmpDir.replace(/\\/g, "/").replace(/:/g, "\\:");
 
+  // BUG FIX: pad audio to video duration instead of using -shortest
+  // apad pads with silence, atrim cuts to exact video length
   const cmd = [
     "ffmpeg", "-y",
     "-i", video,
     "-i", audio,
     "-filter_complex",
-    `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,subtitles='${tmpAssEsc}':fontsdir='${tmpDirEsc}'[v];[1:a]loudnorm=I=-14:TP=-1.5:LRA=11[a]`,
+    `[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,subtitles='${tmpAssEsc}':fontsdir='${tmpDirEsc}'[v];[1:a]loudnorm=I=-14:TP=-1.5:LRA=11,apad,atrim=0:${videoDur.toFixed(3)}[a]`,
     "-map", "[v]", "-map", "[a]",
     "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
     "-c:a", "aac", "-b:a", "128k",
-    "-shortest",
     "-movflags", "+faststart",
     out,
   ];
@@ -165,10 +162,8 @@ function assembleVideo(opts) {
   console.log("\nRunning ffmpeg...");
   execFileSync(cmd[0], cmd.slice(1), { stdio: "inherit" });
 
-  // Clean up temp
+  // Clean up
   try { unlinkSync(tmpAss); unlinkSync(tmpFont); } catch {}
-
-  // Clean up ASS file
   try { unlinkSync(assPath); } catch {}
 
   const stat = statSync(out);
@@ -178,9 +173,6 @@ function assembleVideo(opts) {
   console.log(`Size: ${(stat.size / 1024 / 1024).toFixed(1)} MB`);
 }
 
-/**
- * Stills mode: Ken Burns slideshow from images + audio + overlays
- */
 function assembleStills(opts) {
   const { stills, audio, out } = opts;
 
@@ -202,30 +194,34 @@ function assembleStills(opts) {
     process.exit(1);
   }
 
-  // Generate ASS file for overlays
   const assPath = out.replace(/\.mp4$/i, ".ass");
   generateASS(overlays, assPath);
 
-  // Build a concat filter with Ken Burns zoom on each image
-  const inputs = images.map((img, i) => `-loop 1 -t ${img.duration} -i "${img.path}"`).join(" ");
+  const tmpDir = resolve(process.env.TEMP || "/tmp", "tiktok-build").replace(/\\/g, "/");
+  try { execSync(`mkdir -p "${tmpDir}"`, { stdio: "ignore" }); } catch { /* exists */ }
+  const tmpAss = `${tmpDir}/subs.ass`;
+  const tmpFont = `${tmpDir}/NotoSansThai-Bold.ttf`;
+  try { execSync(`cp "${assPath}" "${tmpAss}"`, { stdio: "ignore" }); } catch { writeFileSync(tmpAss, readFileSync(assPath)); }
+  try { execSync(`cp "${FONT_PATH}" "${tmpFont}"`, { stdio: "ignore" }); } catch { writeFileSync(tmpFont, readFileSync(FONT_PATH)); }
+  const tmpAssEsc = tmpAss.replace(/\\/g, "/").replace(/:/g, "\\:");
+  const tmpDirEsc = tmpDir.replace(/\\/g, "/").replace(/:/g, "\\:");
 
-  // Ken Burns: subtle zoom from 1.0 to 1.08 over each image's duration
+  const inputs = images.map((img) => `-loop 1 -t ${img.duration} -i "${img.path}"`).join(" ");
   const filters = images.map((img, i) => {
     return `[${i}:v]scale=1200:2133,zoompan=z='min(zoom+0.0003,1.08)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${img.duration * 30}:s=1080x1920:fps=30[v${i}]`;
   });
-
   const concatInputs = images.map((_, i) => `[v${i}]`).join("");
   filters.push(`${concatInputs}concat=n=${images.length}:v=1:a=0[vraw]`);
+  filters.push(`[vraw]subtitles='${tmpAssEsc}':fontsdir='${tmpDirEsc}'[v]`);
+  // Pad audio to total image duration
+  filters.push(`[${images.length}:a]loudnorm=I=-14:TP=-1.5:LRA=11,apad,atrim=0:${totalImageDur.toFixed(3)}[a]`);
 
-  const fontDir = resolve(__dirname, "../assets/fonts").replace(/\\/g, "/");
-  const assPathEscaped = assPath.replace(/\\/g, "/").replace(/:/g, "\\:");
-  filters.push(`[vraw]subtitles='${assPathEscaped}':fontsdir='${fontDir}'[v]`);
-
-  const cmd = `ffmpeg -y ${inputs} -i "${audio}" -filter_complex "${filters.join(";")};[${images.length}:a]loudnorm=I=-14:TP=-1.5:LRA=11[a]" -map "[v]" -map "[a]" -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -shortest -movflags +faststart "${out}"`;
+  const cmd = `ffmpeg -y ${inputs} -i "${audio}" -filter_complex "${filters.join(";")}" -map "[v]" -map "[a]" -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -c:a aac -b:a 128k -movflags +faststart "${out}"`;
 
   console.log("\nRunning ffmpeg...");
   execSync(cmd, { stdio: "inherit" });
 
+  try { unlinkSync(tmpAss); unlinkSync(tmpFont); } catch {}
   try { unlinkSync(assPath); } catch {}
 
   const stat = statSync(out);
@@ -249,10 +245,6 @@ if (!opts.out) {
 if (opts.stills) {
   assembleStills(opts);
 } else if (opts.video) {
-  if (!opts.overlays && !opts.out) {
-    console.error("Video mode requires --video, --audio, --overlays, --out");
-    process.exit(1);
-  }
   const overlayData = opts.overlays ? JSON.parse(readFileSync(opts.overlays, "utf8")) : [];
   assembleVideo({ ...opts, overlays: overlayData });
 } else {

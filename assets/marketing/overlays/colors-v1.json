@@ -1,7 +1,44 @@
 [
-  { "text": "เรียนรู้สีภาษาอังกฤษ!", "startSec": 0, "endSec": 3, "position": "top" },
-  { "text": "Red สีแดง", "startSec": 3, "endSec": 6, "position": "center" },
-  { "text": "Blue สีน้ำเงิน", "startSec": 6, "endSec": 9, "position": "center" },
-  { "text": "Yellow สีเหลือง", "startSec": 9, "endSec": 12, "position": "center" },
-  { "text": "English Allstars ⭐", "startSec": 12, "endSec": 15, "position": "bottom" }
+  {
+    "text": "สอนลูกเรียนสีภาษาอังกฤษ",
+    "startSec": 0,
+    "endSec": 15,
+    "style": "thai"
+  },
+  {
+    "text": "Red",
+    "startSec": 0,
+    "endSec": 1.2,
+    "style": "english"
+  },
+  {
+    "text": "Blue",
+    "startSec": 0.748,
+    "endSec": 1.948,
+    "style": "english"
+  },
+  {
+    "text": "Yellow",
+    "startSec": 1.7229999999999999,
+    "endSec": 2.923,
+    "style": "english"
+  },
+  {
+    "text": "Green",
+    "startSec": 2.791,
+    "endSec": 3.9909999999999997,
+    "style": "english"
+  },
+  {
+    "text": "Purple",
+    "startSec": 3.9170000000000003,
+    "endSec": 5.117,
+    "style": "english"
+  },
+  {
+    "text": "Orange",
+    "startSec": 5.066000000000001,
+    "endSec": 6.269,
+    "style": "english"
+  }
 ]

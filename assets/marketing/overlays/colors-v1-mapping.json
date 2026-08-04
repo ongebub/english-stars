@@ -1,0 +1,9 @@
+[
+  { "text": "สอนลูกเรียนสีภาษาอังกฤษ", "style": "thai", "words": ["*"] },
+  { "text": "Red", "style": "english", "words": ["Red"] },
+  { "text": "Blue", "style": "english", "words": ["Blue"] },
+  { "text": "Yellow", "style": "english", "words": ["Yellow"] },
+  { "text": "Green", "style": "english", "words": ["Green"] },
+  { "text": "Purple", "style": "english", "words": ["Purple"] },
+  { "text": "Orange", "style": "english", "words": ["Orange"] }
+]
