@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { sendWelcomeEmail } from "@/lib/resend";
 
 export const dynamic = "force-dynamic";
 
@@ -105,6 +106,38 @@ export async function POST(req: NextRequest) {
 
         if (profileError)
           console.error("Failed to set account_type on checkout:", profileError);
+
+        // Send welcome email
+        try {
+          const { data: authUser } = await supabase.auth.admin.getUserById(userId);
+          const userEmail = authUser?.user?.email;
+          if (userEmail) {
+            const trialEndDate = sub.trial_end
+              ? new Date(sub.trial_end * 1000).toLocaleDateString("th-TH", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
+              : "";
+            if (trialEndDate) {
+              await sendWelcomeEmail(userEmail, trialEndDate);
+            }
+          }
+        } catch (emailErr) {
+          console.error("Failed to send welcome email:", emailErr);
+        }
+
+        // Track trial_active signup event
+        try {
+          await supabase.from("signup_events").insert({
+            session_id: session.id,
+            user_id: userId,
+            event: "trial_active",
+            plan: tier,
+          });
+        } catch (trackErr) {
+          console.error("Failed to track trial_active:", trackErr);
+        }
       }
       break;
     }

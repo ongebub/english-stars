@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { getDeviceFingerprint } from "@/lib/device-fingerprint";
 import PlanCards, { type PlanChoice } from "@/components/PlanCards";
 import { AppFooter } from "@/components/AppFooter";
+import { trackEvent } from "@/lib/track";
 
 /**
  * Signup flow: Step 1 = choose plan, Step 2 = create account.
@@ -49,6 +50,11 @@ function SignupContent() {
   const [success, setSuccess] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Fire signup_started on mount
+  useEffect(() => {
+    trackEvent("signup_started");
+  }, []);
 
   // If user is already logged in, redirect appropriately
   useEffect(() => {
@@ -118,6 +124,7 @@ function SignupContent() {
     setSelectedPlan(plan);
     // Save to sessionStorage to survive potential email confirmation round trip
     const planLabel = plan.tier === "individual" ? "family" : "tutor";
+    trackEvent("plan_selected", planLabel);
     sessionStorage.setItem("es_signup_plan", planLabel);
     if (plan.seatCount) {
       sessionStorage.setItem("es_signup_seats", String(plan.seatCount));
@@ -208,6 +215,8 @@ function SignupContent() {
   }
 
   async function startCheckout(plan: PlanChoice) {
+    trackEvent("checkout_opened", plan.tier === "individual" ? "family" : "tutor");
+
     const body =
       plan.tier === "individual"
         ? { tier: "individual" }

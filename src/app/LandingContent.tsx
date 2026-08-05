@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { trackEvent } from "@/lib/track";
 
 const CONTACT_LINK = "mailto:info@englishallstars.com";
 const CONTACT_LABEL = "info@englishallstars.com";
@@ -330,6 +331,10 @@ interface Stats {
 export default function LandingContent({ stats }: { stats: Stats }) {
   const [lang, setLang] = useState<"th" | "en">("th");
   const t = lang === "th" ? TH : EN;
+
+  useEffect(() => {
+    trackEvent("landing_viewed");
+  }, []);
   const isThai = lang === "th";
 
   const bodyFont = isThai ? "font-sarabun" : "font-nunito";
