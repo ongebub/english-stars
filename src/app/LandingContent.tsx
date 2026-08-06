@@ -418,6 +418,28 @@ export default function LandingContent({ stats }: { stats: Stats }) {
           >
             {t.heroDisclosure}
           </p>
+
+          {/* Phone mockup with real app screenshot */}
+          <div className="mt-12 flex justify-center">
+            <div className="relative w-[220px] sm:w-[260px] mx-auto">
+              {/* Phone bezel */}
+              <div className="rounded-[2.5rem] border-[6px] border-gray-800 bg-gray-800 shadow-2xl overflow-hidden">
+                {/* Notch */}
+                <div className="mx-auto w-24 h-5 bg-gray-800 rounded-b-2xl relative z-10" />
+                {/* Screenshot */}
+                <div className="rounded-[2rem] overflow-hidden -mt-1">
+                  <Image
+                    src="/hero-screenshot.webp"
+                    alt="English Allstars read-along page showing word highlighting"
+                    width={260}
+                    height={590}
+                    className="w-full h-auto"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* wave divider */}
