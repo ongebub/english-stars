@@ -49,12 +49,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="English Allstars" />
         <script dangerouslySetInnerHTML={{ __html: `
           try {
             if (localStorage.getItem('theme') === 'dark') {
               document.documentElement.classList.add('dark');
             }
           } catch(e) {}
+          if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').catch(function(){});
+          }
         `}} />
       </head>
       <body className={`${nunito.variable} ${sarabun.variable} ${fredoka.variable} font-nunito antialiased`}>

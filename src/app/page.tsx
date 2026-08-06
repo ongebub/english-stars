@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import LandingContent from "./LandingContent";
 
@@ -47,6 +48,15 @@ async function getStats() {
 }
 
 export default async function LandingPage() {
+  // Redirect logged-in users straight to /learn
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) redirect("/learn");
+  } catch {
+    // Not logged in — show landing page
+  }
+
   const stats = await getStats();
   return <LandingContent stats={stats} />;
 }

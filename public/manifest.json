@@ -1,0 +1,29 @@
+{
+  "name": "English Allstars",
+  "short_name": "Allstars",
+  "description": "เตรียมสอบภาษาอังกฤษสำหรับเด็กไทย อายุ 4–8 ปี",
+  "start_url": "/learn",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0288D1",
+  "background_color": "#FFFFFF",
+  "lang": "th",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

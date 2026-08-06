@@ -13,6 +13,7 @@ const CONTACT_LABEL = "info@englishallstars.com";
 const TH = {
   lang: "th" as const,
   toggle: "EN",
+  login: "เข้าสู่ระบบ",
   // Hero
   heroH1: "ปูพื้นฐานภาษาอังกฤษให้ลูก ก่อนถึงวันสอบเข้า",
   heroSub:
@@ -148,6 +149,7 @@ const TH = {
 const EN = {
   lang: "en" as const,
   toggle: "TH",
+  login: "Log In",
   // Hero
   heroH1: "Give your child a head start in English — before the entrance exam.",
   heroSub:
@@ -343,7 +345,17 @@ export default function LandingContent({ stats }: { stats: Stats }) {
   return (
     <div className="min-h-screen bg-white font-nunito">
 
-      {/* ── LANGUAGE TOGGLE ───────────────────────────────────────────────────── */}
+      {/* ── LOGIN BUTTON (top-left) ─────────────────────────────────────────── */}
+      <div className="fixed top-4 left-4 z-50">
+        <Link
+          href="/login?redirect=/learn"
+          className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-md text-text-dark font-nunito font-bold text-sm px-4 py-2 rounded-full hover:bg-cream transition-colors min-h-[40px] inline-block"
+        >
+          {t.login}
+        </Link>
+      </div>
+
+      {/* ── LANGUAGE TOGGLE (top-right) ────────────────────────────────────── */}
       <div className="fixed top-4 right-4 z-50">
         <button
           onClick={() => setLang(lang === "th" ? "en" : "th")}
