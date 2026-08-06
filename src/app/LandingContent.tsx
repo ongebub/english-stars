@@ -41,6 +41,7 @@ const TH = {
       emoji: "📚",
       title: "บัตรคำศัพท์พร้อมภาพประกอบ",
       desc: "ทีละคำ พร้อมเสียงอ่านภาษาอังกฤษ",
+      screenshot: "/screenshot-flashcard.webp",
     },
     {
       emoji: "📖",
@@ -51,6 +52,7 @@ const TH = {
       emoji: "✅",
       title: "แบบทดสอบ",
       desc: "สุ่ม 10 ข้อจากคลัง 60 ข้อ ไม่ซ้ำกันในแต่ละครั้ง พร้อมถ้วยรางวัลเมื่อทำครบ",
+      screenshot: "/screenshot-quiz.webp",
     },
     {
       emoji: "✏️",
@@ -177,6 +179,7 @@ const EN = {
       emoji: "📚",
       title: "Illustrated flashcards",
       desc: "One word at a time, with native English audio on every card.",
+      screenshot: "/screenshot-flashcard.webp",
     },
     {
       emoji: "📖",
@@ -187,6 +190,7 @@ const EN = {
       emoji: "✅",
       title: "Quizzes",
       desc: "10 random questions from a pool of 60 — different every time. Trophy awarded on completion.",
+      screenshot: "/screenshot-quiz.webp",
     },
     {
       emoji: "✏️",
@@ -303,10 +307,16 @@ function CheckItem({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ContentCard({ emoji, title, desc }: { emoji: string; title: string; desc: string }) {
+function ContentCard({ emoji, title, desc, screenshot }: { emoji: string; title: string; desc: string; screenshot?: string }) {
   return (
     <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-md flex flex-col gap-2">
-      <span className="text-3xl">{emoji}</span>
+      {screenshot ? (
+        <div className="rounded-xl overflow-hidden border border-gray-100 mb-2 max-h-[200px]">
+          <Image src={screenshot} alt={title} width={400} height={300} className="w-full h-auto object-cover object-top" />
+        </div>
+      ) : (
+        <span className="text-3xl">{emoji}</span>
+      )}
       <h3 className="font-nunito font-extrabold text-text-dark text-lg">{title}</h3>
       <p className="font-sarabun text-text-mid text-sm" style={{ lineHeight: "1.7" }}>{desc}</p>
     </div>
@@ -530,7 +540,7 @@ export default function LandingContent({ stats }: { stats: Stats }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {t.insideItems.map((item) => (
-            <ContentCard key={item.title} emoji={item.emoji} title={item.title} desc={item.desc} />
+            <ContentCard key={item.title} emoji={item.emoji} title={item.title} desc={item.desc} screenshot={(item as { screenshot?: string }).screenshot} />
           ))}
 
           {/* CTA card */}
@@ -560,6 +570,13 @@ export default function LandingContent({ stats }: { stats: Stats }) {
           >
             {t.subjectH2}
           </h2>
+
+          {/* Subject grid screenshot */}
+          <div className="mb-10 flex justify-center">
+            <div className="rounded-2xl overflow-hidden shadow-lg border border-gray-200 max-w-[280px]">
+              <Image src="/screenshot-subjects.webp" alt="Subject grid" width={400} height={900} className="w-full h-auto" />
+            </div>
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             {/* Ages 4–6 */}
