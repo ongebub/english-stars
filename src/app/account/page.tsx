@@ -15,7 +15,7 @@ export default async function AccountPage() {
   }
 
   // Get parent profile
-  const { data: profile } = await supabase
+  await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
@@ -85,16 +85,6 @@ export default async function AccountPage() {
   return (
     <AccountClient
       email={user.email || ""}
-      profile={
-        profile
-          ? {
-              id: profile.id,
-              display_name: profile.display_name,
-              avatar_emoji: profile.avatar_emoji,
-              role: profile.role,
-            }
-          : null
-      }
       subscription={
         sub
           ? {
@@ -109,7 +99,7 @@ export default async function AccountPage() {
           : null
       }
       isTutor={isTutor}
-      children={children}
+      childProfiles={children}
       students={students}
     />
   );

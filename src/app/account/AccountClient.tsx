@@ -8,13 +8,6 @@ import { getInstallState } from "@/components/InstallPrompt";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-interface ProfileData {
-  id: string;
-  display_name: string;
-  avatar_emoji: string | null;
-  role: string;
-}
-
 interface SubscriptionData {
   status: string;
   plan_type: string;
@@ -42,10 +35,9 @@ interface StudentData {
 
 interface Props {
   email: string;
-  profile: ProfileData | null;
   subscription: SubscriptionData | null;
   isTutor: boolean;
-  children: ChildData[];
+  childProfiles: ChildData[];
   students: StudentData[];
 }
 
@@ -92,10 +84,9 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function AccountClient({
   email,
-  profile,
   subscription,
   isTutor,
-  children: initialChildren,
+  childProfiles: initialChildren,
   students: initialStudents,
 }: Props) {
   const router = useRouter();
