@@ -116,5 +116,46 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent, skipped, total: subs.length });
+  // ── Purge step: hard-delete profiles soft-deleted more than 12 months ago ──
+
+  // Find profiles to purge
+  const twelveMonthsAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: profilesToPurge, error: purgeQueryErr } = await supabase
+    .from("profiles")
+    .select("id")
+    .not("deleted_at", "is", null)
+    .lt("deleted_at", twelveMonthsAgo);
+
+  if (purgeQueryErr) {
+    console.error("Purge query failed:", purgeQueryErr);
+    return NextResponse.json({ sent, skipped, total: subs.length, purge_error: purgeQueryErr.message });
+  }
+
+  const purgeIds = (profilesToPurge ?? []).map((p: { id: string }) => p.id);
+  let purged = 0;
+
+  if (purgeIds.length > 0) {
+    // Delete related data first
+    await Promise.all([
+      supabase.from("quiz_attempts").delete().in("child_id", purgeIds),
+      supabase.from("trophies").delete().in("child_id", purgeIds),
+      supabase.from("ebook_progress").delete().in("child_id", purgeIds),
+    ]);
+
+    // Hard-delete the profiles themselves
+    const { error: purgeErr } = await supabase
+      .from("profiles")
+      .delete()
+      .in("id", purgeIds);
+
+    if (purgeErr) {
+      console.error("Purge delete failed:", purgeErr);
+    } else {
+      purged = purgeIds.length;
+      console.log(`Purged ${purged} profile(s):`, purgeIds);
+    }
+  }
+
+  return NextResponse.json({ sent, skipped, total: subs.length, purged, purge_ids: purgeIds });
 }

@@ -92,12 +92,18 @@ export default async function BillingPage() {
             {"cancel_at_period_end" in sub &&
               !!(sub as Record<string, unknown>).cancel_at_period_end &&
               periodEnd && (
-                <div className="bg-sun/30 border-2 border-sun rounded-xl p-4 text-sm">
+                <div className="bg-sun/30 border-2 border-sun rounded-xl p-4 text-sm space-y-2">
                   <p className="font-bold text-text-dark font-nunito">
                     Your subscription will end on {periodEnd}.
                   </p>
-                  <p className="font-sarabun text-text-mid mt-1">
+                  <p className="font-sarabun text-text-mid">
                     สมาชิกของคุณจะสิ้นสุดในวันที่ {periodEnd}
+                  </p>
+                  <p className="font-sarabun text-text-mid text-xs border-t border-sun/50 pt-2">
+                    ข้อมูลความคืบหน้าของลูกจะถูกเก็บไว้ 12 เดือน หากคุณกลับมาสมัครใหม่ภายในระยะเวลาดังกล่าว ทุกอย่างจะเหมือนเดิม
+                  </p>
+                  <p className="font-sarabun text-text-light text-xs">
+                    Your child&apos;s progress data is kept for 12 months. If you resubscribe within that time, everything will be as you left it.
                   </p>
                 </div>
               )}

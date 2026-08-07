@@ -45,6 +45,7 @@ export default async function AccountPage() {
       .from("profiles")
       .select("id, display_name, avatar_emoji, created_at")
       .eq("parent_id", user.id)
+      .is("deleted_at", null)
       .order("created_at", { ascending: true });
     children = childRows || [];
   }

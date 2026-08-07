@@ -25,6 +25,13 @@ interface ChildData {
   created_at: string;
 }
 
+interface DeletedChildData {
+  id: string;
+  display_name: string;
+  avatar_emoji: string | null;
+  deleted_at: string;
+}
+
 interface StudentData {
   id: string;
   display_name: string;
@@ -169,6 +176,17 @@ export default function AccountClient({
   const [newChildAvatar, setNewChildAvatar] = useState("🧒");
   const [addingChild, setAddingChild] = useState(false);
 
+  // Deleted (soft-deleted) children
+  const [deletedChildren, setDeletedChildren] = useState<DeletedChildData[]>([]);
+  const [deletedOpen, setDeletedOpen] = useState(false);
+  const [loadingDeleted, setLoadingDeleted] = useState(false);
+  const [restoringId, setRestoringId] = useState<string | null>(null);
+
+  // Account deletion
+  const [deleteAccountOpen, setDeleteAccountOpen] = useState(false);
+  const [deleteAccountEmail, setDeleteAccountEmail] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
   async function handleSaveChildName(childId: string) {
     if (!editChildName.trim()) {
       setError("กรุณากรอกชื่อ");
@@ -209,15 +227,10 @@ export default function AccountClient({
       return;
     }
     setError("");
-    // Soft-delete: update role to mark as removed
-    // The profiles table doesn't have deleted_at; use a workaround:
-    // set display_name with a prefix to mark deletion, and remove parent_id
+    // Soft-delete: set deleted_at = now(), keep parent_id so restore works
     const { error: delErr } = await supabase
       .from("profiles")
-      .update({
-        parent_id: null,
-        display_name: `[ลบแล้ว] ${child.display_name}`,
-      })
+      .update({ deleted_at: new Date().toISOString() })
       .eq("id", child.id);
     if (delErr) {
       setError("ไม่สามารถลบโปรไฟล์ได้");
@@ -226,6 +239,88 @@ export default function AccountClient({
       setRemoveConfirmId(null);
       setRemoveConfirmText("");
       showSuccess("ลบโปรไฟล์เรียบร้อย");
+    }
+  }
+
+  async function loadDeletedChildren() {
+    setLoadingDeleted(true);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setLoadingDeleted(false); return; }
+    const { data, error: fetchErr } = await supabase
+      .from("profiles")
+      .select("id, display_name, avatar_emoji, deleted_at")
+      .eq("parent_id", user.id)
+      .not("deleted_at", "is", null)
+      .order("deleted_at", { ascending: false });
+    if (!fetchErr && data) {
+      setDeletedChildren(data as DeletedChildData[]);
+    }
+    setLoadingDeleted(false);
+  }
+
+  async function handleToggleDeletedSection() {
+    const newOpen = !deletedOpen;
+    setDeletedOpen(newOpen);
+    if (newOpen && deletedChildren.length === 0) {
+      await loadDeletedChildren();
+    }
+  }
+
+  async function handleRestoreChild(child: DeletedChildData) {
+    // Check seat/plan limit
+    const activeCount = children.length;
+    const maxSeats = subscription?.max_students || 0;
+    // For family plans, max_students may be 0; use a generous default of 5
+    const limit = maxSeats > 0 ? maxSeats : 5;
+    if (activeCount >= limit) {
+      setError(
+        `ไม่สามารถกู้คืนได้ — ถึงขีดจำกัดโปรไฟล์แล้ว (${activeCount}/${limit})`
+      );
+      return;
+    }
+    setRestoringId(child.id);
+    setError("");
+    const { error: restoreErr } = await supabase
+      .from("profiles")
+      .update({ deleted_at: null })
+      .eq("id", child.id);
+    if (restoreErr) {
+      setError("ไม่สามารถกู้คืนโปรไฟล์ได้");
+    } else {
+      setDeletedChildren((prev) => prev.filter((c) => c.id !== child.id));
+      setChildren((prev) => [
+        ...prev,
+        {
+          id: child.id,
+          display_name: child.display_name,
+          avatar_emoji: child.avatar_emoji,
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      showSuccess(`กู้คืน ${child.display_name} เรียบร้อย`);
+    }
+    setRestoringId(null);
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteAccountEmail !== email) {
+      setError("อีเมลไม่ตรงกัน กรุณาพิมพ์อีเมลของคุณให้ถูกต้อง");
+      return;
+    }
+    setDeletingAccount(true);
+    setError("");
+    try {
+      const res = await fetch("/api/account/delete", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "ไม่สามารถลบบัญชีได้");
+        setDeletingAccount(false);
+      } else {
+        router.push("/");
+      }
+    } catch {
+      setError("เกิดข้อผิดพลาด กรุณาลองใหม่");
+      setDeletingAccount(false);
     }
   }
 
@@ -627,6 +722,9 @@ export default function AccountClient({
                       <p className="font-sarabun text-red-600 text-sm font-bold">
                         ยืนยันการลบโปรไฟล์ {child.avatar_emoji || "🧒"} {child.display_name}
                       </p>
+                      <p className="font-sarabun text-amber-700 dark:text-amber-400 text-xs bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-lg p-2">
+                        โปรไฟล์จะถูกเก็บไว้ 12 เดือน และสามารถกู้คืนได้ตลอดเวลา หลังจาก 12 เดือน ข้อมูลจะถูกลบอย่างถาวร
+                      </p>
                       <p className="font-sarabun text-red-500 text-xs">
                         พิมพ์ชื่อ <strong>{child.display_name}</strong> เพื่อยืนยัน
                       </p>
@@ -756,6 +854,77 @@ export default function AccountClient({
                   )}
                 </div>
               ))}
+
+
+              {/* ── Deleted profiles collapsible ── */}
+              <div className="mt-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                <button
+                  onClick={handleToggleDeletedSection}
+                  className="flex items-center gap-2 text-text-mid dark:text-gray-400 text-sm font-sarabun hover:text-text-dark dark:hover:text-gray-200 transition-colors w-full text-left"
+                >
+                  <svg
+                    className={`w-4 h-4 flex-shrink-0 transition-transform ${deletedOpen ? "rotate-90" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  โปรไฟล์ที่ถูกลบ / Removed profiles
+                </button>
+
+                {deletedOpen && (
+                  <div className="mt-3 space-y-2">
+                    {loadingDeleted && (
+                      <p className="font-sarabun text-text-light dark:text-gray-500 text-sm text-center py-3">
+                        กำลังโหลด...
+                      </p>
+                    )}
+                    {!loadingDeleted && deletedChildren.length === 0 && (
+                      <p className="font-sarabun text-text-light dark:text-gray-500 text-sm text-center py-3">
+                        ไม่มีโปรไฟล์ที่ถูกลบ
+                      </p>
+                    )}
+                    {deletedChildren.map((dc) => {
+                      const daysSince = Math.floor(
+                        (Date.now() - new Date(dc.deleted_at).getTime()) / (1000 * 60 * 60 * 24)
+                      );
+                      const daysRemaining = Math.max(0, 365 - daysSince);
+                      return (
+                        <div
+                          key={dc.id}
+                          className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-dashed border-gray-300 dark:border-gray-600"
+                        >
+                          <span className="text-2xl flex-shrink-0 opacity-60">
+                            {dc.avatar_emoji || "🧒"}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-text-mid dark:text-gray-400 font-nunito truncate text-sm">
+                              {dc.display_name}
+                            </p>
+                            <p className="text-xs text-text-light dark:text-gray-500 font-sarabun">
+                              ลบเมื่อ{" "}
+                              {new Date(dc.deleted_at).toLocaleDateString("th-TH", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}{" "}
+                              · เหลืออีก {daysRemaining} วัน
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => handleRestoreChild(dc)}
+                            disabled={restoringId === dc.id}
+                            className="text-xs font-bold text-leaf hover:text-leaf-dark font-nunito px-3 py-1.5 rounded-lg bg-leaf/10 hover:bg-leaf/20 transition-colors disabled:opacity-60 flex-shrink-0"
+                          >
+                            {restoringId === dc.id ? "กำลังกู้คืน..." : "กู้คืน / Restore"}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </section>
         )}
@@ -1071,6 +1240,77 @@ export default function AccountClient({
             >
               {signingOut ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
             </button>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════════
+            SECTION 6: Danger zone — Delete account
+        ══════════════════════════════════════════════════════════════════ */}
+        <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden border-2 border-red-200 dark:border-red-500/30">
+          <div className="bg-red-600 px-6 py-4">
+            <h2 className="text-lg font-bold text-white font-nunito">
+              ⚠️ ลบบัญชีของฉัน / Delete my account
+            </h2>
+          </div>
+          <div className="p-6 space-y-4">
+            {!deleteAccountOpen ? (
+              <>
+                <p className="font-sarabun text-text-mid dark:text-gray-400 text-sm">
+                  การดำเนินการนี้จะลบบัญชีและข้อมูลทั้งหมดอย่างถาวรทันที ไม่สามารถกู้คืนได้
+                </p>
+                <button
+                  onClick={() => { setDeleteAccountOpen(true); setError(""); }}
+                  className="w-full bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 font-bold py-3 rounded-xl border-2 border-red-200 dark:border-red-500/30 hover:bg-red-100 dark:hover:bg-red-500/20 transition-colors font-nunito"
+                >
+                  ลบบัญชีของฉัน
+                </button>
+              </>
+            ) : (
+              <div className="space-y-4">
+                <div className="bg-red-50 dark:bg-red-500/10 border-2 border-red-200 dark:border-red-500/30 rounded-xl p-4">
+                  <p className="font-sarabun text-red-700 dark:text-red-400 text-sm font-bold mb-1">
+                    การดำเนินการนี้ไม่สามารถย้อนกลับได้
+                  </p>
+                  <p className="font-sarabun text-red-600 dark:text-red-400 text-sm">
+                    การดำเนินการนี้จะลบบัญชีและข้อมูลทั้งหมดอย่างถาวรทันที ไม่สามารถกู้คืนได้
+                  </p>
+                  <ul className="font-sarabun text-red-500 dark:text-red-400 text-xs mt-2 list-disc list-inside space-y-0.5">
+                    <li>โปรไฟล์เด็กทั้งหมดและข้อมูลความคืบหน้า</li>
+                    <li>ถ้วยรางวัลและประวัติแบบทดสอบ</li>
+                    <li>การสมัครสมาชิกและประวัติการชำระเงิน</li>
+                  </ul>
+                </div>
+                <div>
+                  <label className="font-sarabun text-text-dark dark:text-gray-100 text-sm mb-1 block">
+                    พิมพ์อีเมลของคุณเพื่อยืนยัน: <strong>{email}</strong>
+                  </label>
+                  <input
+                    type="email"
+                    value={deleteAccountEmail}
+                    onChange={(e) => setDeleteAccountEmail(e.target.value)}
+                    placeholder={email}
+                    className="w-full rounded-xl border-2 border-red-300 dark:border-red-500/50 px-4 py-3
+                               text-text-dark dark:text-gray-100 dark:bg-gray-700
+                               focus:outline-none focus:ring-2 focus:ring-red-400 font-sarabun"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleDeleteAccount}
+                    disabled={deletingAccount || deleteAccountEmail !== email}
+                    className="flex-1 bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition-colors disabled:opacity-50 font-nunito"
+                  >
+                    {deletingAccount ? "กำลังลบบัญชี..." : "ยืนยัน — ลบบัญชีถาวร"}
+                  </button>
+                  <button
+                    onClick={() => { setDeleteAccountOpen(false); setDeleteAccountEmail(""); setError(""); }}
+                    className="px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 text-text-mid dark:text-gray-400 font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-nunito"
+                  >
+                    ยกเลิก
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
