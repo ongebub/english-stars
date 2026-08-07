@@ -61,11 +61,11 @@ export default function LearnLayout({
               <span className="hidden sm:inline">Dashboard / <span className="font-sarabun">แดชบอร์ด</span></span>
             </Link>
             <Link
-              href="/settings/profile"
+              href="/account"
               className="font-nunito text-sm font-semibold text-white/90 hover:text-white"
             >
-              <span className="sm:hidden text-base" aria-label="Profile">👤</span>
-              <span className="hidden sm:inline">Profile / <span className="font-sarabun">โปรไฟล์</span></span>
+              <span className="sm:hidden text-base" aria-label="Account">👤</span>
+              <span className="hidden sm:inline">Account / <span className="font-sarabun">บัญชี</span></span>
             </Link>
             <ThemeToggle />
           </div>
