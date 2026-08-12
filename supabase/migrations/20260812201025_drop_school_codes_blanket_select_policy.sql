@@ -1,0 +1,17 @@
+-- school_codes had TWO SELECT policies:
+--   school_codes_select          USING (auth.uid() = user_id)
+--   school_codes_service_select  USING (true)
+-- Policies OR together, so the second defeated the first and any signed-in user
+-- could read every school's join code.
+--
+-- The service role bypasses RLS entirely and never needed a policy. The only
+-- reads that look a row up BY CODE rather than by user_id are
+-- src/app/api/join/route.ts:192 and src/app/api/school/join/route.ts:27, and
+-- both build service-role clients. Every session-client read filters on
+-- user_id (src/app/dashboard/page.tsx:49, src/app/school/page.tsx:25,
+-- src/app/api/school/generate-code/route.ts:42) and stays covered by
+-- school_codes_select.
+--
+-- school_codes_insert is deliberately kept: generate-code inserts under the
+-- user's own JWT (authenticated), not the service role.
+DROP POLICY IF EXISTS school_codes_service_select ON public.school_codes;
