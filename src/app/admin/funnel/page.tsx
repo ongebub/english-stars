@@ -1,6 +1,17 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import Link from "next/link";
+
+// signup_events has RLS enabled with an INSERT-only policy and no SELECT policy,
+// so the cookie-bound session client reads zero rows here. Authorization for this
+// page is the ADMIN_EMAIL check below; the reads go over the service role.
+function getAdminSupabase() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 const FUNNEL_EVENTS = [
   "landing_viewed",
@@ -33,6 +44,8 @@ export default async function FunnelPage({ searchParams }: { searchParams: Searc
     redirect("/login");
   }
 
+  const admin = getAdminSupabase();
+
   const params = await searchParams;
   const days = parseInt(params.days || "7", 10);
   const planFilter = params.plan || "";
@@ -45,7 +58,7 @@ export default async function FunnelPage({ searchParams }: { searchParams: Searc
 
   await Promise.all(
     FUNNEL_EVENTS.map(async (event) => {
-      let query = supabase
+      let query = admin
         .from("signup_events")
         .select("id, plan", { count: "exact" })
         .eq("event", event)
@@ -70,7 +83,7 @@ export default async function FunnelPage({ searchParams }: { searchParams: Searc
   );
 
   // Get distinct plans for filter
-  const { data: planRows } = await supabase
+  const { data: planRows } = await admin
     .from("signup_events")
     .select("plan")
     .gte("created_at", since)
