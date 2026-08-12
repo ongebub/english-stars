@@ -14,6 +14,8 @@ const TH = {
   lang: "th" as const,
   toggle: "EN",
   login: "เข้าสู่ระบบ",
+  footerPrivacy: "นโยบายความเป็นส่วนตัว",
+  footerTerms: "ข้อกำหนดการใช้งาน",
   // Hero
   heroH1: "ปูพื้นฐานภาษาอังกฤษให้ลูก ก่อนถึงวันสอบเข้า",
   heroSub:
@@ -152,6 +154,8 @@ const EN = {
   lang: "en" as const,
   toggle: "TH",
   login: "Log In",
+  footerPrivacy: "Privacy Policy",
+  footerTerms: "Terms of Service",
   // Hero
   heroH1: "Give your child a head start in English — before the entrance exam.",
   heroSub:
@@ -359,7 +363,7 @@ export default function LandingContent({ stats }: { stats: Stats }) {
       <div className="fixed top-4 left-4 z-50">
         <Link
           href="/login?redirect=/learn"
-          className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-md text-text-dark font-nunito font-bold text-sm px-4 py-2 rounded-full hover:bg-cream transition-colors min-h-[40px] inline-block"
+          className={`bg-white border border-gray-200 shadow-md text-text-dark ${bodyFont} font-bold text-sm px-4 py-2 rounded-full hover:bg-cream transition-colors min-h-[40px] inline-block`}
         >
           {t.login}
         </Link>
@@ -369,7 +373,7 @@ export default function LandingContent({ stats }: { stats: Stats }) {
       <div className="fixed top-4 right-4 z-50">
         <button
           onClick={() => setLang(lang === "th" ? "en" : "th")}
-          className="bg-white/95 backdrop-blur-sm border border-gray-200 shadow-md text-text-dark font-nunito font-bold text-sm px-4 py-2 rounded-full hover:bg-cream transition-colors min-h-[40px]"
+          className="bg-white border border-gray-200 shadow-md text-text-dark font-nunito font-bold text-sm px-4 py-2 rounded-full hover:bg-cream transition-colors min-h-[40px]"
           aria-label={`Switch to ${t.toggle} language`}
         >
           {t.toggle}
@@ -802,10 +806,10 @@ export default function LandingContent({ stats }: { stats: Stats }) {
             {CONTACT_LABEL}
           </a>
         </p>
-        <p>
-          <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
+        <p className={bodyFont}>
+          <Link href="/privacy" className="hover:text-white transition-colors">{t.footerPrivacy}</Link>
           {" · "}
-          <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+          <Link href="/terms" className="hover:text-white transition-colors">{t.footerTerms}</Link>
         </p>
       </footer>
     </div>

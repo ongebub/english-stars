@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AppFooter } from "@/components/AppFooter";
+
+export const metadata: Metadata = {
+  title: "ข้อกำหนดการใช้งาน | Terms of Service — English Allstars",
+  description:
+    "ข้อกำหนดการใช้งานของ English Allstars — Terms of Service for English Allstars.",
+};
 
 export default function TermsPage() {
   return (
