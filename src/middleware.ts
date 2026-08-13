@@ -1,7 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
-const protectedRoutes = ["/dashboard", "/gradebook", "/school", "/tutor", "/settings"];
+const protectedRoutes = [
+  "/dashboard",
+  "/gradebook",
+  "/school",
+  "/tutor",
+  "/settings",
+  // Internal review tools. These write to content tables with the browser
+  // client, so they must never be reachable logged out. Layer 2 is the
+  // ADMIN_EMAIL check in admin/layout.tsx and punchlist/layout.tsx; layer 3 is
+  // RLS, which now restricts those writes to the authenticated role.
+  "/admin",
+  "/punchlist",
+];
 const semiProtectedRoutes = ["/learn"];
 
 // Routes that should never be subscription-gated

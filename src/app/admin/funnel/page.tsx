@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { isAdminEmail } from "@/lib/admin";
 import Link from "next/link";
 
 // signup_events has RLS enabled with an INSERT-only policy and no SELECT policy,
@@ -31,8 +32,6 @@ const EVENT_LABELS: Record<string, string> = {
   trial_active: "Trial Active",
 };
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "ongebub@gmail.com";
-
 type SearchParams = Promise<{ days?: string; plan?: string }>;
 
 export default async function FunnelPage({ searchParams }: { searchParams: SearchParams }) {
@@ -40,7 +39,7 @@ export default async function FunnelPage({ searchParams }: { searchParams: Searc
 
   // Auth check
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!isAdminEmail(user?.email)) {
     redirect("/login");
   }
 
