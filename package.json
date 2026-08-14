@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs",
+    "security-check": "node scripts/security-check.mjs",
+    "verify": "npm run typecheck && npm run lint && npm run build && npm run smoke"
   },
   "dependencies": {
     "@stripe/react-stripe-js": "^6.8.0",
