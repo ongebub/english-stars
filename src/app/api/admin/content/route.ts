@@ -24,6 +24,23 @@ function getAdminSupabase() {
 }
 
 export async function POST(req: NextRequest) {
+  // 0. CSRF. This is a cookie-authenticated POST, so it relies on @supabase/ssr's
+  //    default SameSite=Lax to suppress cross-site sends. Browsers always send
+  //    Origin on POST, so rejecting a mismatched Origin closes that gap
+  //    explicitly rather than depending on a cookie attribute we do not set here.
+  const origin = req.headers.get("origin");
+  if (origin) {
+    let originHost: string | null = null;
+    try {
+      originHost = new URL(origin).host;
+    } catch {
+      originHost = null;
+    }
+    if (originHost !== req.headers.get("host")) {
+      return NextResponse.json({ error: "Cross-origin request rejected" }, { status: 403 });
+    }
+  }
+
   // 1. Who is calling? Uses the cookie-bound session, not anything client-supplied.
   const supabase = await createServerClient();
   const {
@@ -50,22 +67,31 @@ export async function POST(req: NextRequest) {
     never
   >;
 
-  const invalid = validateAdminUpdate({ table, filterColumn, filterValue, patch });
-  if (invalid) {
-    return NextResponse.json({ error: invalid }, { status: 400 });
+  // Validation and execution are wrapped so an unexpected throw can never
+  // surface as an unhandled 500 with a stack attached.
+  try {
+    const invalid = validateAdminUpdate({ table, filterColumn, filterValue, patch });
+    if (invalid) {
+      return NextResponse.json({ error: invalid }, { status: 400 });
+    }
+
+    // 3. Execute with the service role, scoped by the validated filter.
+    const admin = getAdminSupabase();
+    const { error, count } = await admin
+      .from(table as AdminTable)
+      .update(patch as Record<string, unknown>, { count: "exact" })
+      .eq(filterColumn as string, filterValue as string);
+
+    if (error) {
+      // Detail stays server-side: the raw Postgres message leaks column names
+      // and types. The caller is an admin, but there is no reason to echo it.
+      console.error("admin content update failed:", error);
+      return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true, updated: count ?? 0 });
+  } catch (err) {
+    console.error("admin content update threw:", err);
+    return NextResponse.json({ error: "Update failed" }, { status: 500 });
   }
-
-  // 3. Execute with the service role, scoped by the validated filter.
-  const admin = getAdminSupabase();
-  const { error, count } = await admin
-    .from(table as AdminTable)
-    .update(patch as Record<string, unknown>, { count: "exact" })
-    .eq(filterColumn as string, filterValue as string);
-
-  if (error) {
-    console.error("admin content update failed:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ ok: true, updated: count ?? 0 });
 }

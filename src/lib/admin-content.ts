@@ -83,7 +83,16 @@ export type AdminUpdateRequest = {
 export function validateAdminUpdate(req: Partial<AdminUpdateRequest>): string | null {
   const { table, filterColumn, filterValue, patch } = req;
 
-  if (typeof table !== "string" || !(table in ADMIN_CONTENT_RULES)) {
+  // hasOwnProperty, NOT `in`: the `in` operator walks the prototype chain, so
+  // `"toString" in ADMIN_CONTENT_RULES` is true. That would pass this check and
+  // then set `rule` to Object.prototype.toString, whose .filters is undefined —
+  // a TypeError and a 500 rather than a clean 400. Not exploitable into a write,
+  // but a security-relevant membership test should not depend on prototype
+  // semantics.
+  if (
+    typeof table !== "string" ||
+    !Object.prototype.hasOwnProperty.call(ADMIN_CONTENT_RULES, table)
+  ) {
     return `table not allowed: ${String(table)}`;
   }
   const rule = ADMIN_CONTENT_RULES[table as AdminTable];
