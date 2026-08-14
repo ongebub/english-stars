@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
+import { adminUpdate } from "@/lib/admin-update";
 
 const supabase = createClient();
 
@@ -89,17 +90,17 @@ export default function FlashcardsAdminPage() {
     const newVal = !card.flagged;
     const notes = newVal ? (prompt('Correction notes (what needs fixing):') || '') : null;
     setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, flagged: newVal, flag_notes: notes } : c)));
-    await supabase.from('flashcards').update({ flagged: newVal, flag_notes: notes }).eq('id', card.id);
+    await adminUpdate('flashcards', { column: 'id', value: card.id }, { flagged: newVal, flag_notes: notes });
   }
 
   async function updateNotes(card: Flashcard, notes: string) {
     setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, flag_notes: notes } : c)));
-    await supabase.from('flashcards').update({ flag_notes: notes }).eq('id', card.id);
+    await adminUpdate('flashcards', { column: 'id', value: card.id }, { flag_notes: notes });
   }
 
   async function markReviewed(card: Flashcard) {
     setCards((prev) => prev.map((c) => (c.id === card.id ? { ...c, reviewed: true } : c)));
-    await supabase.from('flashcards').update({ reviewed: true }).eq('id', card.id);
+    await adminUpdate('flashcards', { column: 'id', value: card.id }, { reviewed: true });
   }
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);

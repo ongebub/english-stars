@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
+import { adminUpdate } from "@/lib/admin-update";
 
 const supabase = createClient();
 
@@ -103,10 +104,11 @@ export default function PicqReviewPage() {
     const newVal = !question.flagged;
     const notes = newVal ? (prompt('Correction notes (what needs fixing):') || '') : null;
     setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, flagged: newVal, flag_notes: notes } : q)));
-    const { error } = await supabase
-      .from('picture_quiz_questions')
-      .update({ flagged: newVal, flag_notes: notes })
-      .eq('id', question.id);
+    const { error } = await adminUpdate(
+      'picture_quiz_questions',
+      { column: 'id', value: question.id },
+      { flagged: newVal, flag_notes: notes }
+    );
     if (error) {
       setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, flagged: !newVal } : q)));
       alert(`Failed: ${error.message}`);
@@ -115,18 +117,18 @@ export default function PicqReviewPage() {
 
   async function updateNotes(question: Question, notes: string) {
     setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, flag_notes: notes } : q)));
-    await supabase.from('picture_quiz_questions').update({ flag_notes: notes }).eq('id', question.id);
+    await adminUpdate('picture_quiz_questions', { column: 'id', value: question.id }, { flag_notes: notes });
   }
 
   async function markReviewed(question: Question) {
     setQuestions((prev) => prev.map((q) => (q.id === question.id ? { ...q, reviewed: true } : q)));
-    await supabase.from('picture_quiz_questions').update({ reviewed: true }).eq('id', question.id);
+    await adminUpdate('picture_quiz_questions', { column: 'id', value: question.id }, { reviewed: true });
   }
 
   async function markAllReviewed() {
     if (!selectedSubjectId || !confirm('Mark all questions in this subject as reviewed?')) return;
     setQuestions((prev) => prev.map((q) => ({ ...q, reviewed: true })));
-    await supabase.from('picture_quiz_questions').update({ reviewed: true }).eq('subject_id', selectedSubjectId);
+    await adminUpdate('picture_quiz_questions', { column: 'subject_id', value: selectedSubjectId }, { reviewed: true });
   }
 
   function playAudio(url: string, questionId: string) {

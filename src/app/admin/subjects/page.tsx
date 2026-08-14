@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Subject } from "@/lib/types";
+import { adminUpdate } from "@/lib/admin-update";
 
 export default function AdminPage() {
   const supabase = createClient();
@@ -27,16 +28,17 @@ export default function AdminPage() {
   }
 
   async function handleSave(id: string) {
-    await supabase
-      .from("subjects")
-      .update({
+    await adminUpdate(
+      "subjects",
+      { column: "id", value: id },
+      {
         title_en: form.title_en,
         title_th: form.title_th,
         emoji: form.emoji,
         is_published: form.is_published,
         updated_at: new Date().toISOString(),
-      })
-      .eq("id", id);
+      }
+    );
     setEditing(null);
     loadSubjects();
   }

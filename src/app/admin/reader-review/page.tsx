@@ -6,6 +6,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { adminUpdate } from "@/lib/admin-update";
 
 const supabase = createClient();
 
@@ -87,10 +88,11 @@ export default function ReaderReviewPage() {
   async function toggleFlag(page: Page) {
     const newVal = !page.flagged;
     setPages((prev) => prev.map((p) => (p.id === page.id ? { ...p, flagged: newVal } : p)));
-    const { error } = await supabase
-      .from('reader_pages')
-      .update({ flagged: newVal })
-      .eq('id', page.id);
+    const { error } = await adminUpdate(
+      'reader_pages',
+      { column: 'id', value: page.id },
+      { flagged: newVal }
+    );
     if (error) {
       setPages((prev) => prev.map((p) => (p.id === page.id ? { ...p, flagged: !newVal } : p)));
       alert(`Failed: ${error.message}`);
@@ -103,10 +105,11 @@ export default function ReaderReviewPage() {
       alert(`Cannot approve — ${flaggedCount} page(s) still flagged.`);
       return;
     }
-    const { error } = await supabase
-      .from('reader_books')
-      .update({ status: 'approved' })
-      .eq('id', selectedBookId);
+    const { error } = await adminUpdate(
+      'reader_books',
+      { column: 'id', value: selectedBookId },
+      { status: 'approved' }
+    );
     if (error) { alert(`Failed: ${error.message}`); return; }
     setBooks((prev) => prev.map((b) => (b.id === selectedBookId ? { ...b, status: 'approved' } : b)));
   }

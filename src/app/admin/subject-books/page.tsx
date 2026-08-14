@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
+import { adminUpdate } from "@/lib/admin-update";
 
 const supabase = createClient();
 
@@ -99,23 +100,23 @@ export default function SubjectBooksPage() {
     const newVal = !ep.flagged;
     const notes = newVal ? (prompt('Correction notes (what needs fixing):') || '') : null;
     setPages((prev) => prev.map((p) => (p.id === ep.id ? { ...p, flagged: newVal, flag_notes: notes } : p)));
-    await supabase.from('ebook_pages').update({ flagged: newVal, flag_notes: notes }).eq('id', ep.id);
+    await adminUpdate('ebook_pages', { column: 'id', value: ep.id }, { flagged: newVal, flag_notes: notes });
   }
 
   async function updateNotes(ep: EbookPage, notes: string) {
     setPages((prev) => prev.map((p) => (p.id === ep.id ? { ...p, flag_notes: notes } : p)));
-    await supabase.from('ebook_pages').update({ flag_notes: notes }).eq('id', ep.id);
+    await adminUpdate('ebook_pages', { column: 'id', value: ep.id }, { flag_notes: notes });
   }
 
   async function markReviewed(ep: EbookPage) {
     setPages((prev) => prev.map((p) => (p.id === ep.id ? { ...p, reviewed: true } : p)));
-    await supabase.from('ebook_pages').update({ reviewed: true }).eq('id', ep.id);
+    await adminUpdate('ebook_pages', { column: 'id', value: ep.id }, { reviewed: true });
   }
 
   async function markAllReviewed() {
     if (!selectedSubjectId || !confirm('Mark all pages in this subject as reviewed?')) return;
     setPages((prev) => prev.map((p) => ({ ...p, reviewed: true })));
-    await supabase.from('ebook_pages').update({ reviewed: true }).eq('subject_id', selectedSubjectId);
+    await adminUpdate('ebook_pages', { column: 'subject_id', value: selectedSubjectId }, { reviewed: true });
   }
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);

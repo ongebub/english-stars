@@ -51,9 +51,16 @@ Read CLAUDE.md first — it is law for you and every sub-agent you spawn.
 Page at app/admin/reader-review/page.tsx:
 - Book selector (reader_books by level + status), then a vertical list of pages:
   image left, page text + stored prompt + catalog description right.
-- Per page: a "🚩 Regenerate" toggle → sets reader_pages.flagged (anon-key update
-  policy exists). Header: book status + flagged count + "Mark book approved" button
-  (sets status 'approved').
+- Per page: a "🚩 Regenerate" toggle → sets reader_pages.flagged. Header: book
+  status + flagged count + "Mark book approved" button (sets status 'approved').
+- DO NOT write to content tables from the browser with the anon key. That
+  shortcut required permissive RLS write policies which left every content table
+  open first to the whole internet and then to any signed-in customer. All those
+  write policies have been dropped; content tables are now service-role-only for
+  writes. Admin writes go through `adminUpdate()` (src/lib/admin-update.ts) ->
+  POST /api/admin/content, which checks ADMIN_EMAIL server-side and validates
+  against a narrow table/column allowlist in src/lib/admin-content.ts. To make a
+  new column writable from a review tool, add it to that allowlist.
 - Same visual pattern as /punchlist. Screenshot it rendering real data before done.
 
 ## Regen loop (coordinator, after Chris reviews)

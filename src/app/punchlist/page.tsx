@@ -6,6 +6,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { adminUpdate } from "@/lib/admin-update";
 
 const supabase = createClient();
 
@@ -131,10 +132,11 @@ export default function PunchlistPage() {
     setRoadmapItems((prev) =>
       prev.map((it) => (it.id === item.id ? { ...it, [field]: newValue } : it))
     );
-    const { error: err } = await supabase
-      .from('punchlist_items')
-      .update({ [field]: newValue, updated_at: new Date().toISOString() })
-      .eq('id', item.id);
+    const { error: err } = await adminUpdate(
+      'punchlist_items',
+      { column: 'id', value: item.id },
+      { [field]: newValue, updated_at: new Date().toISOString() }
+    );
     if (err) {
       setRoadmapItems((prev) =>
         prev.map((it) => (it.id === item.id ? { ...it, [field]: !newValue } : it))
@@ -149,10 +151,11 @@ export default function PunchlistPage() {
     setSubjects((prev) =>
       prev.map((s) => (s.id === subject.id ? { ...s, storybook_planned: newValue } : s))
     );
-    const { error: err } = await supabase
-      .from('subjects')
-      .update({ storybook_planned: newValue })
-      .eq('id', subject.id);
+    const { error: err } = await adminUpdate(
+      'subjects',
+      { column: 'id', value: subject.id },
+      { storybook_planned: newValue }
+    );
     if (err) {
       setSubjects((prev) =>
         prev.map((s) => (s.id === subject.id ? { ...s, storybook_planned: !newValue } : s))
