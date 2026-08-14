@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 import { sendWelcomeEmail } from "@/lib/resend";
+import { sendCapiEvent } from "@/lib/meta-capi";
 
 export const dynamic = "force-dynamic";
 
@@ -138,6 +139,22 @@ export async function POST(req: NextRequest) {
         } catch (trackErr) {
           console.error("Failed to track trial_active:", trackErr);
         }
+
+        // Meta Conversions API. Both are server-side because the card is
+        // entered on Stripe's hosted page, which we cannot observe from the
+        // browser. No-ops with a warning until META_CAPI_ACCESS_TOKEN is set.
+        await sendCapiEvent("AddPaymentInfo", {
+          userId,
+          plan: tier,
+          eventId: `addpaymentinfo_${session.id}`,
+        });
+        await sendCapiEvent("StartTrial", {
+          userId,
+          plan: tier,
+          value: 750,
+          currency: "THB",
+          eventId: `starttrial_${session.id}`,
+        });
       }
       break;
     }
@@ -251,6 +268,29 @@ export async function POST(req: NextRequest) {
 
         if (error)
           console.error("Failed to update on payment_succeeded:", error);
+
+        // Subscribe = the first REAL charge after the trial converts.
+        // The trial-start invoice is 0 THB with billing_reason
+        // "subscription_create", so requiring a positive amount on a
+        // "subscription_cycle" invoice isolates the genuine conversion.
+        const isFirstRealCharge =
+          invoice.amount_paid > 0 && invoice.billing_reason === "subscription_cycle";
+
+        if (isFirstRealCharge) {
+          const { data: subRow } = await supabase
+            .from("subscriptions")
+            .select("user_id, tier")
+            .eq("stripe_customer_id", customerId)
+            .maybeSingle();
+
+          await sendCapiEvent("Subscribe", {
+            userId: subRow?.user_id ?? null,
+            plan: subRow?.tier ?? null,
+            value: invoice.amount_paid / 100,
+            currency: (invoice.currency || "thb").toUpperCase(),
+            eventId: `subscribe_${invoice.id}`,
+          });
+        }
       }
       break;
     }

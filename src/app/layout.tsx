@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Nunito, Sarabun, Fredoka } from "next/font/google";
+import MetaPixel from "@/components/MetaPixel";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -65,6 +66,7 @@ export default function RootLayout({
         `}} />
       </head>
       <body className={`${nunito.variable} ${sarabun.variable} ${fredoka.variable} font-nunito antialiased`}>
+        <MetaPixel />
         {children}
       </body>
     </html>
