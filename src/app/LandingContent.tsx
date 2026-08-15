@@ -351,6 +351,14 @@ export default function LandingContent({ stats }: { stats: Stats }) {
   useEffect(() => {
     trackEvent("landing_viewed");
   }, []);
+
+  // Keep <html lang> in step with the visible locale. The server renders lang="th"
+  // (Thai is the default), but the toggle switches the page client-side, and a
+  // stale lang makes screen readers voice Thai copy with an English synthesiser
+  // and vice versa.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
   const isThai = lang === "th";
 
   const bodyFont = isThai ? "font-sarabun" : "font-nunito";

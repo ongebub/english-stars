@@ -23,7 +23,7 @@ export default function PrivacyPage() {
 
         <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 space-y-6 text-text-dark text-sm leading-relaxed">
 
-          <p className="text-text-mid text-xs">Effective date: August 12, 2026 / วันที่มีผลบังคับใช้: 12 สิงหาคม 2569</p>
+          <p className="text-text-mid text-xs">Effective date: August 15, 2026 / วันที่มีผลบังคับใช้: 15 สิงหาคม 2569</p>
 
           <div className="bg-sun/20 border-2 border-sun rounded-xl p-4 text-xs text-text-dark">
             <p className="font-bold mb-1">Disclaimer / ข้อจำกัดความรับผิดชอบ</p>
@@ -113,8 +113,16 @@ export default function PrivacyPage() {
           {/* 6. Data Retention */}
           <section>
             <h2 className="font-nunito text-lg font-bold mb-2">6. Data Retention / การเก็บรักษาข้อมูล</h2>
-            <p>We retain your personal data for as long as your account is active or as needed to provide the Service. If you delete your account, we delete your personal data and all associated child profiles immediately, except where we are required by law to retain certain records (such as billing records). If you remove an individual child or student profile from your account without deleting the account, we keep that profile and its learning progress for 12 months from the date of removal so that you can restore it; after 12 months it is permanently deleted. Anonymous, aggregated data that cannot identify you may be retained indefinitely for analytics and content improvement.</p>
-            <p className="font-sarabun text-text-mid mt-2">เราเก็บรักษาข้อมูลส่วนบุคคลของคุณตราบเท่าที่บัญชีของคุณยังใช้งานอยู่หรือตามที่จำเป็นเพื่อให้บริการ หากคุณลบบัญชี เราจะลบข้อมูลส่วนบุคคลของคุณและโปรไฟล์เด็กที่เกี่ยวข้องทั้งหมดทันที ยกเว้นกรณีที่กฎหมายกำหนดให้เราต้องเก็บรักษาบันทึกบางอย่าง (เช่น บันทึกการเรียกเก็บเงิน) หากคุณลบโปรไฟล์เด็กหรือนักเรียนรายบุคคลออกจากบัญชีโดยไม่ได้ลบบัญชีทั้งหมด เราจะเก็บรักษาโปรไฟล์นั้นพร้อมความคืบหน้าการเรียนไว้เป็นเวลา 12 เดือนนับจากวันที่ลบ เพื่อให้คุณสามารถกู้คืนได้ หลังจากครบ 12 เดือน ข้อมูลดังกล่าวจะถูกลบอย่างถาวร ข้อมูลที่ไม่ระบุตัวตนและรวมกลุ่มที่ไม่สามารถระบุตัวคุณได้อาจถูกเก็บรักษาไว้อย่างไม่มีกำหนดเพื่อการวิเคราะห์และปรับปรุงเนื้อหา</p>
+            <p>We retain your personal data for as long as your account is active or as needed to provide the Service.</p>
+            <p className="mt-2"><strong>Removing a child or student profile.</strong> If you remove an individual profile without deleting your account, we keep that profile and its learning progress for 12 months from the date of removal so that you can restore it. After 12 months it is permanently deleted.</p>
+            <p className="mt-2"><strong>Cancelled or lapsed subscriptions.</strong> If your subscription is cancelled or lapses, your child profiles and their learning progress are retained on the same 12-month clock, so you can resume later without losing your child&apos;s history.</p>
+            <p className="mt-2"><strong>Deleting your data.</strong> Asking us to delete your account and personal data is a separate action from removing a profile. It is honoured immediately and permanently, and is <em>not</em> subject to the 12-month window. The only exception is records we are required by law to keep, such as billing records.</p>
+            <p className="mt-2">Anonymous, aggregated data that cannot identify you may be retained indefinitely for analytics and content improvement.</p>
+            <p className="font-sarabun text-text-mid mt-4">เราเก็บรักษาข้อมูลส่วนบุคคลของคุณตราบเท่าที่บัญชีของคุณยังใช้งานอยู่หรือตามที่จำเป็นเพื่อให้บริการ</p>
+            <p className="font-sarabun text-text-mid mt-2"><strong>การลบโปรไฟล์เด็กหรือนักเรียน</strong> หากคุณลบโปรไฟล์รายบุคคลออกโดยไม่ได้ลบบัญชีทั้งหมด เราจะเก็บรักษาโปรไฟล์นั้นพร้อมความคืบหน้าการเรียนไว้เป็นเวลา 12 เดือนนับจากวันที่ลบ เพื่อให้คุณสามารถกู้คืนได้ หลังจากครบ 12 เดือน ข้อมูลดังกล่าวจะถูกลบอย่างถาวร</p>
+            <p className="font-sarabun text-text-mid mt-2"><strong>การยกเลิกหรือหมดอายุการสมัครสมาชิก</strong> หากการสมัครสมาชิกของคุณถูกยกเลิกหรือหมดอายุ โปรไฟล์เด็กและความคืบหน้าการเรียนจะถูกเก็บรักษาไว้ตามระยะเวลา 12 เดือนเช่นเดียวกัน เพื่อให้คุณกลับมาใช้งานต่อได้โดยไม่สูญเสียประวัติการเรียนของลูก</p>
+            <p className="font-sarabun text-text-mid mt-2"><strong>การขอลบข้อมูลของคุณ</strong> การขอให้เราลบบัญชีและข้อมูลส่วนบุคคลของคุณเป็นคนละขั้นตอนกับการลบโปรไฟล์ เราจะดำเนินการทันทีและอย่างถาวร และ<em>ไม่</em>อยู่ภายใต้ระยะเวลา 12 เดือน ยกเว้นบันทึกที่กฎหมายกำหนดให้เราต้องเก็บรักษา เช่น บันทึกการเรียกเก็บเงิน</p>
+            <p className="font-sarabun text-text-mid mt-2">ข้อมูลที่ไม่ระบุตัวตนและรวมกลุ่มที่ไม่สามารถระบุตัวคุณได้อาจถูกเก็บรักษาไว้อย่างไม่มีกำหนดเพื่อการวิเคราะห์และปรับปรุงเนื้อหา</p>
           </section>
 
           {/* 7. Your Rights under PDPA */}
