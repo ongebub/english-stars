@@ -16,6 +16,18 @@ export function trackEvent(event: string, plan?: string) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ session_id: sessionId, event, plan }),
+    // keepalive lets the request outlive the page.
+    //
+    // Several funnel steps are recorded immediately before the browser leaves:
+    // signup/page.tsx fires checkout_opened and then sets
+    // window.location.href to Stripe's hosted page a few lines later. That is a
+    // full document unload, and without keepalive the browser is free to cancel
+    // the in-flight POST — so checkout_opened has been silently under-counted at
+    // exactly the step the funnel is judged on.
+    //
+    // Same-origin Link clicks (e.g. /interview -> /signup) were never affected,
+    // since those are client-side transitions and the document survives.
+    keepalive: true,
   }).catch(() => {});
 
   pixelTrack(event as FunnelEvent, { plan });

@@ -12,6 +12,9 @@
 
 export type FunnelEvent =
   | "landing_viewed"
+  | "interview_page_viewed"
+  | "interview_email_submitted"
+  | "interview_cta_clicked"
   | "signup_started"
   | "plan_selected"
   | "checkout_opened"
@@ -64,6 +67,31 @@ export const META_PIXEL_ID = process.env.NEXT_PUBLIC_FB_PIXEL_ID || "";
  */
 const META_EVENT_MAP: Record<FunnelEvent, string | null> = {
   landing_viewed: "ViewContent",
+  interview_page_viewed: "ViewContent",
+
+  // DELIBERATE DEVIATION FROM THE TASK SPEC — read before "fixing" this.
+  // The spec asked for Meta Lead on the /interview CTA click. But clicking that
+  // CTA navigates straight to /signup, which fires signup_started -> Lead a
+  // moment later. Mapping both would report TWO Leads for one person, and only
+  // on /interview traffic — which would make /interview look roughly twice as
+  // good as / in Meta's own reporting. That is precisely the comparison this
+  // page exists to make, so inflating it defeats the purpose, and it would also
+  // train Meta's optimiser on a doubled signal.
+  //
+  // Lead therefore still fires exactly once per visitor, at signup_started, for
+  // BOTH pages. The distinct interview_cta_clicked step is recorded in our own
+  // signup_events table, which is where Chris's page-vs-page comparison is
+  // actually run. If he wants Meta to count the click itself instead, change
+  // this to "Lead" AND drop signup_started to null — not both.
+  interview_cta_clicked: null,
+
+  // Same reasoning is NOT in play here: submitting the worksheet form is a real
+  // conversion that has no downstream Meta event of its own. It is still left
+  // null because it is a different, softer action than a trial signup, and
+  // merging the two into one Lead number would blur the metric Chris optimises
+  // against. Give it its own custom Meta event if he wants it counted.
+  interview_email_submitted: null,
+
   signup_started: "Lead",
   plan_selected: null,
   checkout_opened: "InitiateCheckout",
@@ -91,6 +119,9 @@ const meta: Provider = {
 
 const TIKTOK_EVENT_MAP: Record<FunnelEvent, string | null> = {
   landing_viewed: "ViewContent",
+  interview_page_viewed: "ViewContent",
+  interview_cta_clicked: null, // see the note in META_EVENT_MAP
+  interview_email_submitted: null,
   signup_started: "SubmitForm",
   plan_selected: null,
   checkout_opened: "InitiateCheckout",

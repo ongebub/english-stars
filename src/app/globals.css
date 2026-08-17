@@ -28,6 +28,27 @@ html.dark .text-text-mid { color: #D1D5DB !important; }
 html.dark .text-text-light { color: #9CA3AF !important; }
 html.dark .text-\[\#1A237E\] { color: #F3F4F6 !important; }
 
+/* ── Keep dark text on brand backgrounds that DO NOT darken. ────────────────
+   The rules above flip .text-text-dark to near-white in dark mode, on the
+   assumption that whatever sits behind it went dark too. That assumption fails
+   for the accent colours: .bg-sun stays #FFD54F and .bg-sun-dark stays #F9A825
+   in both themes, because they are brand fills rather than surfaces.
+
+   The result was measured, not guessed: every "ทดลองใช้ฟรี 7 วัน" trial button
+   on the landing page rendered #F3F4F6 on #FFD54F — a contrast ratio of
+   1.28:1, i.e. all but invisible — for any visitor whose phone was in dark
+   mode. That is the primary conversion button on a page taking paid traffic,
+   and it is the same failure mode as the white-on-white header controls that
+   shipped earlier: a text override firing without its matching background
+   override.
+
+   Restoring the intended ink gives 9.31:1 on .bg-sun and 8.02:1 on
+   .bg-sun-dark. Anything added here must be a colour that stays light in dark
+   mode, and must be checked with a computed-contrast pass, not by eye. */
+html.dark .bg-sun.text-text-dark,
+html.dark .bg-sun-dark.text-text-dark,
+html.dark .hover\:bg-sun-dark.text-text-dark { color: #1A237E !important; }
+
 /* Dark mode fallback for standard Tailwind grays.
    Only applies when the element has no explicit dark: text override. */
 html.dark [class*="text-gray-900"]:not([class*="dark:text-"]) { color: #F3F4F6 !important; }

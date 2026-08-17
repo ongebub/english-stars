@@ -201,8 +201,10 @@ function SignupContent() {
         await startCheckout(selectedPlan);
       } else {
         // Email confirmation required — show success message
+        // "proceed to payment" was the same lie as the old button label — the
+        // next step adds a card to start the trial, it does not take money.
         setSuccess(
-          "Check your email to confirm your account, then you'll proceed to payment.\nตรวจสอบอีเมลเพื่อยืนยันบัญชี แล้วดำเนินการชำระเงิน"
+          "Check your email to confirm your account, then you'll add a card to start your free trial.\nตรวจสอบอีเมลเพื่อยืนยันบัญชี แล้วเพิ่มบัตรเพื่อเริ่มทดลองใช้ฟรี"
         );
       }
     } catch {
@@ -484,8 +486,17 @@ function SignupContent() {
                     </span>
                   ) : (
                     <span>
-                      <span className="font-nunito">Create Account & Pay</span>{" "}
-                      <span className="font-sarabun">สร้างบัญชีและชำระเงิน</span>
+                      {/*
+                        NOT "Create Account & Pay" / "สร้างบัญชีและชำระเงิน".
+                        That told the parent they were being charged NOW, which is
+                        false — this starts a 7-day trial and the first charge is
+                        seven days away. It is the most likely reason people
+                        reached this button and stopped.
+                        The card requirement is NOT hidden: it is stated in the
+                        trial terms directly below this button.
+                      */}
+                      <span className="font-sarabun">เริ่มทดลองใช้ฟรี 7 วัน</span>{" "}
+                      <span className="font-nunito">Start 7-day free trial</span>
                     </span>
                   )}
                 </button>
@@ -504,8 +515,34 @@ function SignupContent() {
           </div>
         )}
 
-        {/* Secure payment notice */}
-        <p className="text-center text-xs text-text-light dark:text-gray-400 mt-6">
+        {/*
+          Trial terms. These used to be absent entirely — the page said only
+          "Secure payment via Stripe", which implied an immediate charge without
+          ever stating the trial. Now that the button says "free trial", the card
+          requirement HAS to be visible here or the button would be the
+          misleading one instead. Honest in both directions: the no-charge
+          promise is bold and first, the card requirement is plain text right
+          under it, and neither is fine print.
+        */}
+        <div className="mt-6 rounded-xl bg-leaf/10 dark:bg-leaf/15 px-4 py-3 text-center">
+          <p className="font-sarabun text-sm font-bold text-text-dark dark:text-white">
+            ไม่มีการเรียกเก็บเงินใน 7 วันแรก
+          </p>
+          <p className="font-nunito text-sm font-bold text-text-dark dark:text-white">
+            No charge during the first 7 days.
+          </p>
+          <p className="font-sarabun text-xs text-text-mid dark:text-gray-300 mt-2 leading-relaxed">
+            ต้องใช้บัตรเครดิตหรือบัตรเดบิตเพื่อเริ่มทดลองใช้ หลังจากครบ 7 วัน
+            ระบบจะเรียกเก็บเงินโดยอัตโนมัติ ยกเลิกได้ตลอดเวลาก่อนครบ 7 วัน
+            โดยไม่มีค่าใช้จ่าย
+          </p>
+          <p className="font-nunito text-xs text-text-mid dark:text-gray-300 mt-1 leading-relaxed">
+            A credit or debit card is required to start. After day 7 you are
+            charged automatically. Cancel any time before then at no charge.
+          </p>
+        </div>
+
+        <p className="text-center text-xs text-text-light dark:text-gray-400 mt-3">
           Secure payment via Stripe &middot; ชำระเงินปลอดภัยผ่าน Stripe
         </p>
 

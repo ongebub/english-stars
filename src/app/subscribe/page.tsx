@@ -189,8 +189,28 @@ function SubscribeContent() {
           </div>
         )}
 
+        {/*
+          Same trial terms as /signup. Checkout sets trial_period_days: 7
+          (src/app/api/stripe/checkout/route.ts), so this page does not take
+          money today either, and "Subscribe to English Allstars" on its own
+          reads as if it does.
+        */}
+        <div className="mt-4 rounded-xl bg-leaf/10 dark:bg-leaf/15 px-4 py-3 text-center">
+          <p className="font-sarabun text-sm font-bold text-text-dark dark:text-white">
+            ไม่มีการเรียกเก็บเงินใน 7 วันแรก
+          </p>
+          <p className="font-nunito text-sm font-bold text-text-dark dark:text-white">
+            No charge during the first 7 days.
+          </p>
+          <p className="font-sarabun text-xs text-text-mid dark:text-gray-300 mt-2 leading-relaxed">
+            ต้องใช้บัตรเครดิตหรือบัตรเดบิตเพื่อเริ่มทดลองใช้ หลังจากครบ 7 วัน
+            ระบบจะเรียกเก็บเงินโดยอัตโนมัติ ยกเลิกได้ตลอดเวลาก่อนครบ 7 วัน
+            โดยไม่มีค่าใช้จ่าย
+          </p>
+        </div>
+
         {/* Secure payment */}
-        <p className="text-center text-xs text-text-light dark:text-gray-400 mt-4">
+        <p className="text-center text-xs text-text-light dark:text-gray-400 mt-3">
           Secure payment via Stripe &middot; ชำระเงินปลอดภัยผ่าน Stripe
         </p>
         <p className="text-center text-xs text-text-light dark:text-gray-400 mt-2">

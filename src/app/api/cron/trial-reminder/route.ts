@@ -31,19 +31,32 @@ export async function GET(req: NextRequest) {
     .gte("trial_end", windowStart.toISOString())
     .lte("trial_end", windowEnd.toISOString());
 
-  if (subsError) {
-    console.error("Failed to query trialing subscriptions:", subsError);
-    return NextResponse.json({ error: "DB query failed" }, { status: 500 });
-  }
-
-  if (!subs || subs.length === 0) {
-    return NextResponse.json({ sent: 0, message: "No subscriptions in window" });
-  }
-
+  // ── NO EARLY RETURNS FROM HERE ON. READ THIS BEFORE ADDING ONE. ────────────
+  //
+  // This route does three unrelated jobs: send trial reminders, purge profiles
+  // soft-deleted 12+ months ago, and scrub old rate-limiting IP hashes. It used
+  // to `return` here whenever there were no trials in the 1.5–2.5 day window,
+  // which on most days there are not — so the two MAINTENANCE jobs below almost
+  // never executed.
+  //
+  // That was found by the security review, and it is worse than it sounds: the
+  // 12-month purge is a RETENTION COMMITMENT stated in our privacy policy, and
+  // on this evidence it has very likely never run since it was added in
+  // 9634163. A live check at the time of the fix showed 0 trialing subscriptions
+  // in the window, i.e. the cron was returning at this line that day.
+  //
+  // The reminder failure is likewise no longer fatal to the rest of the run: a
+  // bad subscriptions query must not stop us honouring a deletion request.
   let sent = 0;
   let skipped = 0;
+  let reminderError: string | null = null;
 
-  for (const sub of subs) {
+  if (subsError) {
+    console.error("Failed to query trialing subscriptions:", subsError);
+    reminderError = subsError.message;
+  }
+
+  for (const sub of subs ?? []) {
     const userId = sub.user_id;
 
     // Idempotency: check if reminder already sent
@@ -127,9 +140,12 @@ export async function GET(req: NextRequest) {
     .not("deleted_at", "is", null)
     .lt("deleted_at", twelveMonthsAgo);
 
+  // Was an early return. A failed purge query must not skip the ip_hash
+  // retention scrub below — they are independent obligations.
+  let purgeError: string | null = null;
   if (purgeQueryErr) {
     console.error("Purge query failed:", purgeQueryErr);
-    return NextResponse.json({ sent, skipped, total: subs.length, purge_error: purgeQueryErr.message });
+    purgeError = purgeQueryErr.message;
   }
 
   const purgeIds = (profilesToPurge ?? []).map((p: { id: string }) => p.id);
@@ -157,5 +173,40 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent, skipped, total: subs.length, purged, purge_ids: purgeIds });
+  // ── Retention step: drop rate-limiting IP hashes older than 30 days ────────
+  //
+  // printable_requests.ip_hash exists only to rate-limit the public worksheet
+  // endpoint, and the longest window it is consulted over is 24 hours. A salted
+  // hash is pseudonymised, not anonymised, so it stays personal data for as long
+  // as we keep it — and there is no reason to keep it past its usefulness.
+  //
+  // This was written because the security review pointed out that the migration
+  // claimed retention was handled "by the existing retention job" when no such
+  // code existed. Now it does. Do not delete this without also correcting that
+  // comment in 20260817200000_printable_requests_rate_limit.sql.
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data: scrubbed, error: scrubErr } = await supabase
+    .from("printable_requests")
+    .update({ ip_hash: null })
+    .not("ip_hash", "is", null)
+    .lt("created_at", thirtyDaysAgo)
+    .select("id");
+
+  if (scrubErr) console.error("ip_hash retention scrub failed:", scrubErr);
+  const ipHashesScrubbed = scrubbed?.length ?? 0;
+  if (ipHashesScrubbed > 0) console.log(`Scrubbed ip_hash from ${ipHashesScrubbed} row(s)`);
+
+  return NextResponse.json({
+    sent,
+    skipped,
+    total: subs?.length ?? 0,
+    purged,
+    purge_ids: purgeIds,
+    ip_hashes_scrubbed: ipHashesScrubbed,
+    // Reported rather than thrown, so a failure in one job is visible without
+    // hiding whether the other two ran.
+    reminder_error: reminderError,
+    purge_error: purgeError,
+  });
 }
