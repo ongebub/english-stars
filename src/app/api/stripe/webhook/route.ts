@@ -72,6 +72,42 @@ export async function POST(req: NextRequest) {
         const priceId = sub.items.data[0]?.price.id || "";
         const tier = detectTier(priceId, session.metadata?.tier);
 
+        // Which promotion code, if any, was redeemed.
+        //
+        // Stripe tracks how MANY times a code was redeemed but not by whom, and
+        // the review-exchange programme is capped at 40 — Chris has to be able
+        // to match those 40 redemptions back to accounts. Checkout completion is
+        // the one moment both facts are in the same object.
+        //
+        // session.discounts[].promotion_code is the promo ID (promo_...), not
+        // the code the customer typed, so the human-readable code costs one
+        // extra retrieve. Both are stored: the text is what Chris searches by,
+        // the id is stable if the text is later edited in Stripe.
+        //
+        // Wrapped in its own try/catch on purpose — failing to record a
+        // marketing attribution must never cost the customer their subscription
+        // row, which is what this handler actually exists to write.
+        let promotionCode: string | null = null;
+        let promotionCodeId: string | null = null;
+        try {
+          // Scan the whole discounts array rather than taking [0]. A session can
+          // carry more than one discount — a customer-level coupon alongside the
+          // redeemed promotion code — and there is no guarantee the promotion
+          // code is first. Reading only index 0 silently attributed nothing in
+          // that case, which is precisely the "which 40 people redeemed it"
+          // question this column exists to answer.
+          const rawPromo = session.discounts?.find((d) => d.promotion_code)
+            ?.promotion_code;
+          if (rawPromo) {
+            promotionCodeId =
+              typeof rawPromo === "string" ? rawPromo : rawPromo.id;
+            const promo = await stripe.promotionCodes.retrieve(promotionCodeId);
+            promotionCode = promo.code ?? null;
+          }
+        } catch (promoErr) {
+          console.error("Failed to resolve promotion code on checkout:", promoErr);
+        }
+
         const { error } = await supabase.from("subscriptions").upsert({
           user_id: userId,
           stripe_customer_id: session.customer as string,
@@ -91,6 +127,8 @@ export async function POST(req: NextRequest) {
           cancel_at_period_end: sub.cancel_at_period_end,
           child_count: tier === "tutor" ? seatCount : 1,
           max_students: tier === "tutor" ? seatCount : 4,
+          promotion_code: promotionCode,
+          promotion_code_id: promotionCodeId,
           updated_at: new Date().toISOString(),
         });
 

@@ -88,6 +88,11 @@ export async function POST(req: NextRequest) {
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [lineItem],
+      // Without this, Stripe Checkout never renders the promotion-code field and
+      // any code we hand out is silently unusable — the customer has nowhere to
+      // type it. This flag only applies to hosted Checkout, which is what this
+      // route creates; it would do nothing for a PaymentElement flow.
+      allow_promotion_codes: true,
       subscription_data: {
         trial_period_days: 7,
       },

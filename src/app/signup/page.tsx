@@ -302,6 +302,38 @@ function SignupContent() {
               </p>
             </div>
 
+            {/*
+              Discount-code disclosure.
+
+              COLLAPSED BY DEFAULT, and deliberately NOT a code input. Showing an
+              empty promo box to every visitor sends people off hunting for a code
+              instead of paying, which costs more than the codes are worth.
+
+              There is no input here because this flow uses HOSTED Stripe
+              Checkout: the code is entered on Stripe's own page, which now
+              renders an "Add promotion code" field because the session sets
+              allow_promotion_codes. Duplicating the box here would mean
+              collecting a code we cannot validate and then asking for it again a
+              screen later. This only tells the few people holding a code that it
+              will be honoured, and where to put it.
+            */}
+            <details className="mt-4 text-center">
+              <summary className="cursor-pointer list-none text-sm font-semibold text-sky-dark hover:underline">
+                <span className="font-sarabun">มีโค้ดส่วนลด?</span>{" "}
+                <span className="font-nunito">Have a discount code?</span>
+              </summary>
+              <div className="mt-2 px-2">
+                <p className="font-sarabun text-xs text-text-mid dark:text-gray-300 leading-relaxed">
+                  กรอกโค้ดได้ในหน้าถัดไป ตรงช่อง &quot;Add promotion code&quot;
+                  ก่อนยืนยันการสมัคร
+                </p>
+                <p className="font-nunito text-xs text-text-mid dark:text-gray-300 mt-1 leading-relaxed">
+                  Enter it on the next page, under &quot;Add promotion
+                  code&quot;, before you confirm.
+                </p>
+              </div>
+            </details>
+
             {/* Already have an account */}
             <div className="text-center mt-6">
               <Link
