@@ -6,8 +6,13 @@ import Link from "next/link";
 import { TH, EN } from "./content";
 import { trackEvent } from "@/lib/track";
 
-/** Set once Chris supplies IMG_1905. See the note on PhotoSlot below. */
-const PHOTO_SRC: string | null = null;
+/**
+ * The hero photo. See scripts/build-teacher-photo.mjs for why this is IMG_2184
+ * (Matt solo, blank whiteboard) rather than the group shot the brief first
+ * pointed at — short version: the group shot's evidence is illegible at phone
+ * size, and it carries consent questions this one does not.
+ */
+const PHOTO_SRC: string | null = "/teacher/matt-whiteboard.jpg";
 
 /**
  * /teacher — single-screen landing page.
@@ -127,18 +132,14 @@ export default function TeacherContent() {
  * and NOT of whatever file eventually lands here. That is what makes the
  * no-scroll layout verifiable before the photo exists.
  *
- * IMG_1905 has not been supplied yet (task 6b823e8c). When it is:
- *   - crop to 16:9 centred on Matt and the whiteboard
- *   - the whiteboard text MUST stay legible — his handwriting and the English
- *     homework on it are what make the photo credible, and are the entire
- *     reason this page works. Do not crop them out.
- *   - do not crop so tight the students disappear
- *   - set PHOTO_SRC above; the layout does not need to change
+ * The image is produced by scripts/build-teacher-photo.mjs — change the crop
+ * there, not here, so it stays reproducible.
  *
- * SEPARATELY BLOCKED: the whiteboard shows Matt's FULL SURNAME legibly, and he
- * previously approved first name only. Consent for the surname to appear in
- * PAID ADVERTISING is unconfirmed. Do not ship the real photo until that is
- * settled in writing.
+ * BEFORE SWAPPING IN A DIFFERENT PHOTO, read the note in that script. The
+ * obvious-looking alternative (the class group shot, IMG_1905) was rejected on
+ * measurement: its whiteboard evidence is illegible at 375px and it puts both
+ * Matt's full surname and eight identifiable students into a paid ad, neither of
+ * which has been consented to. This photo needs nobody's permission.
  */
 function PhotoSlot({ alt }: { alt: string }) {
   if (!PHOTO_SRC) {
