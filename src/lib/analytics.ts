@@ -15,6 +15,8 @@ export type FunnelEvent =
   | "interview_page_viewed"
   | "interview_email_submitted"
   | "interview_cta_clicked"
+  | "teacher_page_viewed"
+  | "teacher_cta_clicked"
   | "signup_started"
   | "plan_selected"
   | "checkout_opened"
@@ -92,6 +94,14 @@ const META_EVENT_MAP: Record<FunnelEvent, string | null> = {
   // against. Give it its own custom Meta event if he wants it counted.
   interview_email_submitted: null,
 
+  teacher_page_viewed: "ViewContent",
+  // Same reasoning as interview_cta_clicked above: this click lands on /signup,
+  // which fires signup_started -> Lead moments later. Counting both would report
+  // two Leads per visitor from /teacher only, and Chris is explicitly comparing
+  // /teacher against /interview against / — inflating one of the three is the
+  // one thing that would make that comparison useless.
+  teacher_cta_clicked: null,
+
   signup_started: "Lead",
   plan_selected: null,
   checkout_opened: "InitiateCheckout",
@@ -122,6 +132,8 @@ const TIKTOK_EVENT_MAP: Record<FunnelEvent, string | null> = {
   interview_page_viewed: "ViewContent",
   interview_cta_clicked: null, // see the note in META_EVENT_MAP
   interview_email_submitted: null,
+  teacher_page_viewed: "ViewContent",
+  teacher_cta_clicked: null,
   signup_started: "SubmitForm",
   plan_selected: null,
   checkout_opened: "InitiateCheckout",
