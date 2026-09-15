@@ -214,6 +214,22 @@ export const TH = {
   ],
   offerCta: "ทดลองใช้ฟรี 7 วัน",
 
+  // ── The offer, said at the top and said again in a bar that never leaves.
+  //
+  // These six strings are Naparat's, from her review of this page: the price
+  // and the signup belong at the TOP and stated plainly, because Thai
+  // ecommerce is more price-forward than Western landing-page convention.
+  // That is the first native-speaker review this page has had and it outranks
+  // the previous design theory, which put the first CTA 7,570px down.
+  //
+  // Unlike most of this file, these are NOT placeholder.
+  stickyOffer: "ทดลองใช้ฟรี 7 วัน · 750฿/เดือน",
+  stickyCta: "สมัครเลย",
+  topOfferHeadline: "ทดลองใช้ฟรี 7 วัน แล้ว 750 บาท/เดือน",
+  topOfferTerms: "ยกเลิกได้ตลอดเวลาก่อนครบ 7 วัน โดยไม่มีค่าใช้จ่าย",
+  topOfferCta: "เริ่มทดลองใช้ฟรี 7 วัน",
+  questionMore: "ดูรายละเอียด",
+
   // ── Trial terms. Verbatim from LandingContent.tsx — do not reword.
   trialHeadline: "ไม่มีการเรียกเก็บเงินใน 7 วันแรก",
   trialTerms:
@@ -372,6 +388,13 @@ export const EN: typeof TH = {
     },
   ],
   offerCta: "Start your free 7-day trial",
+
+  stickyOffer: "7 days free · 750฿/month",
+  stickyCta: "Sign up",
+  topOfferHeadline: "Free for 7 days, then 750 THB a month",
+  topOfferTerms: "Cancel any time before day 7 at no charge.",
+  topOfferCta: "Start the free 7-day trial",
+  questionMore: "See the detail",
 
   trialHeadline: "No charge during the first 7 days.",
   trialTerms:

@@ -42,7 +42,7 @@ export default function InterviewContent() {
   }, [lang]);
 
   return (
-    <div className="min-h-screen bg-white font-nunito">
+    <div className="min-h-screen bg-white font-nunito pb-24 sm:pb-20">
       {/* ── Controls ──────────────────────────────────────────────────────────
           Plain bg-white, NOT bg-white/95. Tailwind emits the latter as the
           class "bg-white\/95", which does not match the html.dark .bg-white
@@ -131,6 +131,36 @@ export default function InterviewContent() {
       </header>
 
       {/* ── 2. THE FIVE QUESTIONS ───────────────────────────────────────────── */}
+      {/* ── 1b. THE OFFER, AT THE TOP ────────────────────────────────────────
+             Naparat's review: the price and the signup belong at the TOP,
+             stated plainly. This is additive — the five free questions and the
+             value-first structure below are untouched. Someone who arrived
+             ready to buy can now act; someone who wants to read first still
+             reads first. Before this, the only CTA sat 7,570px down. */}
+      <section className="max-w-3xl mx-auto px-5 sm:px-6 pt-8 pb-2">
+        <div className="rounded-2xl border-2 border-sun bg-sun/10 px-5 py-6 text-center">
+          <p
+            className={`${bodyFont} font-black text-xl sm:text-2xl text-text-dark`}
+            style={thaiLeading}
+          >
+            {t.topOfferHeadline}
+          </p>
+          <p
+            className={`${bodyFont} text-sm text-text-mid mt-2`}
+            style={thaiLeading}
+          >
+            {t.topOfferTerms}
+          </p>
+          <Link
+            href="/signup"
+            onClick={() => trackEvent("interview_cta_clicked")}
+            className={`${bodyFont} mt-5 inline-flex items-center justify-center bg-sun text-text-dark font-extrabold text-base sm:text-lg px-8 py-4 rounded-2xl hover:bg-sun-dark transition-colors shadow-lg w-full sm:w-auto text-center min-h-[56px]`}
+          >
+            {t.topOfferCta}
+          </Link>
+        </div>
+      </section>
+
       <section className="max-w-3xl mx-auto px-5 sm:px-6 py-10 sm:py-14">
         <h2
           className={`${bodyFont} font-black text-2xl sm:text-3xl text-text-dark text-center mb-8`}
@@ -195,9 +225,26 @@ export default function InterviewContent() {
                     </span>
                   </p>
 
-                  <Detail label={t.labelListen} body={q.listen} font={bodyFont} leading={thaiLeading} />
-                  <Detail label={t.labelMistake} body={q.mistake} font={bodyFont} leading={thaiLeading} />
-                  <Detail label={t.labelPractise} body={q.practise} font={bodyFont} leading={thaiLeading} last />
+                  {/* The model answer above stays visible; the coaching
+                      detail folds away. Native <details> on purpose — it needs
+                      no state, no hydration and no JavaScript to open, and it
+                      is keyboard-accessible for free. First card open so the
+                      pattern is obvious and the page does not read as empty. */}
+                  <details open={i === 0} className="group">
+                    <summary
+                      className={`${bodyFont} cursor-pointer list-none select-none text-sm font-bold text-[#01579B] dark:text-sky flex items-center gap-1.5 py-1`}
+                    >
+                      <span className="transition-transform group-open:rotate-90" aria-hidden="true">
+                        &#9656;
+                      </span>
+                      {t.questionMore}
+                    </summary>
+                    <div className="pt-3">
+                      <Detail label={t.labelListen} body={q.listen} font={bodyFont} leading={thaiLeading} />
+                      <Detail label={t.labelMistake} body={q.mistake} font={bodyFont} leading={thaiLeading} />
+                      <Detail label={t.labelPractise} body={q.practise} font={bodyFont} leading={thaiLeading} last />
+                    </div>
+                  </details>
                 </div>
               </div>
             </article>
@@ -205,7 +252,14 @@ export default function InterviewContent() {
         </div>
       </section>
 
-      {/* ── 3. GENERAL ADVICE ───────────────────────────────────────────────── */}
+      {/* ── 3. PRINTABLE WORKSHEET (email capture) ──────────────────────────────
+             Moved up from below the general advice, where it sat 8.9 screens
+             down. It is the cheapest thing a reader can say yes to and it has
+             just been earned by the five answers above; asking for it after
+             another two screens of prose was asking too late. */}
+      <PrintableForm t={t} bodyFont={bodyFont} leading={thaiLeading} />
+
+      {/* ── 4. GENERAL ADVICE ───────────────────────────────────────────────── */}
       <section className="bg-cream py-10 sm:py-14">
         <div className="max-w-3xl mx-auto px-5 sm:px-6">
           <div className="text-center mb-8">
@@ -253,9 +307,6 @@ export default function InterviewContent() {
           </div>
         </div>
       </section>
-
-      {/* ── 4. PRINTABLE WORKSHEET (email capture) ──────────────────────────── */}
-      <PrintableForm t={t} bodyFont={bodyFont} leading={thaiLeading} />
 
       {/* ── 5. THE OFFER — only now, after the value has been handed over. ──── */}
       <section className="bg-gradient-to-br from-sky-dark/5 to-leaf/10 py-10 sm:py-14">
@@ -352,6 +403,37 @@ export default function InterviewContent() {
           </Link>
         </p>
       </footer>
+
+      {/* ── THE STICKY OFFER BAR ─────────────────────────────────────────────
+             The main fix. Whatever the visitor is reading, the price and the
+             way to buy are on screen.
+
+             pb-[env(safe-area-inset-bottom)] keeps it clear of the iPhone home
+             indicator; without it the tap target sits under the system gesture
+             area on exactly the phones this ad runs on. The page itself is
+             padded at the foot (pb-24 on the root) so this never covers the
+             footer.
+
+             Same trackEvent as every other CTA, so it lands in signup_events
+             and fires the Meta Lead pixel — a CTA that does not report is
+             worse than no CTA, because the funnel then lies. */}
+      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-sun-dark/40 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.12)] pb-[env(safe-area-inset-bottom)]">
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+          <p
+            className={`${bodyFont} font-bold text-sm sm:text-base text-text-dark leading-snug`}
+            style={thaiLeading}
+          >
+            {t.stickyOffer}
+          </p>
+          <Link
+            href="/signup"
+            onClick={() => trackEvent("interview_cta_clicked")}
+            className={`${bodyFont} flex-shrink-0 inline-flex items-center justify-center bg-sun text-text-dark font-extrabold text-sm sm:text-base px-5 py-3 rounded-xl hover:bg-sun-dark transition-colors min-h-[48px]`}
+          >
+            {t.stickyCta}
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
