@@ -37,10 +37,22 @@ function backToLogin(origin: string, reason: FailureReason) {
   return NextResponse.redirect(`${origin}/login?error=${reason}`);
 }
 
+/**
+ * `next` arrives from the emailed link, so it is attacker-controllable in the
+ * sense that anyone can craft one and send it to someone. Only a single-slash
+ * relative path is allowed through: "//evil.com" would otherwise be a
+ * protocol-relative URL, and an absolute one would make NextResponse.redirect
+ * throw on a malformed string and turn a bad link into a 500.
+ */
+function safeNext(raw: string | null): string {
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return '/dashboard';
+  return raw;
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
 
-  const next = searchParams.get('next') ?? '/dashboard';
+  const next = safeNext(searchParams.get('next'));
   const tokenHash = searchParams.get('token_hash');
   const type = searchParams.get('type');
   const code = searchParams.get('code');
