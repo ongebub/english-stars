@@ -10,7 +10,7 @@ const supabase = createClient(
 );
 
 export async function POST(request: NextRequest) {
-  const { device_hash } = await request.json();
+  const { device_hash, legacy_device_hash } = await request.json();
 
   if (!device_hash) {
     return NextResponse.json({ error: "Missing device_hash" }, { status: 400 });
@@ -40,6 +40,43 @@ export async function POST(request: NextRequest) {
       .eq("id", trusted.id);
 
     return NextResponse.json({ trusted: true });
+  }
+
+  // No row under the current hash. Before emailing a code, check whether this
+  // device was trusted under the pre-2026-09-21 fingerprint (the one that
+  // included the browser version) and, if so, move the row onto the new hash.
+  //
+  // Without this, shipping the new fingerprint would un-trust every existing
+  // device exactly once — the same failure we are fixing, delivered on purpose.
+  //
+  // Delete this block, and getLegacyDeviceFingerprint, once no trusted_devices
+  // row predates the rollout.
+  if (legacy_device_hash && legacy_device_hash !== device_hash) {
+    const { data: legacy } = await supabase
+      .from("trusted_devices")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("device_hash", legacy_device_hash)
+      .single();
+
+    if (legacy) {
+      const { error: migrateError } = await supabase
+        .from("trusted_devices")
+        .update({
+          device_hash,
+          last_used_at: new Date().toISOString(),
+        })
+        .eq("id", legacy.id);
+
+      // If the migration write fails, fall through to the emailed code rather
+      // than trusting a device we could not record. One extra email beats a
+      // trust decision with nothing behind it.
+      if (!migrateError) {
+        return NextResponse.json({ trusted: true, migrated: true });
+      }
+
+      console.error("Failed to migrate legacy device hash:", migrateError);
+    }
   }
 
   // Device is not trusted — generate verification code

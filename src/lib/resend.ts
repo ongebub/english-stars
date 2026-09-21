@@ -12,7 +12,14 @@ export async function sendVerificationCode(
 ): Promise<void> {
   const from = process.env.RESEND_FROM_EMAIL || "English Allstars <onboarding@resend.dev>";
 
-  await resend.emails.send({
+  // resend.emails.send() RESOLVES with { data, error } — it does not reject.
+  // Awaiting it without reading `error` means a quota overrun, a 429, a
+  // suppressed address or an unverified domain all look like success, and
+  // /api/auth/check-device then answers requires_2fa and sends the user off to
+  // read an email that was never sent. That is a silent lockout: the only way
+  // past the device gate is a code they cannot receive. Throw instead, so the
+  // route returns its 500 and the user is told to try again.
+  const { error } = await resend.emails.send({
     from,
     to,
     subject: `${code} is your English Allstars verification code`,
@@ -37,6 +44,12 @@ export async function sendVerificationCode(
       </div>
     `,
   });
+
+  if (error) {
+    // Message only — the Resend error object can carry request details that do
+    // not belong in application logs.
+    throw new Error(`Resend refused the verification code email: ${error.message}`);
+  }
 }
 
 export async function sendWelcomeEmail(

@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
-import { getDeviceFingerprint } from '@/lib/device-fingerprint';
+import { getDeviceFingerprint, getLegacyDeviceFingerprint } from '@/lib/device-fingerprint';
 import { AppFooter } from '@/components/AppFooter';
 
 export default function LoginPage() {
@@ -20,17 +20,40 @@ export default function LoginPage() {
   );
 }
 
+/**
+ * Why a dead reset link gets its own message.
+ *
+ * /api/auth/callback used to bounce every failure to a bare /login, so an
+ * expired link, a link opened in the wrong browser and a genuinely wrong
+ * password all produced the same "wrong email or password". That is what made
+ * resetting the password look like it was going in circles — the reset had
+ * worked, the link had not, and nothing on screen could tell the difference.
+ */
+const LINK_ERRORS: Record<string, string> = {
+  link_expired:
+    'That reset link has expired or was already used. Please request a new one.\nลิงก์รีเซ็ตหมดอายุหรือถูกใช้ไปแล้ว กรุณาขอลิงก์ใหม่',
+  link_wrong_browser:
+    'That link has to be opened in the same browser you requested it from. Copy it into this browser, or request a new one here.\nต้องเปิดลิงก์ในเบราว์เซอร์เดียวกับที่ขอไว้ กรุณาคัดลอกลิงก์มาเปิดที่นี่ หรือขอลิงก์ใหม่',
+  link_invalid:
+    'That reset link is not valid. Please request a new one.\nลิงก์รีเซ็ตไม่ถูกต้อง กรุณาขอลิงก์ใหม่',
+  link_missing:
+    'That link was incomplete. Please request a new one.\nลิงก์ไม่สมบูรณ์ กรุณาขอลิงก์ใหม่',
+};
+
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
   const redirectTo = searchParams.get('redirect') || searchParams.get('redirectTo');
+  const linkError = searchParams.get('error');
 
   const [mode, setMode] = useState<'login' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    linkError ? LINK_ERRORS[linkError] ?? LINK_ERRORS.link_invalid : null
+  );
   const [success, setSuccess] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -67,12 +90,17 @@ function LoginContent() {
           return;
         }
 
-        // Check if this device is trusted (2FA)
+        // Check if this device is trusted (2FA).
+        //
+        // legacy_device_hash lets the route recognise a device trusted under
+        // the old user-agent-based fingerprint and migrate it, so changing the
+        // fingerprint does not re-prompt every existing user exactly once.
         const device_hash = await getDeviceFingerprint();
+        const legacy_device_hash = await getLegacyDeviceFingerprint();
         const checkRes = await fetch('/api/auth/check-device', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ device_hash }),
+          body: JSON.stringify({ device_hash, legacy_device_hash }),
         });
         const checkData = await checkRes.json();
 
