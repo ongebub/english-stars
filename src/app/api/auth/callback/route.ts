@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { safeRelativePath } from '@/lib/safe-redirect';
 
 /**
  * Where emailed auth links land: password recovery, email confirmation, magic
@@ -37,16 +38,9 @@ function backToLogin(origin: string, reason: FailureReason) {
   return NextResponse.redirect(`${origin}/login?error=${reason}`);
 }
 
-/**
- * `next` arrives from the emailed link, so it is attacker-controllable in the
- * sense that anyone can craft one and send it to someone. Only a single-slash
- * relative path is allowed through: "//evil.com" would otherwise be a
- * protocol-relative URL, and an absolute one would make NextResponse.redirect
- * throw on a malformed string and turn a bad link into a 500.
- */
+/** `next` comes from the emailed link, so only a same-site relative path is followed (see safe-redirect.ts). */
 function safeNext(raw: string | null): string {
-  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return '/dashboard';
-  return raw;
+  return safeRelativePath(raw, '/dashboard') as string;
 }
 
 export async function GET(request: Request) {

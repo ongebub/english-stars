@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { getDeviceFingerprint, getLegacyDeviceFingerprint } from '@/lib/device-fingerprint';
+import { safeRelativePath } from '@/lib/safe-redirect';
 import { AppFooter } from '@/components/AppFooter';
 
 export default function LoginPage() {
@@ -44,7 +45,7 @@ function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
-  const redirectTo = searchParams.get('redirect') || searchParams.get('redirectTo');
+  const redirectTo = safeRelativePath(searchParams.get('redirect') || searchParams.get('redirectTo'));
   const linkError = searchParams.get('error');
 
   const [mode, setMode] = useState<'login' | 'forgot'>('login');
