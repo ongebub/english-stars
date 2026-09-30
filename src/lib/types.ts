@@ -13,6 +13,8 @@ export interface Subject {
   emoji: string;
   grade_band: string;
   sort_order: number;
+  /** Map position within a grade band; null until the game_order migration is applied. */
+  game_order?: number | null;
   is_published: boolean;
   storybook_planned: boolean;
   printable_url: string | null;

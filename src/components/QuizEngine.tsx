@@ -110,6 +110,11 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
         } as never);
         if (error) { setSaveError(true); } else {
           setSaved(true);
+          // Game mode: have the server re-check this castle. Silent; never blocks results.
+          fetch("/api/game/complete-check", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ subject_id: subjectId }),
+          }).catch(() => { /* silent */ });
           try {
             const res = await fetch("/api/trophies", {
               method: "POST", headers: { "Content-Type": "application/json" },
