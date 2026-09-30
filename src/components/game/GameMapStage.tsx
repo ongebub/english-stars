@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Castle } from "@/lib/game/rules";
 import {
-  MAP_ASPECT, MAP_MIN_WIDTH_PX, MAP_SPOTS, OLLIE_FLY_FRAMES, OLLIE_HOP, OLLIE_STAND,
-  OLLIE_WALKSIDE_FRAMES, OLLIE_WAVE, mapFallback, mapSrcSet,
+  FLY_FRAME_MS, LANDING_MS, MAP_ASPECT, MAP_MIN_WIDTH_PX, MAP_SPOTS, OLLIE_FLY_FRAMES, OLLIE_LANDING,
+  OLLIE_SIDE_REL_SCALE, OLLIE_STAND, OLLIE_TAKEOFF, OLLIE_WALKSIDE_FRAMES, OLLIE_WAVE, TAKEOFF_MS,
+  WALK_FRAME_MS, WALK_MAX_DIST, mapFallback, mapSrcSet, type OllieFrame,
 } from "@/lib/game/map-config";
 import type { MapBand } from "@/lib/game/rules";
 
@@ -42,10 +43,8 @@ export function GameMapStage({
     return { x: s.x - s.w * 0.52, y: s.y + 3.5 };
   };
   const [pos, setPos] = useState<{ x: number; y: number } | null>(homeIdx >= 0 ? home(homeIdx) : null);
-  const [hop, setHop] = useState(0);            // px lift while moving
-  const [frame, setFrame] = useState(0);
-  const [moving, setMoving] = useState<null | { flip: boolean }>(null);
-  const flyFrames = OLLIE_FLY_FRAMES;
+  // While travelling, Ollie is drawn from these pixel values instead of the idle sprite.
+  const [motion, setMotion] = useState<null | { f: OllieFrame; left: number; top: number; k: number; flip: boolean; bob: number }>(null);
 
   const centreOn = (xPct: number, smooth = false) => {
     const sc = scroller.current, st = stage.current;
@@ -67,37 +66,75 @@ export function GameMapStage({
     const remember = () => { try { localStorage.setItem(storageKey, slug); } catch { /* private mode */ } };
     const prevIdx = prevSlug ? castles.findIndex((c) => c.slug === prevSlug) : -1;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (prevIdx < 0 || prevIdx === homeIdx || reduce) { remember(); setPos(home(homeIdx)); return; }
+    const st = stage.current;
+    if (prevIdx < 0 || prevIdx === homeIdx || reduce || !st) { remember(); setPos(home(homeIdx)); return; }
 
+    const W = st.clientWidth, H = st.clientHeight;
     const from = home(prevIdx), to = home(homeIdx);
-    setPos(from); centreOn(from.x);
-    const DURATION = 1800;
-    let raf = 0, t0 = 0;
-    const flying = flyFrames.length > 0;
-    setMoving({ flip: to.x < from.x });
-    const step = (t: number) => {
+    const G0 = { x: (from.x / 100) * W, y: (from.y / 100) * H };
+    const G1 = { x: (to.x / 100) * W, y: (to.y / 100) * H };
+    const dist = Math.hypot(G1.x - G0.x, G1.y - G0.y);
+    const flip = G1.x < G0.x;
+    const k = ((W * OLLIE_W) / 100 / 320) * OLLIE_SIDE_REL_SCALE; // px per WebP pixel
+    const walking = dist < WALK_MAX_DIST * W;
+    const ease = (p: number) => (p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2);
+    // Frame placement: put the frame's cap centre at (capX, capY).
+    const byCap = (f: OllieFrame, capX: number, capY: number, bob = 0) =>
+      setMotion({ f, left: capX - f.cx * k, top: capY - f.cy * k - bob, k, flip, bob });
+    // Grounded frames: cap sits above the ground point by (feet - cy).
+    const capAbove = (f: OllieFrame, g: { x: number; y: number }) => ({ x: g.x, y: g.y - (f.feet - f.cy) * k });
+
+    const flyMs = Math.min(2400, 1300 + dist * 1.1);
+    const walkMs = Math.max(900, dist * 6);
+    const total = walking ? walkMs : TAKEOFF_MS + flyMs + LANDING_MS;
+    const capStart = capAbove(OLLIE_TAKEOFF, G0), capEnd = capAbove(OLLIE_LANDING, G1);
+
+    let raf = 0, t0 = 0, cancelled = false;
+    const tick = (t: number) => {
+      if (cancelled) return;
       if (!t0) t0 = t;
-      const p = Math.min(1, (t - t0) / DURATION);
-      const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-      const x = from.x + (to.x - from.x) * e;
-      const y = from.y + (to.y - from.y) * e;
-      setPos({ x, y });
-      // flying: one smooth arc; hopping: four bounces
-      setHop(flying ? Math.sin(Math.PI * p) * 40 : Math.abs(Math.sin(p * Math.PI * 4)) * 22);
-      setFrame(Math.floor(((t - t0) / 90) % Math.max(1, flyFrames.length)));
-      centreOn(x);
-      if (p < 1) raf = requestAnimationFrame(step);
-      else { setHop(0); setMoving(null); remember(); }
+      const el = t - t0;
+      if (el >= total) { setMotion(null); setPos(to); remember(); return; }
+      if (walking) {
+        const p = el / walkMs, e = ease(p);
+        const fi = Math.floor(el / WALK_FRAME_MS) % OLLIE_WALKSIDE_FRAMES.length;
+        const f = OLLIE_WALKSIDE_FRAMES[fi];
+        const g = { x: G0.x + (G1.x - G0.x) * e, y: G0.y + (G1.y - G0.y) * e };
+        const cap = capAbove(f, g);
+        byCap(f, cap.x, cap.y, fi % 2 === 1 ? 3 : 0); // small bob on frames 2 and 4
+        centreOn((g.x / W) * 100);
+      } else if (el < TAKEOFF_MS) {
+        byCap(OLLIE_TAKEOFF, capStart.x, capStart.y);
+      } else if (el < TAKEOFF_MS + flyMs) {
+        const p = (el - TAKEOFF_MS) / flyMs, e = ease(p);
+        const f = OLLIE_FLY_FRAMES[Math.floor((el - TAKEOFF_MS) / FLY_FRAME_MS) % OLLIE_FLY_FRAMES.length];
+        const x = capStart.x + (capEnd.x - capStart.x) * e;
+        const y = capStart.y + (capEnd.y - capStart.y) * e - Math.sin(Math.PI * p) * (0.06 * W + dist * 0.12);
+        byCap(f, x, y);
+        centreOn((x / W) * 100);
+      } else {
+        byCap(OLLIE_LANDING, capEnd.x, capEnd.y);
+        centreOn(to.x);
+      }
+      raf = requestAnimationFrame(tick);
     };
-    const delay = window.setTimeout(() => { raf = requestAnimationFrame(step); }, 500);
-    return () => { clearTimeout(delay); cancelAnimationFrame(raf); };
+    // Preload every frame so nothing pops in mid-flight, then go.
+    const frames = [OLLIE_TAKEOFF, OLLIE_LANDING, ...OLLIE_FLY_FRAMES, ...OLLIE_WALKSIDE_FRAMES];
+    let started = false;
+    const go = () => {
+      if (started || cancelled) return;
+      started = true;
+      setPos(from); centreOn(from.x);
+      window.setTimeout(() => { if (!cancelled) raf = requestAnimationFrame(tick); }, 450);
+    };
+    let left = frames.length;
+    frames.forEach((fr) => { const im = new window.Image(); im.onload = im.onerror = () => { if (--left === 0) go(); }; im.src = fr.src; });
+    const guard = window.setTimeout(go, 2500);
+    return () => { cancelled = true; clearTimeout(guard); cancelAnimationFrame(raf); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [band, homeIdx, storageKey]);
 
-  const ollieSrc = moving
-    ? (flyFrames.length ? flyFrames[frame % flyFrames.length]
-      : OLLIE_WALKSIDE_FRAMES.length ? OLLIE_WALKSIDE_FRAMES[frame % OLLIE_WALKSIDE_FRAMES.length] : OLLIE_HOP)
-    : allDone && curIdx < 0 ? OLLIE_WAVE : OLLIE_STAND;
+  const idleSrc = allDone && curIdx < 0 ? OLLIE_WAVE : OLLIE_STAND;
 
   return (
     <div ref={scroller} className="overflow-x-auto overflow-y-hidden rounded-2xl shadow-lg" style={{ scrollbarWidth: "thin" }}>
@@ -156,14 +193,23 @@ export function GameMapStage({
           })}
         </ol>
 
-        {pos && (
+        {pos && !motion && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={ollieSrc} alt="Ollie the owl" draggable={false}
+            src={idleSrc} alt="Ollie the owl" draggable={false}
+            className="pointer-events-none absolute select-none drop-shadow-lg"
+            style={{ left: `${pos.x}%`, top: `${pos.y}%`, width: `${OLLIE_W}%`, minWidth: 40, zIndex: 2000, transform: "translate(-50%, -100%)" }}
+          />
+        )}
+        {motion && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={motion.f.src} alt="Ollie the owl" draggable={false}
             className="pointer-events-none absolute select-none drop-shadow-lg"
             style={{
-              left: `${pos.x}%`, top: `${pos.y}%`, width: `${OLLIE_W}%`, minWidth: 40, zIndex: 2000,
-              transform: `translate(-50%, calc(-100% - ${hop}px)) scaleX(${moving?.flip && (flyFrames.length || OLLIE_WALKSIDE_FRAMES.length) ? -1 : 1})`,
+              left: motion.left, top: motion.top, width: motion.f.w * motion.k, height: motion.f.h * motion.k, zIndex: 2000,
+              transformOrigin: `${motion.f.cx * motion.k}px ${motion.f.cy * motion.k}px`,
+              transform: motion.flip ? "scaleX(-1)" : undefined,
             }}
           />
         )}

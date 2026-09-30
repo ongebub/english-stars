@@ -55,13 +55,39 @@ export function mapFallback(band: MapBand): string {
 }
 
 /**
- * Ollie's side-view frames. Empty until the art exists; when it does, convert the
- * frames to WebP (about 320px wide), drop them in public/game/ and list them here,
- * facing RIGHT (the component mirrors them for leftward travel). With fly frames
- * Ollie flies between castles; without, he hops using ollie-walk.webp.
+ * Ollie's side-view frames (all face RIGHT; the stage mirrors them for leftward
+ * travel). Every frame of a set is scaled by the same factor on the same canvas,
+ * so anchors stay consistent: cx, cy = centre of the mortarboard cap, feet = the
+ * feet baseline, all in pixels of the WebP. Regenerate with the same 0.2 factor if
+ * the art changes.
  */
-export const OLLIE_FLY_FRAMES: string[] = [];       // e.g. "/game/ollie-fly-1.webp", ...
-export const OLLIE_WALKSIDE_FRAMES: string[] = [];  // e.g. "/game/ollie-walkside-1.webp", ...
+export interface OllieFrame { src: string; w: number; h: number; cx: number; cy: number; feet: number }
+const f = (name: string, w: number, h: number, cx: number, cy: number, feet: number): OllieFrame =>
+  ({ src: `/game/${name}.webp`, w, h, cx, cy, feet });
+export const OLLIE_FLY_FRAMES: OllieFrame[] = [
+  f("ollie-fly-1", 316, 358, 208.9, 57.6, 319.8),
+  f("ollie-fly-2", 316, 358, 208.9, 57.7, 312.2),
+  f("ollie-fly-3", 316, 358, 208.9, 57.6, 354.0),
+  f("ollie-fly-4", 316, 358, 209.1, 57.7, 306.6),
+];
+export const OLLIE_WALKSIDE_FRAMES: OllieFrame[] = [
+  f("ollie-walkside-1", 195, 325, 116.3, 40.2, 320.6),
+  f("ollie-walkside-2", 195, 325, 116.5, 41.9, 320.6),
+  f("ollie-walkside-3", 195, 325, 116.4, 42.7, 320.6),
+  f("ollie-walkside-4", 195, 325, 116.4, 42.0, 320.6),
+];
+export const OLLIE_TAKEOFF: OllieFrame = f("ollie-takeoff", 315, 327, 177.8, 69.0, 323.4);
+export const OLLIE_LANDING: OllieFrame = f("ollie-landing", 315, 327, 177.7, 40.1, 323.2);
+/** Side frames are exported at 0.2x with lots of padding; this scales them to the
+ *  stand sprite's size (matched on cap area, then eased down so feet-to-cap height
+ *  agrees with the stand pose). */
+export const OLLIE_SIDE_REL_SCALE = 1.85;
+/** Timings, ms */
+export const FLY_FRAME_MS = 110;
+export const WALK_FRAME_MS = 170;
+export const TAKEOFF_MS = 380;
+export const LANDING_MS = 420;
+/** Moves shorter than this (fraction of map width) are walked, longer ones flown. */
+export const WALK_MAX_DIST = 0.17;
 export const OLLIE_STAND = "/game/ollie-stand.webp";
-export const OLLIE_HOP = "/game/ollie-walk.webp";
 export const OLLIE_WAVE = "/game/ollie-walk-wave.webp";
