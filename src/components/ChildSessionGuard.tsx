@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { clearActiveChild } from "@/lib/active-child";
+import { clearActiveChild, syncActiveChildCookie } from "@/lib/active-child";
 import { getSchoolSession, clearSchoolSession } from "@/lib/school-session";
 
 const HEARTBEAT_INTERVAL = 30_000; // 30 seconds
@@ -60,6 +60,10 @@ export function ChildSessionGuard({ children }: { children: React.ReactNode }) {
       // Network error — skip this heartbeat
     }
   }, [router]);
+
+  useEffect(() => {
+    syncActiveChildCookie();
+  }, []);
 
   useEffect(() => {
     // Only run heartbeat if there's an active session

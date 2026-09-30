@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getProgressId } from "@/lib/progress-id.client";
 import Link from "next/link";
 import NextImage from "next/image";
 import type { EbookPage } from "@/lib/types";
@@ -94,10 +95,11 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+        const progressId = await getProgressId(supabase, user.id);
         const isComplete = currentPage >= totalPages - 1;
         await supabase.from("ebook_progress").upsert(
           {
-            child_id: user.id, subject_id: subjectId,
+            child_id: progressId, subject_id: subjectId,
             last_page: currentPage + 1, completed: isComplete,
             ...(isComplete ? { completed_at: new Date().toISOString() } : {}),
             updated_at: new Date().toISOString(),

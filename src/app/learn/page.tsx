@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getProgressIdServer } from "@/lib/progress-id.server";
 import type { Subject } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -53,7 +54,7 @@ export default async function LearnPage() {
 
   // Fetch medals for this user
   const { data: medalsData } = await supabase.rpc("get_subject_medals", {
-    p_child_id: user.id,
+    p_child_id: await getProgressIdServer(supabase, user.id),
   });
 
   const medals: Record<string, Medal> = {};

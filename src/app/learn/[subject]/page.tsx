@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getProgressIdServer } from "@/lib/progress-id.server";
 import type { Subject } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -86,12 +87,14 @@ export default async function SubjectPage({
   // Medal
   let quizMedal: string | null = null;
 
-  if (user) {
+  const progressId = user ? await getProgressIdServer(supabase, user.id) : null;
+
+  if (user && progressId) {
     // Quiz attempts
     const { data: attempts } = await supabase
       .from("quiz_attempts")
       .select("score, total")
-      .eq("child_id", user.id)
+      .eq("child_id", progressId)
       .eq("subject_id", subject.id);
 
     if (attempts && attempts.length > 0) {
@@ -119,7 +122,7 @@ export default async function SubjectPage({
       const { count: viewed } = await supabase
         .from("flashcard_progress")
         .select("id", { count: "exact", head: true })
-        .eq("child_id", user.id)
+        .eq("child_id", progressId)
         .eq("subject_id", subject.id);
 
       flashcardViewed = viewed || 0;
@@ -139,7 +142,7 @@ export default async function SubjectPage({
       const { data: ebookProgress } = await supabase
         .from("ebook_progress")
         .select("last_page, completed")
-        .eq("child_id", user.id)
+        .eq("child_id", progressId)
         .eq("subject_id", subject.id)
         .single();
 
@@ -153,7 +156,7 @@ export default async function SubjectPage({
     const { data: pqAttempts } = await supabase
       .from("picture_quiz_attempts")
       .select("score, total")
-      .eq("child_id", user.id)
+      .eq("child_id", progressId)
       .eq("subject_id", subject.id);
 
     if (pqAttempts && pqAttempts.length > 0) {

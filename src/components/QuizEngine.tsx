@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getProgressId } from "@/lib/progress-id.client";
 import type { AnswerRecord, QuizQuestion } from "@/lib/types";
 
 interface QuizEngineProps {
@@ -100,8 +101,9 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+        const progressId = await getProgressId(supabase, user.id);
         const { error } = await supabase.from("quiz_attempts").insert({
-          child_id: user.id, subject_id: subjectId,
+          child_id: progressId, subject_id: subjectId,
           questions_shown: selectedQuestions.map((q) => q.id),
           answers: answers as unknown as AnswerRecord[],
           score, total: QUIZ_SIZE, completed_at: new Date().toISOString(),
@@ -111,7 +113,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
           try {
             const res = await fetch("/api/trophies", {
               method: "POST", headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ child_id: user.id, subject_id: subjectId, score, total: QUIZ_SIZE }),
+              body: JSON.stringify({ child_id: progressId, subject_id: subjectId, score, total: QUIZ_SIZE }),
             });
             const data = await res.json();
             if (data.awarded?.length > 0) setTrophiesAwarded(data.awarded);

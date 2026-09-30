@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getProgressId } from "@/lib/progress-id.client";
 import Link from "next/link";
 import NextImage from "next/image";
 import type { Flashcard } from "@/lib/types";
@@ -74,8 +75,9 @@ export function FlashcardViewer({
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+        const progressId = await getProgressId(supabase, user.id);
         await supabase.from("flashcard_progress").upsert(
-          { child_id: user.id, subject_id: subjectId, flashcard_id: card.id },
+          { child_id: progressId, subject_id: subjectId, flashcard_id: card.id },
           { onConflict: "child_id,flashcard_id" }
         );
       } catch { /* silent */ }

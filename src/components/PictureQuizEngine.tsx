@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { getProgressId } from "@/lib/progress-id.client";
 import type { PictureQuizQuestion } from "@/lib/types";
 
 interface PictureQuizEngineProps {
@@ -142,8 +143,9 @@ export default function PictureQuizEngine({
           data: { user },
         } = await supabase.auth.getUser();
         if (!user) return;
+        const progressId = await getProgressId(supabase, user.id);
         await supabase.from("picture_quiz_attempts").insert({
-          child_id: user.id,
+          child_id: progressId,
           subject_id: subjectId,
           score,
           total: QUIZ_SIZE,
