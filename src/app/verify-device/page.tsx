@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getDeviceLabel } from "@/lib/device-fingerprint";
 import { createClient } from "@/lib/supabase/client";
+import { postLoginPath } from "@/lib/post-login";
 
 export default function VerifyDevicePage() {
   const router = useRouter();
@@ -80,17 +81,7 @@ export default function VerifyDevicePage() {
         // Store device ID cookie
         document.cookie = `es_device_id=${device_hash}; path=/; max-age=${30 * 24 * 60 * 60}; samesite=lax`;
         sessionStorage.removeItem("es_pending_device_hash");
-        // Check if user is a tutor — route to tutor dashboard
-        const supabase = createClient();
-        const { data: sub } = await supabase
-          .from("subscriptions")
-          .select("tier")
-          .single();
-        if (sub?.tier === "tutor") {
-          router.push("/tutor/dashboard");
-        } else {
-          router.push("/learn");
-        }
+        router.push(await postLoginPath(createClient()));
       } else {
         setError(data.error || "Invalid code");
         setDigits(["", "", "", "", "", ""]);

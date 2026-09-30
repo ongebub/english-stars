@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { getDeviceFingerprint, getLegacyDeviceFingerprint } from '@/lib/device-fingerprint';
+import { postLoginPath } from '@/lib/post-login';
 import { AppFooter } from '@/components/AppFooter';
 
 export default function LoginPage() {
@@ -116,16 +117,7 @@ function LoginContent() {
         if (redirectTo) {
           router.push(redirectTo);
         } else {
-          // Check if user is a tutor — route to tutor dashboard
-          const { data: sub } = await supabase
-            .from('subscriptions')
-            .select('tier')
-            .single();
-          if (sub?.tier === 'tutor') {
-            router.push('/tutor/dashboard');
-          } else {
-            router.push('/learn');
-          }
+          router.push(await postLoginPath(supabase));
         }
       }
     } catch {
