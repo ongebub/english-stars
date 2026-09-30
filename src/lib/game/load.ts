@@ -88,6 +88,7 @@ export async function loadBandCastles(
   // Best attempt by ratio, so a differently-sized quiz still compares fairly.
   const best = new Map<string, { score: number; total: number }>();
   for (const a of attempts) {
+    if (!(a.total > 0) || a.score < 0 || a.score > a.total) continue; // malformed row: ignore
     const cur = best.get(a.subject_id);
     if (!cur || a.score * cur.total > cur.score * a.total) best.set(a.subject_id, { score: a.score, total: a.total });
   }

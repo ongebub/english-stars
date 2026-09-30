@@ -14,6 +14,8 @@ export default async function SelectProfilePage() {
     .from("profiles")
     .select("*")
     .eq("parent_id", user.id)
+    .eq("role", "child")
+    .is("deleted_at", null)
     .order("created_at", { ascending: true });
 
   return <ProfilePickerClient childProfiles={children ?? []} />;

@@ -45,6 +45,7 @@ CREATE INDEX IF NOT EXISTS game_progress_subject_id_idx ON public.game_progress 
 
 ALTER TABLE public.game_progress ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS game_progress_select ON public.game_progress;
 CREATE POLICY game_progress_select ON public.game_progress
   FOR SELECT TO authenticated
   USING (
