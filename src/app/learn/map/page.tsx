@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProgressIdServer } from "@/lib/progress-id.server";
 import { loadBandCastles } from "@/lib/game/load";
 import { CASTLES_PER_PAGE, MAP_BANDS, isMapBand } from "@/lib/game/rules";
-import { CastleNode } from "@/components/game/CastleNode";
+import { GameMapStage } from "@/components/game/GameMapStage";
 import { CastleSync } from "@/components/game/CastleSync";
 
 export const dynamic = "force-dynamic";
@@ -15,7 +15,6 @@ const BAND_LABEL: Record<string, { en: string; th: string }> = {
   "2": { en: "Grade 2", th: "ป.2" },
   "3": { en: "Grade 3", th: "ป.3" },
 };
-const ALIGN = ["left", "center", "right", "center"] as const;
 
 /**
  * Game map, Phase 2: one map per grade band, 5 castles a page, placeholder art.
@@ -59,7 +58,7 @@ export default async function MapPage({
       <CastleSync subjectIds={needSync} />
       <h1 className="font-nunito text-center text-3xl font-extrabold text-text-dark dark:text-gray-100">Castle Map</h1>
       <p className="font-sarabun mt-1 text-center text-lg text-text-mid dark:text-gray-400">แผนที่ปราสาท</p>
-      <p className="mt-1 text-center text-xs text-text-light">Preview build: placeholder art.</p>
+      <p className="mt-1 text-center text-xs text-text-light">Preview build.</p>
 
       <div className="mt-4 flex justify-center gap-2" role="tablist" aria-label="Grade band">
         {MAP_BANDS.map((b) => (
@@ -77,17 +76,19 @@ export default async function MapPage({
       {castles.length === 0 ? (
         <p className="mt-8 text-center text-text-mid">No castles in this grade yet.</p>
       ) : (
-        <ol className="relative mt-6 space-y-2">
-          {visible.map((c, i) => (
-            <li key={c.id}>
-              <CastleNode castle={c} align={ALIGN[(start + i) % ALIGN.length]} number={start + i + 1} />
-              {i < visible.length - 1 && (
-                <div aria-hidden className="mx-auto my-1 h-8 w-0 border-l-4 border-dotted border-amber-400" />
-              )}
-            </li>
-          ))}
-        </ol>
+        <div className="mt-6">
+          <GameMapStage
+            band={band}
+            storageKey={`eas_ollie_at:${progressId}:${band}`}
+            allDone={done === castles.length}
+            castles={visible.map((c, i) => ({
+              id: c.id, slug: c.slug, title_en: c.title_en, title_th: c.title_th, status: c.status,
+              flag: c.flag, paywalled: c.paywalled, steps: c.steps, number: start + i + 1,
+            }))}
+          />
+        </div>
       )}
+      <p className="mt-2 text-center text-xs text-text-mid sm:hidden">Swipe the map sideways to see all the castles &rarr;</p>
 
       <div className="mt-8 flex items-center justify-between">
         {page > 1 ? (
