@@ -7,6 +7,7 @@ const supabase = createClient(
   { auth: { persistSession: false } }
 );
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_SESSIONS = 2;
 const STALE_MINUTES = 5;
 
@@ -17,14 +18,41 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Missing child_id or device_hash" }, { status: 400 });
   }
 
-  // Get parent_user_id from the auth cookie if available (not for school flow)
+  // AUTHORISATION. The service-role client below bypasses RLS, so ownership of
+  // child_id must be proven here or anyone could create/kick sessions for any child.
+  if (typeof child_id !== "string" || !UUID.test(child_id)) {
+    return NextResponse.json({ error: "Invalid child_id" }, { status: 400 });
+  }
   let parent_user_id: string | null = null;
   if (!is_school) {
-    // Try to extract user from the Supabase auth cookie
+    // Family flow: caller must be logged in and the child must be theirs
+    // (same rule as resolveProgressId: parent_id = caller, role child, not deleted).
     const { createClient: createServerClient } = await import("@/lib/supabase/server");
     const serverSupabase = await createServerClient();
     const { data: { user } } = await serverSupabase.auth.getUser();
-    parent_user_id = user?.id ?? null;
+    if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const { data: child } = await supabase
+      .from("profiles").select("id")
+      .eq("id", child_id).eq("parent_id", user.id).eq("role", "child").is("deleted_at", null)
+      .maybeSingle();
+    if (!child) return NextResponse.json({ error: "Not your child profile" }, { status: 403 });
+    parent_user_id = user.id;
+  } else {
+    // School flow: the child has no login. /api/join created a school profile with a
+    // random UUID that only that device was given, so the UUID is the credential.
+    // Accept only a live school profile whose class code still exists and is unexpired;
+    // a family child's id cannot be registered through this branch.
+    const { data: child } = await supabase
+      .from("profiles").select("id, join_code")
+      .eq("id", child_id).eq("role", "child").eq("account_type", "school")
+      .is("deleted_at", null).not("join_code", "is", null)
+      .maybeSingle();
+    const { data: code } = child
+      ? await supabase.from("school_codes").select("expires_at").eq("code", child.join_code).maybeSingle()
+      : { data: null };
+    if (!child || !code || new Date(code.expires_at) < new Date()) {
+      return NextResponse.json({ error: "Not a valid school session" }, { status: 403 });
+    }
   }
 
   // Check if this device already has a session for this child — update it
