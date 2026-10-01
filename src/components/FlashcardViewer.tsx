@@ -1,5 +1,7 @@
 "use client";
 
+import { CastleReturn } from "@/components/game/CastleReturn";
+import { useLearnBack } from "@/components/game/useLearnBack";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getProgressId } from "@/lib/progress-id.client";
@@ -24,6 +26,7 @@ interface FlashcardViewerProps {
 export function FlashcardViewer({
   flashcards, subjectTitle, subjectId, subjectSlug,
 }: FlashcardViewerProps) {
+  const back = useLearnBack(subjectSlug);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isShuffled, setIsShuffled] = useState(false);
   const [shuffledOrder, setShuffledOrder] = useState<number[]>(() =>
@@ -163,7 +166,7 @@ export function FlashcardViewer({
     <div className="fixed inset-0 z-50 flex flex-col bg-white">
       {/* ── Top bar ── */}
       <div className="flex flex-shrink-0 items-center justify-between px-3 py-2 border-b border-gray-100">
-        <Link href={`/learn/${subjectSlug}`}
+        <Link href={back.href}
           className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-600 active:scale-95 transition-transform">
           <span className="text-xl font-bold">✕</span>
         </Link>
@@ -186,6 +189,7 @@ export function FlashcardViewer({
       </div>
 
       {/* ── Completion banner ── */}
+      <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={showComplete} delayMs={1500} />
       {showComplete && (
         <div className="flex-shrink-0 bg-leaf/20 px-4 py-2 text-center">
           <p className="font-nunito text-sm font-bold text-leaf-dark">

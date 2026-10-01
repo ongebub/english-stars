@@ -1,5 +1,6 @@
 "use client";
 
+import { useLearnBack } from "@/components/game/useLearnBack";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -62,6 +63,7 @@ export default function PictureQuizEngine({
 }: PictureQuizEngineProps) {
   const QUIZ_SIZE = Math.min(10, questions.length);
 
+  const back = useLearnBack(subjectSlug);
   const [phase, setPhase] = useState<Phase>("ready");
   const [selectedQuestions, setSelectedQuestions] = useState<PictureQuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -185,10 +187,10 @@ export default function PictureQuizEngine({
           START / <span className="font-sarabun">เริ่ม</span>
         </button>
         <Link
-          href={`/learn/${subjectSlug}`}
+          href={back.href}
           className="mt-4 min-h-[48px] flex items-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white"
         >
-          ← Back / <span className="font-sarabun ml-1">กลับ</span>
+          {back.isGame ? <>← Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></> : <>← Back / <span className="font-sarabun ml-1">กลับ</span></>}
         </Link>
       </div>
     );
@@ -210,7 +212,7 @@ export default function PictureQuizEngine({
         <div className="flex-shrink-0 px-4 pb-2" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
           <div className="flex items-center justify-between mb-2">
             <Link
-              href={`/learn/${subjectSlug}`}
+              href={back.href}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 active:scale-95 transition-transform"
             >
               <span className="text-lg font-bold">✕</span>
@@ -371,10 +373,10 @@ export default function PictureQuizEngine({
               Try Again / <span className="font-sarabun">ลองอีกครั้ง</span>
             </button>
             <Link
-              href={`/learn/${subjectSlug}`}
+              href={back.href}
               className="min-h-[48px] flex items-center justify-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white"
             >
-              Back to Subject / <span className="font-sarabun ml-1">กลับ</span>
+              {back.isGame ? <>Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></> : <>Back to Subject / <span className="font-sarabun ml-1">กลับ</span></>}
             </Link>
           </div>
         </div>

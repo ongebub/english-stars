@@ -1,5 +1,7 @@
 "use client";
 
+import { CastleReturn } from "@/components/game/CastleReturn";
+import { useLearnBack } from "@/components/game/useLearnBack";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getProgressId } from "@/lib/progress-id.client";
@@ -15,6 +17,7 @@ interface EbookReaderProps {
 }
 
 export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: EbookReaderProps) {
+  const back = useLearnBack(subjectSlug);
   const [currentPage, setCurrentPage] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
@@ -278,6 +281,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
   if (showComplete) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white dark:bg-gray-900 px-6 transition-colors">
+        <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={showComplete} delayMs={1200} />
         <div className="text-center">
           <div className="text-8xl mb-6 animate-bounce">🦉</div>
           <h2 className="font-fredoka text-3xl font-semibold text-text-dark dark:text-gray-100">You finished the book!</h2>
@@ -290,9 +294,9 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
               className="min-h-[56px] rounded-2xl py-4 text-white bg-leaf active:scale-95 transition-transform shadow-lg font-fredoka text-lg font-medium">
               Read Again / <span className="font-sarabun">อ่านอีกครั้ง</span>
             </button>
-            <Link href={`/learn/${subjectSlug}`}
+            <Link href={back.href}
               className="min-h-[48px] flex items-center justify-center rounded-xl bg-sky-dark px-6 py-3 font-fredoka font-medium text-white">
-              Back / <span className="font-sarabun ml-1">กลับ</span>
+              {back.isGame ? <>Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></> : <>Back / <span className="font-sarabun ml-1">กลับ</span></>}
             </Link>
           </div>
         </div>
@@ -305,7 +309,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
       {/* Top bar */}
       <div className="flex-shrink-0 flex items-center justify-between px-3 pb-2 border-b border-gray-100 dark:border-gray-700"
         style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
-        <Link href={`/learn/${subjectSlug}`}
+        <Link href={back.href}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 text-gray-600 active:scale-95 transition-transform">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </Link>

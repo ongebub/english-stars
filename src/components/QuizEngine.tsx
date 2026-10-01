@@ -1,5 +1,7 @@
 "use client";
 
+import { CastleReturn } from "@/components/game/CastleReturn";
+import { useLearnBack } from "@/components/game/useLearnBack";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -50,6 +52,7 @@ type Phase = "ready" | "playing" | "results";
 export default function QuizEngine({ questions, subjectId, subjectSlug, subjectTitle, subjectEmoji }: QuizEngineProps) {
   const QUIZ_SIZE = Math.min(10, questions.length);
 
+  const back = useLearnBack(subjectSlug);
   const [phase, setPhase] = useState<Phase>("ready");
   const [selectedQuestions, setSelectedQuestions] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -110,11 +113,6 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
         } as never);
         if (error) { setSaveError(true); } else {
           setSaved(true);
-          // Game mode: have the server re-check this castle. Silent; never blocks results.
-          fetch("/api/game/complete-check", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ subject_id: subjectId }),
-          }).catch(() => { /* silent */ });
           try {
             const res = await fetch("/api/trophies", {
               method: "POST", headers: { "Content-Type": "application/json" },
@@ -147,9 +145,9 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
           className="mt-8 min-h-[56px] rounded-2xl bg-coral px-10 py-4 font-nunito text-lg font-bold text-white shadow-lg active:scale-95 transition-transform">
           Start Quiz / <span className="font-sarabun">เริ่มทำแบบทดสอบ</span>
         </button>
-        <Link href={`/learn/${subjectSlug}`}
+        <Link href={back.href}
           className="mt-4 min-h-[48px] flex items-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white">
-          ← Back / <span className="font-sarabun ml-1">กลับ</span>
+          {back.isGame ? <>← Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></> : <>← Back / <span className="font-sarabun ml-1">กลับ</span></>}
         </Link>
       </div>
     );
@@ -166,7 +164,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
         {/* Top bar */}
         <div className="flex-shrink-0 px-4 pb-2" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
           <div className="flex items-center justify-between mb-2">
-            <Link href={`/learn/${subjectSlug}`}
+            <Link href={back.href}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 active:scale-95 transition-transform">
               <span className="text-lg font-bold">✕</span>
             </Link>
@@ -265,6 +263,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
   if (phase === "results") {
     return (
       <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-6 overflow-hidden">
+        <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={saved} />
         {/* Confetti */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {Array.from({ length: 20 }).map((_, i) => <ConfettiPiece key={i} index={i} />)}
@@ -330,9 +329,9 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
               className="min-h-[56px] rounded-2xl bg-coral px-6 py-4 font-nunito text-base font-bold text-white shadow-lg active:scale-95 transition-transform">
               Try Again / <span className="font-sarabun">ลองอีกครั้ง</span>
             </button>
-            <Link href={`/learn/${subjectSlug}`}
+            <Link href={back.href}
               className="min-h-[48px] flex items-center justify-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white">
-              Back to Subject / <span className="font-sarabun ml-1">กลับ</span>
+              {back.isGame ? <>Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></> : <>Back to Subject / <span className="font-sarabun ml-1">กลับ</span></>}
             </Link>
           </div>
         </div>

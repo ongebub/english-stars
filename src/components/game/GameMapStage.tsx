@@ -9,6 +9,9 @@ import {
   WALK_FRAME_MS, WALK_MAX_DIST, mapFallback, mapSrcSet, type OllieFrame,
 } from "@/lib/game/map-config";
 import type { MapBand } from "@/lib/game/rules";
+import {
+  CELEBRATE_MS, CELEBRATE_REDUCED_MS, CastleFireworks, CelebrationBanner, CelebrationStyles, RisingFlag,
+} from "@/components/game/Celebration";
 
 const OLLIE_W = 5.6; // % of map width
 
@@ -29,8 +32,8 @@ function sprite(c: StageCastle): string {
  * it opens scrolled to Ollie. On wider screens it simply fills the column.
  */
 export function GameMapStage({
-  band, castles, storageKey, allDone,
-}: { band: MapBand; castles: StageCastle[]; storageKey: string; allDone: boolean }) {
+  band, castles, storageKey, allDone, replay = false,
+}: { band: MapBand; castles: StageCastle[]; storageKey: string; allDone: boolean; replay?: boolean }) {
   const spots = MAP_SPOTS[band];
   const scroller = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -45,6 +48,10 @@ export function GameMapStage({
   const [pos, setPos] = useState<{ x: number; y: number } | null>(homeIdx >= 0 ? home(homeIdx) : null);
   // While travelling, Ollie is drawn from these pixel values instead of the idle sprite.
   const [motion, setMotion] = useState<null | { f: OllieFrame; left: number; top: number; k: number; flip: boolean; bob: number }>(null);
+
+  // Fanfare on the castle just completed, before Ollie leaves it.
+  const [cel, setCel] = useState<null | { idx: number; reduced: boolean }>(null);
+  const skipRef = useRef<(() => void) | null>(null);
 
   const centreOn = (xPct: number, smooth = false) => {
     const sc = scroller.current, st = stage.current;
@@ -64,10 +71,23 @@ export function GameMapStage({
     let prevSlug: string | null = null;
     try { prevSlug = localStorage.getItem(storageKey); } catch { /* private mode */ }
     const remember = () => { try { localStorage.setItem(storageKey, slug); } catch { /* private mode */ } };
-    const prevIdx = prevSlug ? castles.findIndex((c) => c.slug === prevSlug) : -1;
+    let prevIdx = prevSlug ? castles.findIndex((c) => c.slug === prevSlug) : -1;
+    // ?replay=1 re-runs the fanfare for the castle before the current one. Cosmetic only
+    // (it just changes this browser's "last seen" marker), and off on the live domain.
+    if (replay && !/(^|\.)englishallstars\.com$/i.test(window.location.hostname) && homeIdx > 0) prevIdx = homeIdx - 1;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const st = stage.current;
-    if (prevIdx < 0 || prevIdx === homeIdx || reduce || !st) { remember(); setPos(home(homeIdx)); return; }
+    const celebrated = prevIdx >= 0 && castles[prevIdx].status === "complete";
+    if (prevIdx < 0 || prevIdx === homeIdx || !st) { remember(); setPos(home(homeIdx)); return; }
+    if (reduce) {
+      // No motion: show the finished state and the words briefly, then Ollie simply appears.
+      if (!celebrated) { remember(); setPos(home(homeIdx)); return; }
+      setPos(home(prevIdx)); centreOn(home(prevIdx).x);
+      setCel({ idx: prevIdx, reduced: true });
+      const t = window.setTimeout(() => { setCel(null); setPos(home(homeIdx)); centreOn(home(homeIdx).x); remember(); }, CELEBRATE_REDUCED_MS);
+      skipRef.current = () => { clearTimeout(t); setCel(null); setPos(home(homeIdx)); centreOn(home(homeIdx).x); remember(); };
+      return () => { clearTimeout(t); skipRef.current = null; };
+    }
 
     const W = st.clientWidth, H = st.clientHeight;
     const from = home(prevIdx), to = home(homeIdx);
@@ -125,12 +145,17 @@ export function GameMapStage({
       if (started || cancelled) return;
       started = true;
       setPos(from); centreOn(from.x);
-      window.setTimeout(() => { if (!cancelled) raf = requestAnimationFrame(tick); }, 450);
+      const fly = () => { setCel(null); skipRef.current = null; window.setTimeout(() => { if (!cancelled) raf = requestAnimationFrame(tick); }, 450); };
+      if (!celebrated) { fly(); return; }
+      // Fanfare on the castle just completed, then Ollie takes off. A tap skips it.
+      setCel({ idx: prevIdx, reduced: false });
+      const t = window.setTimeout(fly, CELEBRATE_MS);
+      skipRef.current = () => { clearTimeout(t); fly(); };
     };
     let left = frames.length;
     frames.forEach((fr) => { const im = new window.Image(); im.onload = im.onerror = () => { if (--left === 0) go(); }; im.src = fr.src; });
     const guard = window.setTimeout(go, 2500);
-    return () => { cancelled = true; clearTimeout(guard); cancelAnimationFrame(raf); };
+    return () => { cancelled = true; clearTimeout(guard); cancelAnimationFrame(raf); skipRef.current = null; setCel(null); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [band, homeIdx, storageKey]);
 
@@ -153,10 +178,23 @@ export function GameMapStage({
           {castles.map((c, i) => {
             const s = spots[i];
             const href = c.paywalled ? "/subscribe" : c.status === "locked" ? null : `/learn/${c.slug}`;
+            const celebrating = cel && !cel.reduced && cel.idx === i && c.status === "complete";
             const inner = (
               <>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={sprite(c)} alt="" draggable={false} className={`block w-full select-none ${c.status === "locked" ? "opacity-95" : ""}`} />
+                {celebrating ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/game/castle-open.webp" alt="" draggable={false} className="block w-full select-none" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={sprite(c)} alt="" draggable={false} className="eas-anim absolute inset-0 block w-full select-none"
+                      style={{ animation: "eas-fade-in .35s ease 1.3s both" }} />
+                    <RisingFlag flag={c.flag ?? "bronze"} />
+                    <CastleFireworks flag={c.flag ?? "bronze"} />
+                  </>
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={sprite(c)} alt="" draggable={false} className={`block w-full select-none ${c.status === "locked" ? "opacity-95" : ""}`} />
+                )}
                 <span className={`pointer-events-none absolute left-1/2 flex -translate-x-1/2 flex-col items-center whitespace-nowrap ${s.labelTop ? "bottom-full -mb-[4%]" : "top-full -mt-[6%]"}`}>
                   <span className="rounded-full bg-white/95 px-2.5 py-0.5 font-nunito text-[11px] font-extrabold leading-tight text-text-dark shadow sm:text-xs">
                     <span className="mr-1 text-sky-dark">{c.number}</span>{c.title_en}
@@ -193,6 +231,10 @@ export function GameMapStage({
           })}
         </ol>
 
+        <CelebrationStyles />
+        {cel && castles[cel.idx] && (
+          <CelebrationBanner flag={castles[cel.idx].flag ?? "bronze"} onSkip={() => skipRef.current?.()} />
+        )}
         {pos && !motion && (
           // eslint-disable-next-line @next/next/no-img-element
           <img

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LearnContextMarker } from "@/components/game/LearnContextMarker";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProgressIdServer } from "@/lib/progress-id.server";
@@ -92,6 +93,7 @@ export default async function LearnPage() {
 
   return (
     <section>
+      <LearnContextMarker mode="tutor" />
       <h1 className="font-nunito text-center text-3xl font-extrabold text-text-dark dark:text-gray-100">
         Choose a Subject
       </h1>

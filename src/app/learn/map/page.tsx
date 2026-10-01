@@ -5,6 +5,7 @@ import { getProgressIdServer } from "@/lib/progress-id.server";
 import { loadBandCastles } from "@/lib/game/load";
 import { CASTLES_PER_PAGE, MAP_BANDS, isMapBand } from "@/lib/game/rules";
 import { GameMapStage } from "@/components/game/GameMapStage";
+import { LearnContextMarker } from "@/components/game/LearnContextMarker";
 import { CastleSync } from "@/components/game/CastleSync";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ const BAND_LABEL: Record<string, { en: string; th: string }> = {
 export default async function MapPage({
   searchParams,
 }: {
-  searchParams: Promise<{ band?: string; p?: string }>;
+  searchParams: Promise<{ band?: string; p?: string; replay?: string }>;
 }) {
   const sp = await searchParams;
   const band = isMapBand(sp.band) ? sp.band : "K";
@@ -55,6 +56,7 @@ export default async function MapPage({
 
   return (
     <section>
+      <LearnContextMarker mode="game" band={band} />
       <CastleSync subjectIds={needSync} />
       <h1 className="font-nunito text-center text-3xl font-extrabold text-text-dark dark:text-gray-100">Castle Map</h1>
       <p className="font-sarabun mt-1 text-center text-lg text-text-mid dark:text-gray-400">แผนที่ปราสาท</p>
@@ -81,6 +83,7 @@ export default async function MapPage({
             band={band}
             storageKey={`eas_ollie_at:${progressId}:${band}`}
             allDone={done === castles.length}
+            replay={sp.replay === "1"}
             castles={visible.map((c, i) => ({
               id: c.id, slug: c.slug, title_en: c.title_en, title_th: c.title_th, status: c.status,
               flag: c.flag, paywalled: c.paywalled, steps: c.steps, number: start + i + 1,
