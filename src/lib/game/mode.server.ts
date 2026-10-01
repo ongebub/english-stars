@@ -31,5 +31,6 @@ export async function getLearnMode(
 export async function getMapBandServer(): Promise<string | null> {
   const store = await cookies();
   const v = store.get(MAP_BAND_COOKIE)?.value;
-  return v ? decodeURIComponent(v) : null;
+  if (!v) return null;
+  try { return decodeURIComponent(v); } catch { return null; }
 }

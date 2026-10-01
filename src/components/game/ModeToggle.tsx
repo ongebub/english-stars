@@ -10,9 +10,11 @@ const input = "w-full rounded-xl border-2 border-gray-300 px-4 py-3 text-center 
 
 /**
  * Game | Tutor pill in the /learn header. Flipping needs the parent PIN, which is set
- * the first time (entered twice) and verified on the server only. Switching children is
- * deliberately NOT gated: profiles are not secret and login already lands on the
- * picker; the mode, which decides what a child can reach, is what the PIN protects.
+ * the first time (entered twice, plus the account password) and verified on the server
+ * only. The PIN is a UX nudge to keep children on track, NOT an access boundary: the
+ * account password is the real boundary (it is also what resets the PIN). Switching
+ * children is deliberately NOT gated: profiles are not secret and login already lands on
+ * the picker.
  */
 export function ModeToggle({ mode }: { mode: Mode }) {
   const router = useRouter();
@@ -33,6 +35,7 @@ export function ModeToggle({ mode }: { mode: Mode }) {
       const d = await r.json();
       if (!d.available) { setStep("unavailable"); return; }
       if (d.lockedForSec > 0) setMsg(`Too many tries. Please wait ${Math.ceil(d.lockedForSec / 60)} min. ลองใหม่ภายหลัง`);
+      if (d.needsReset) { setMsg("Your PIN needs to be set again. ตั้งรหัสใหม่"); setStep("forgot"); return; }
       setStep(d.hasPin ? "enter" : "create");
     } catch { setStep("unavailable"); }
   }
@@ -41,6 +44,9 @@ export function ModeToggle({ mode }: { mode: Mode }) {
     if (d.error === "locked" || d.error === "busy") return `Too many tries. Wait ${Math.max(1, Math.ceil((d.retryAfterSec ?? 300) / 60))} min and try again. ลองใหม่ภายหลัง`;
     if (d.error === "wrong_pin") return `Wrong PIN. ${d.remaining ?? 0} tries left. รหัสผิด`;
     if (d.error === "wrong_password") return `Wrong password. ${d.remaining ?? 0} tries left. รหัสผ่านผิด`;
+    if (d.error === "password_required") return "Please enter your account password. กรุณาใส่รหัสผ่าน";
+    if (d.error === "pin_needs_reset") return "Your PIN needs to be set again. ตั้งรหัสใหม่";
+    if (d.error === "pin_exists") return "A PIN already exists. Use Forgot PIN to change it.";
     if (d.error === "pin_mismatch") return "The two PINs are different. รหัสสองครั้งไม่ตรงกัน";
     if (d.error === "pin_format") return "Use exactly 4 digits. ใช้ตัวเลข 4 หลัก";
     return "Something went wrong. Please try again.";
@@ -60,7 +66,7 @@ export function ModeToggle({ mode }: { mode: Mode }) {
     setBusy(true); setMsg("");
     try {
       if (step === "create") {
-        const r = await fetch("/api/parent-pin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin, confirm }) });
+        const r = await fetch("/api/parent-pin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password, pin, confirm }) });
         const d = await r.json();
         if (!r.ok) { setMsg(explain(d)); return; }
         await flip(pin);
@@ -97,7 +103,7 @@ export function ModeToggle({ mode }: { mode: Mode }) {
               {step === "create" ? "Create a parent PIN" : step === "forgot" ? "Reset your PIN" : `Switch to ${target === "game" ? "Game" : "Tutor"} mode`}
             </h2>
             <p className="font-sarabun text-sm text-text-mid dark:text-gray-400">
-              {step === "create" ? "ตั้งรหัสผู้ปกครอง 4 หลัก (ครั้งแรก)" : step === "forgot" ? "ใส่รหัสผ่านบัญชีของคุณ" : "ใส่รหัสผู้ปกครอง 4 หลัก"}
+              {step === "create" ? "ตั้งรหัสผู้ปกครอง 4 หลัก (ครั้งแรก) ต้องใส่รหัสผ่านบัญชี" : step === "forgot" ? "ใส่รหัสผ่านบัญชีของคุณ" : "ใส่รหัสผู้ปกครอง 4 หลัก"}
             </p>
 
             {step === "loading" && <p className="mt-4 text-text-mid">…</p>}
@@ -109,12 +115,12 @@ export function ModeToggle({ mode }: { mode: Mode }) {
 
             {(step === "create" || step === "enter" || step === "forgot") && (
               <div className="mt-4 space-y-3">
-                {step === "forgot" && (
+                {(step === "forgot" || step === "create") && (
                   <input type="password" autoComplete="current-password" placeholder="Account password" value={password}
                     onChange={(e) => setPassword(e.target.value)} className="w-full rounded-xl border-2 border-gray-300 px-4 py-3 font-nunito text-base text-text-dark focus:border-sky-dark focus:outline-none" />
                 )}
                 <input type="password" inputMode="numeric" pattern="\d{4}" maxLength={4} autoComplete="off" autoFocus
-                  placeholder={step === "forgot" ? "New PIN" : "PIN"} value={pin}
+                  placeholder={step === "forgot" || step === "create" ? "New PIN" : "PIN"} value={pin}
                   onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))} className={input} />
                 {(step === "create" || step === "forgot") && (
                   <input type="password" inputMode="numeric" pattern="\d{4}" maxLength={4} autoComplete="off"
@@ -129,7 +135,7 @@ export function ModeToggle({ mode }: { mode: Mode }) {
             <div className="mt-5 flex gap-2">
               <button type="button" onClick={close} className="min-h-[48px] flex-1 rounded-xl bg-gray-200 font-nunito text-sm font-bold text-text-dark">Cancel</button>
               {(step === "create" || step === "enter" || step === "forgot") && (
-                <button type="submit" disabled={busy || pin.length !== 4 || ((step === "create" || step === "forgot") && confirm.length !== 4) || (step === "forgot" && !password)}
+                <button type="submit" disabled={busy || pin.length !== 4 || ((step === "create" || step === "forgot") && (confirm.length !== 4 || !password))}
                   className="min-h-[48px] flex-1 rounded-xl bg-leaf font-nunito text-sm font-bold text-white disabled:opacity-50">
                   {busy ? "…" : step === "create" ? "Save & switch" : step === "forgot" ? "Reset & switch" : "Switch"}
                 </button>

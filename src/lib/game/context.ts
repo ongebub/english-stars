@@ -22,7 +22,8 @@ export function setMapBand(band: string): void {
 export function getMapBandClient(): string | null {
   if (typeof document === "undefined") return null;
   const m = document.cookie.split("; ").find((c) => c.startsWith(`${MAP_BAND_COOKIE}=`));
-  return m ? decodeURIComponent(m.slice(MAP_BAND_COOKIE.length + 1)) || null : null;
+  if (!m) return null;
+  try { return decodeURIComponent(m.slice(MAP_BAND_COOKIE.length + 1)) || null; } catch { return null; }
 }
 
 export function mapHref(band: string | null): string {
