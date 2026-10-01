@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 
 type Mode = "game" | "tutor";
@@ -25,6 +26,10 @@ export function ModeToggle({ mode }: { mode: Mode }) {
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  // The header <nav> is its own stacking context (sticky z-30), so a dialog rendered inside it
+  // can never rise above the map art (z up to 2000). Portal to <body> instead.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const close = () => { setStep("closed"); setPin(""); setConfirm(""); setPassword(""); setMsg(""); };
 
@@ -95,8 +100,8 @@ export function ModeToggle({ mode }: { mode: Mode }) {
         <span className={`${pill} ${mode === "tutor" ? "bg-white text-sky-dark" : "text-white"}`}>🧑‍🏫<span className="hidden sm:inline"> Tutor</span></span>
       </button>
 
-      {step !== "closed" && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true">
+      {mounted && step !== "closed" && createPortal(
+        <div className="fixed inset-0 z-[3000] flex items-center justify-center bg-black/50 px-4" role="dialog" aria-modal="true">
           <form onSubmit={submit} className="w-full max-w-sm rounded-3xl bg-white p-6 text-center shadow-2xl dark:bg-gray-800">
             <p className="text-4xl">🔐</p>
             <h2 className="mt-1 font-nunito text-xl font-extrabold text-text-dark dark:text-gray-100">
@@ -147,7 +152,8 @@ export function ModeToggle({ mode }: { mode: Mode }) {
               </button>
             )}
           </form>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
