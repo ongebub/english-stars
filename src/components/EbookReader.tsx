@@ -281,7 +281,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
   if (showComplete) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white dark:bg-gray-900 px-6 transition-colors">
-        <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={showComplete} delayMs={1200} />
+        <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={showComplete} delayMs={1200} stepDone />
         <div className="text-center">
           <div className="text-8xl mb-6 animate-bounce">🦉</div>
           <h2 className="font-fredoka text-3xl font-semibold text-text-dark dark:text-gray-100">You finished the book!</h2>
@@ -296,7 +296,7 @@ export function EbookReader({ pages, subjectTitle, subjectId, subjectSlug }: Ebo
             </button>
             <Link href={back.href}
               className="min-h-[48px] flex items-center justify-center rounded-xl bg-sky-dark px-6 py-3 font-fredoka font-medium text-white">
-              {back.isGame ? <>Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></> : <>Back / <span className="font-sarabun ml-1">กลับ</span></>}
+              {back.isGame ? <>Back to Castle / <span className="font-sarabun ml-1">กลับไปปราสาท</span></> : <>Back / <span className="font-sarabun ml-1">กลับ</span></>}
             </Link>
           </div>
         </div>

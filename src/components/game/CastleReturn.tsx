@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getProgressId } from "@/lib/progress-id.client";
-import { getLearnContextClient, mapHref, ollieKey } from "@/lib/game/context";
+import { castleHref, getLearnContextClient, mapHref, ollieKey } from "@/lib/game/context";
 
 const COUNTDOWN = 6;
 
@@ -15,11 +15,14 @@ const COUNTDOWN = 6;
  * fanfare has not played yet), offer a short countdown back to the map. Replaying
  * an already-celebrated castle never auto-leaves.
  */
-export function CastleReturn({ subjectSlug, subjectId, ready, delayMs = 0 }: {
+export function CastleReturn({ subjectSlug, subjectId, ready, delayMs = 0, stepDone = false }: {
   subjectSlug: string; subjectId: string; ready: boolean; delayMs?: number;
+  /** This activity counts as finished for the guided flow: offer the next step when the castle is not complete. */
+  stepDone?: boolean;
 }) {
   const router = useRouter();
   const [href, setHref] = useState<string | null>(null);
+  const [kind, setKind] = useState<"map" | "next">("map");
   const [left, setLeft] = useState(COUNTDOWN);
   const [stopped, setStopped] = useState(false);
 
@@ -35,18 +38,21 @@ export function CastleReturn({ subjectSlug, subjectId, ready, delayMs = 0 }: {
           body: JSON.stringify({ subject_id: subjectId }),
         });
         const data = await res.json();
-        if (!data.complete || dead) return;
+        if (dead) return;
+        if (!data.complete) { if (stepDone) { setKind("next"); setHref(`${castleHref(subjectSlug)}?go=next`); } return; }
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const pid = await getProgressId(supabase, user.id);
         let last: string | null = null;
         try { last = localStorage.getItem(ollieKey(pid, ctx.band!)); } catch { /* private mode */ }
-        if (last === subjectSlug && !dead) setHref(mapHref(ctx.band));
+        if (dead) return;
+        if (last === subjectSlug) { setKind("map"); setHref(mapHref(ctx.band)); }
+        else if (stepDone) { setKind("next"); setHref(`${castleHref(subjectSlug)}?go=next`); }
       } catch { /* silent */ }
     }, delayMs);
     return () => { dead = true; clearTimeout(t); };
-  }, [ready, subjectId, subjectSlug, delayMs]);
+  }, [ready, subjectId, subjectSlug, delayMs, stepDone]);
 
   useEffect(() => {
     if (!href || stopped) return;
@@ -59,11 +65,20 @@ export function CastleReturn({ subjectSlug, subjectId, ready, delayMs = 0 }: {
   return (
     <div className="fixed inset-x-0 bottom-0 z-[120] flex justify-center px-4 pb-[max(16px,env(safe-area-inset-bottom))]">
       <div className="w-full max-w-sm rounded-2xl bg-white p-4 text-center shadow-2xl ring-4 ring-amber-300 dark:bg-gray-800">
-        <p className="font-fredoka text-lg font-semibold text-text-dark dark:text-gray-100">🏰 Castle conquered!</p>
-        <p className="font-sarabun text-sm text-text-mid dark:text-gray-400">ผ่านปราสาทแล้ว! กลับไปดูธงบนแผนที่</p>
+        {kind === "map" ? (
+          <>
+            <p className="font-fredoka text-lg font-semibold text-text-dark dark:text-gray-100">🏰 Castle conquered!</p>
+            <p className="font-sarabun text-sm text-text-mid dark:text-gray-400">ผ่านปราสาทแล้ว! กลับไปดูธงบนแผนที่</p>
+          </>
+        ) : (
+          <>
+            <p className="font-fredoka text-lg font-semibold text-text-dark dark:text-gray-100">⭐ Step done!</p>
+            <p className="font-sarabun text-sm text-text-mid dark:text-gray-400">เก่งมาก! ไปขั้นต่อไปกันเลย</p>
+          </>
+        )}
         <div className="mt-3 flex gap-2">
           <Link href={href} className="flex min-h-[48px] flex-1 items-center justify-center rounded-xl bg-leaf px-4 font-nunito text-sm font-bold text-white">
-            {stopped ? "Back to map" : `Back to map (${left})`}
+            {kind === "map" ? (stopped ? "Back to map" : `Back to map (${left})`) : (stopped ? "Next →" : `Next → (${left})`)}
           </Link>
           {!stopped && (
             <button onClick={() => setStopped(true)} className="min-h-[48px] rounded-xl bg-gray-200 px-4 font-nunito text-sm font-bold text-text-dark">

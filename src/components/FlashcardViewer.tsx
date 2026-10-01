@@ -189,7 +189,7 @@ export function FlashcardViewer({
       </div>
 
       {/* ── Completion banner ── */}
-      <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={showComplete} delayMs={1500} />
+      <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={showComplete} delayMs={1500} stepDone />
       {showComplete && (
         <div className="flex-shrink-0 bg-leaf/20 px-4 py-2 text-center">
           <p className="font-nunito text-sm font-bold text-leaf-dark">

@@ -177,7 +177,7 @@ export function GameMapStage({
         <ol className="absolute inset-0 m-0 list-none p-0">
           {castles.map((c, i) => {
             const s = spots[i];
-            const href = c.paywalled ? "/subscribe" : c.status === "locked" ? null : `/learn/${c.slug}`;
+            const href = c.paywalled ? "/subscribe" : c.status === "locked" ? null : `/learn/${c.slug}/castle`;
             const celebrating = cel && !cel.reduced && cel.idx === i && c.status === "complete";
             const inner = (
               <>

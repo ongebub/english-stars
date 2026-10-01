@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getLearnContextClient, mapHref } from "@/lib/game/context";
+import { castleHref, getLearnContextClient, mapHref } from "@/lib/game/context";
 
 /**
- * Where "back" goes from inside an activity. Game context: the castle map.
+ * Where "back" goes from inside an activity. Game context: the castle screen (the map is one tap further).
  * Otherwise (tutor / no flag): the subject page, exactly as before.
  * First render is the subject page so server and client markup match.
  */
@@ -17,6 +17,7 @@ export function useLearnBack(subjectSlug: string) {
   return {
     isGame: state.isGame,
     band: state.band,
-    href: state.isGame ? mapHref(state.band) : `/learn/${subjectSlug}`,
+    href: state.isGame ? castleHref(subjectSlug) : `/learn/${subjectSlug}`,
+    mapHref: mapHref(state.band),
   };
 }

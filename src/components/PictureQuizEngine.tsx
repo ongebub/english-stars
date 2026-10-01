@@ -1,5 +1,6 @@
 "use client";
 
+import { CastleReturn } from "@/components/game/CastleReturn";
 import { useLearnBack } from "@/components/game/useLearnBack";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
@@ -190,7 +191,7 @@ export default function PictureQuizEngine({
           href={back.href}
           className="mt-4 min-h-[48px] flex items-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white"
         >
-          {back.isGame ? <>← Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></> : <>← Back / <span className="font-sarabun ml-1">กลับ</span></>}
+          {back.isGame ? <>← Back to Castle / <span className="font-sarabun ml-1">กลับไปปราสาท</span></> : <>← Back / <span className="font-sarabun ml-1">กลับ</span></>}
         </Link>
       </div>
     );
@@ -324,6 +325,7 @@ export default function PictureQuizEngine({
   if (phase === "results") {
     return (
       <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-6 overflow-hidden">
+        <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={saved} stepDone />
         {/* Confetti */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {Array.from({ length: 20 }).map((_, i) => (
@@ -376,7 +378,7 @@ export default function PictureQuizEngine({
               href={back.href}
               className="min-h-[48px] flex items-center justify-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white"
             >
-              {back.isGame ? <>Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></> : <>Back to Subject / <span className="font-sarabun ml-1">กลับ</span></>}
+              {back.isGame ? <>Back to Castle / <span className="font-sarabun ml-1">กลับไปปราสาท</span></> : <>Back to Subject / <span className="font-sarabun ml-1">กลับ</span></>}
             </Link>
           </div>
         </div>

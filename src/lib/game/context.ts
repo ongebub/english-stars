@@ -38,3 +38,8 @@ export function mapHref(band: string | null): string {
 export function ollieKey(progressId: string, band: string): string {
   return `eas_ollie_at:${progressId}:${band}`;
 }
+
+/** The guided castle screen for a subject (game context). */
+export function castleHref(subjectSlug: string): string {
+  return `/learn/${subjectSlug}/castle`;
+}
