@@ -5,12 +5,40 @@ import { ChildSessionGuard } from "@/components/ChildSessionGuard";
 import { AppFooter } from "@/components/AppFooter";
 import TutorialOverlay from "@/components/TutorialOverlay";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { ChildSwitcher, type SwitcherChild } from "@/components/ChildSwitcher";
+import { createClient } from "@/lib/supabase/server";
+import { getLearnMode } from "@/lib/game/mode.server";
+import { LearnModeProvider } from "@/components/game/LearnModeProvider";
+import { ModeToggle } from "@/components/game/ModeToggle";
 
-export default function LearnLayout({
+export default async function LearnLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Child profiles for the header switcher. /learn is semi-protected (school
+  // sessions have no login), so no user simply means no switcher.
+  let kids: SwitcherChild[] = [];
+  let showSwitcher = false;
+  let showToggle = false;
+  let mode: "game" | "tutor" = "tutor"; // no login (school session): the plain Tutor view, as before
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      mode = (await getLearnMode(supabase, user.id)).mode;
+      showToggle = true;
+      const [{ data: rows }, { data: sub }] = await Promise.all([
+        supabase.from("profiles").select("id, display_name, avatar_emoji")
+          .eq("parent_id", user.id).eq("role", "child").is("deleted_at", null)
+          .order("created_at", { ascending: true }),
+        supabase.from("subscriptions").select("tier").maybeSingle(),
+      ]);
+      kids = (rows ?? []).map((r) => ({ id: r.id, name: r.display_name, emoji: r.avatar_emoji || "🧒" }));
+      showSwitcher = sub?.tier !== "tutor"; // tutors have students, not child profiles
+    }
+  } catch { /* header still renders without the switcher */ }
+
   return (
     <div className="min-h-screen bg-white dark:bg-[#111827] transition-colors relative">
       {/* Background starfield — light */}
@@ -67,6 +95,8 @@ export default function LearnLayout({
               <span className="sm:hidden text-base" aria-label="Account">👤</span>
               <span className="hidden sm:inline">Account / <span className="font-sarabun">บัญชี</span></span>
             </Link>
+            {showSwitcher && <ChildSwitcher kids={kids} />}
+            {showToggle && <ModeToggle mode={mode} />}
             <ThemeToggle />
           </div>
         </div>
@@ -74,7 +104,7 @@ export default function LearnLayout({
 
       {/* ── Page content with session guard ── */}
       <main className="mx-auto max-w-4xl px-4 py-6 relative">
-        <ChildSessionGuard>{children}</ChildSessionGuard>
+        <LearnModeProvider mode={mode}><ChildSessionGuard>{children}</ChildSessionGuard></LearnModeProvider>
       </main>
       <TutorialOverlay />
       <AppFooter />

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { setActiveChild } from "@/lib/active-child";
 import { getDeviceFingerprint, getDeviceLabel } from "@/lib/device-fingerprint";
 import { setSessionId } from "@/components/ChildSessionGuard";
@@ -165,6 +166,13 @@ export default function ProfilePickerClient({ childProfiles: children }: Props) 
             <span className="font-sarabun text-xs text-white/70">เพิ่มเด็ก</span>
           </button>
         </div>
+
+        {/* Parents who came here only to manage the account */}
+        <p className="mt-6 text-center">
+          <Link href="/dashboard" className="font-nunito text-sm font-semibold text-white/80 underline hover:text-white">
+            Parent dashboard / <span className="font-sarabun">แดชบอร์ดผู้ปกครอง</span>
+          </Link>
+        </p>
 
         {/* Add child modal */}
         {showAddChild && (

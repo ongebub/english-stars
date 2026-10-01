@@ -1,5 +1,8 @@
 "use client";
 
+import { quizPassed, PASS_NUMERATOR, PASS_DENOMINATOR } from "@/lib/game/rules";
+import { CastleReturn } from "@/components/game/CastleReturn";
+import { useLearnBack } from "@/components/game/useLearnBack";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -50,6 +53,7 @@ type Phase = "ready" | "playing" | "results";
 export default function QuizEngine({ questions, subjectId, subjectSlug, subjectTitle, subjectEmoji }: QuizEngineProps) {
   const QUIZ_SIZE = Math.min(10, questions.length);
 
+  const back = useLearnBack(subjectSlug);
   const [phase, setPhase] = useState<Phase>("ready");
   const [selectedQuestions, setSelectedQuestions] = useState<QuizQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -142,9 +146,9 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
           className="mt-8 min-h-[56px] rounded-2xl bg-coral px-10 py-4 font-nunito text-lg font-bold text-white shadow-lg active:scale-95 transition-transform">
           Start Quiz / <span className="font-sarabun">เริ่มทำแบบทดสอบ</span>
         </button>
-        <Link href={`/learn/${subjectSlug}`}
+        <Link href={back.href}
           className="mt-4 min-h-[48px] flex items-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white">
-          ← Back / <span className="font-sarabun ml-1">กลับ</span>
+          {back.isGame ? <>← Back to Castle / <span className="font-sarabun ml-1">กลับไปปราสาท</span></> : <>← Back / <span className="font-sarabun ml-1">กลับ</span></>}
         </Link>
       </div>
     );
@@ -161,7 +165,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
         {/* Top bar */}
         <div className="flex-shrink-0 px-4 pb-2" style={{ paddingTop: "max(12px, env(safe-area-inset-top))" }}>
           <div className="flex items-center justify-between mb-2">
-            <Link href={`/learn/${subjectSlug}`}
+            <Link href={back.href}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-300 active:scale-95 transition-transform">
               <span className="text-lg font-bold">✕</span>
             </Link>
@@ -260,6 +264,7 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
   if (phase === "results") {
     return (
       <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white dark:bg-gray-900 px-6 overflow-hidden">
+        <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={saved} stepDone={quizPassed(score, QUIZ_SIZE)} />
         {/* Confetti */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {Array.from({ length: 20 }).map((_, i) => <ConfettiPiece key={i} index={i} />)}
@@ -274,6 +279,14 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
             {score} out of {QUIZ_SIZE}!
           </h1>
           <p className="font-sarabun text-lg text-text-mid">คุณได้ {score} จาก {QUIZ_SIZE}!</p>
+
+          {back.isGame && !quizPassed(score, QUIZ_SIZE) && (
+            <div className="mt-4 max-w-xs rounded-2xl bg-orange-50 p-3 text-center">
+              <p className="font-nunito text-base font-extrabold text-orange-700">So close! You need {PASS_NUMERATOR} out of {PASS_DENOMINATOR} to win the castle. Try again?</p>
+              <p className="font-sarabun text-sm text-orange-700">เกือบแล้ว! ต้องได้ {PASS_NUMERATOR} จาก {PASS_DENOMINATOR} เพื่อพิชิตปราสาท ลองอีกครั้งนะ</p>
+              <Link href={back.mapHref} className="mt-2 inline-flex min-h-[44px] items-center rounded-xl bg-sky-dark px-4 font-nunito text-sm font-bold text-white">Back to Map / กลับไปแผนที่</Link>
+            </div>
+          )}
 
           {/* Stars */}
           <div className="mt-4 flex gap-2 text-4xl">
@@ -325,9 +338,9 @@ export default function QuizEngine({ questions, subjectId, subjectSlug, subjectT
               className="min-h-[56px] rounded-2xl bg-coral px-6 py-4 font-nunito text-base font-bold text-white shadow-lg active:scale-95 transition-transform">
               Try Again / <span className="font-sarabun">ลองอีกครั้ง</span>
             </button>
-            <Link href={`/learn/${subjectSlug}`}
+            <Link href={back.href}
               className="min-h-[48px] flex items-center justify-center rounded-xl bg-sky-dark px-6 py-3 font-nunito text-sm font-bold text-white">
-              Back to Subject / <span className="font-sarabun ml-1">กลับ</span>
+              {back.isGame ? <>Back to Castle / <span className="font-sarabun ml-1">กลับไปปราสาท</span></> : <>Back to Subject / <span className="font-sarabun ml-1">กลับ</span></>}
             </Link>
           </div>
         </div>

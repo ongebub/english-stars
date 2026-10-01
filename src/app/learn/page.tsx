@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { getLearnMode, getMapBandServer } from "@/lib/game/mode.server";
+import { mapHref } from "@/lib/game/context";
+import { isMapBand } from "@/lib/game/rules";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProgressIdServer } from "@/lib/progress-id.server";
@@ -37,6 +40,12 @@ export default async function LearnPage() {
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+
+  // Game mode lands on the castle map; Tutor mode keeps the subject grid below.
+  if ((await getLearnMode(supabase, user.id)).mode === "game") {
+    const b = await getMapBandServer();
+    redirect(mapHref(isMapBand(b) ? b : "K"));
+  }
 
   const { data: subscription } = await supabase
     .from("subscriptions")

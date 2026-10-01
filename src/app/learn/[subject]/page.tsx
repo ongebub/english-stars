@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getLearnMode, getMapBandServer } from "@/lib/game/mode.server";
+import { castleHref, mapHref } from "@/lib/game/context";
+import { isMapBand } from "@/lib/game/rules";
+import { redirect } from "next/navigation";
 import { getProgressIdServer } from "@/lib/progress-id.server";
 import type { Subject } from "@/lib/types";
 
@@ -23,6 +27,12 @@ export default async function SubjectPage({
 
   if (!data) notFound();
   const subject = data as Subject;
+
+  // Game mode plays subjects through the guided castle screen; Tutor mode is unchanged.
+  const { data: { user: modeUser } } = await supabase.auth.getUser();
+  const mode = modeUser ? (await getLearnMode(supabase, modeUser.id)).mode : "tutor";
+  if (mode === "game" && isMapBand(subject.grade_band)) redirect(castleHref(slug));
+  const ctx = { mode, band: await getMapBandServer() };
 
   // Content counts (not user-specific) — used to hide empty tiles
   const [
@@ -304,11 +314,14 @@ export default async function SubjectPage({
       </div>
 
       <Link
-        href="/learn"
+        href={ctx.mode === "game" ? mapHref(ctx.band) : "/learn"}
         className="mt-8 inline-flex min-h-[48px] items-center rounded-xl bg-sky-dark px-6 font-nunito text-sm font-bold text-white shadow hover:bg-sky-dark/90"
       >
-        ← Back to Subjects /{" "}
-        <span className="font-sarabun ml-1">กลับไปเลือกวิชา</span>
+        {ctx.mode === "game" ? (
+          <>← Back to Map / <span className="font-sarabun ml-1">กลับไปแผนที่</span></>
+        ) : (
+          <>← Back to Subjects /{" "}<span className="font-sarabun ml-1">กลับไปเลือกวิชา</span></>
+        )}
       </Link>
     </section>
   );
