@@ -74,7 +74,9 @@ GRANT ALL ON public.parent_pins TO service_role;
 -- Atomic attempt charge. ONE statement: skips (returns no row) while locked, otherwise
 -- counts the guess and, when it is the 5th, sets the escalating lock in the same
 -- UPDATE. An expired lock restarts the count at zero. lockout_count decays to 0 once
--- the last failed guess is over 24 hours old. Returns the new count and any lock.
+-- 24 hours have passed since the last failed guess or the end of the last lock (measured
+-- with GREATEST(last_failed_at, locked_until), so a 24 h lock does not reset itself).
+-- last_failed_at is stamped by parent_pin_fail(), i.e. only on wrong guesses. Returns the new count and any lock.
 CREATE OR REPLACE FUNCTION public.parent_pin_charge(p_user uuid)
 RETURNS TABLE (failed_attempts integer, locked_until timestamptz)
 LANGUAGE sql
@@ -85,19 +87,30 @@ AS $$
     failed_attempts = (CASE WHEN p.locked_until IS NOT NULL AND p.locked_until <= now() THEN 0 ELSE p.failed_attempts END) + 1,
     locked_until = CASE
       WHEN (CASE WHEN p.locked_until IS NOT NULL AND p.locked_until <= now() THEN 0 ELSE p.failed_attempts END) + 1 >= 5
-      THEN now() + (CASE (CASE WHEN p.last_failed_at IS NULL OR p.last_failed_at < now() - interval '24 hours' THEN 0 ELSE p.lockout_count END)
+      THEN now() + (CASE (CASE WHEN p.last_failed_at IS NULL OR GREATEST(p.last_failed_at, COALESCE(p.locked_until, p.last_failed_at)) < now() - interval '24 hours' THEN 0 ELSE p.lockout_count END)
                       WHEN 0 THEN interval '5 minutes'
                       WHEN 1 THEN interval '15 minutes'
                       WHEN 2 THEN interval '1 hour'
                       ELSE interval '24 hours' END)
       ELSE NULL END,
-    lockout_count = (CASE WHEN p.last_failed_at IS NULL OR p.last_failed_at < now() - interval '24 hours' THEN 0 ELSE p.lockout_count END)
+    lockout_count = (CASE WHEN p.last_failed_at IS NULL OR GREATEST(p.last_failed_at, COALESCE(p.locked_until, p.last_failed_at)) < now() - interval '24 hours' THEN 0 ELSE p.lockout_count END)
       + (CASE WHEN (CASE WHEN p.locked_until IS NOT NULL AND p.locked_until <= now() THEN 0 ELSE p.failed_attempts END) + 1 >= 5 THEN 1 ELSE 0 END),
-    last_failed_at = now(),
     updated_at = now()
   WHERE p.user_id = p_user
     AND (p.locked_until IS NULL OR p.locked_until <= now())
   RETURNING p.failed_attempts, p.locked_until;
+$$;
+
+-- Stamps a WRONG guess (called by the server after a failed check; correct guesses never
+-- touch last_failed_at, so a parent who types the PIN right does not keep the decay clock
+-- from running).
+CREATE OR REPLACE FUNCTION public.parent_pin_fail(p_user uuid)
+RETURNS void
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $$
+  UPDATE public.parent_pins SET last_failed_at = now() WHERE user_id = p_user;
 $$;
 
 -- A correct PIN/password clears the counter and lock. If that guess was the 5th (which
@@ -120,5 +133,7 @@ $$;
 -- authenticated, so revoke explicitly; only the server (service role) may call these.
 REVOKE ALL ON FUNCTION public.parent_pin_charge(uuid)  FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION public.parent_pin_success(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.parent_pin_fail(uuid)    FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.parent_pin_charge(uuid)  TO service_role;
 GRANT EXECUTE ON FUNCTION public.parent_pin_success(uuid) TO service_role;
+GRANT EXECUTE ON FUNCTION public.parent_pin_fail(uuid)    TO service_role;

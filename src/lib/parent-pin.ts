@@ -8,10 +8,10 @@ import { createClient as createAnonClient } from "@supabase/supabase-js";
  *
  * Storage: public.parent_pins, service-role only (RLS on, no policies, privileges
  * revoked). Only a salted, peppered scrypt hash is kept, tagged `v1$<pepperId>$...`.
- * Four digits is a tiny space, so the pepper (PIN_PEPPER, a server secret that is never
+ * Four digits is a tiny space, so the pepper (PIN_PEPPER, at least 32 characters, a server secret that is never
  * in the database) is what stops an offline guess if the table leaks. PIN_PEPPER is
  * REQUIRED: with it unset every PIN route answers 503 instead of weakening the hash.
- * Rotating the pepper (change PIN_PEPPER_ID too) makes old hashes report "needs reset"
+ * The pepper id is derived from the pepper itself, so rotating PIN_PEPPER makes old hashes report "needs reset"
  * rather than "wrong PIN".
  *
  * Attempts are charged and locked by SQL functions (parent_pin_charge / _success), so
@@ -24,14 +24,26 @@ export const MAX_ATTEMPTS = 5;
 export const PIN_RE = /^\d{4}$/;
 /** pin_hash value for a row created only to track password attempts before a PIN exists. */
 export const UNSET = "!";
+const MIN_PEPPER_LEN = 32;
 
-const PEPPER_ID = process.env.PIN_PEPPER_ID || "p1";
 
 /** True only when the server secret exists. Logs (never the value) when it does not. */
 export function pepperReady(): boolean {
-  if (process.env.PIN_PEPPER) return true;
-  console.error("[parent-pin] PIN_PEPPER is not set: PIN features are disabled (503). Set it in the Vercel environment.");
-  return false;
+  const p = process.env.PIN_PEPPER;
+  if (!p) {
+    console.error("[parent-pin] PIN_PEPPER is not set: PIN features are disabled (503). Set it in the Vercel environment.");
+    return false;
+  }
+  if (p.length < MIN_PEPPER_LEN) {
+    console.error(`[parent-pin] PIN_PEPPER is shorter than ${MIN_PEPPER_LEN} characters: PIN features are disabled (503).`);
+    return false;
+  }
+  return true;
+}
+
+/** Identifies the pepper without revealing it: first 8 hex chars of HMAC-SHA256(PIN_PEPPER, "pepper-id"). */
+function pepperId(): string {
+  return createHmac("sha256", process.env.PIN_PEPPER ?? "").update("pepper-id").digest("hex").slice(0, 8);
 }
 
 export function adminClient(): Admin | null {
@@ -53,21 +65,21 @@ function derive(pin: string, salt: Buffer): Buffer {
 
 export function hashPin(pin: string): string {
   const salt = randomBytes(16);
-  return `v1$${PEPPER_ID}$${salt.toString("base64")}$${derive(pin, salt).toString("base64")}`;
+  return `v1$${pepperId()}$${salt.toString("base64")}$${derive(pin, salt).toString("base64")}`;
 }
 
 /** "stale" = hashed under a different pepper id: the PIN must be reset, it is not simply wrong. */
 export function verifyPinHash(pin: string, stored: string): "ok" | "wrong" | "stale" {
   const [v, pid, s, h] = stored.split("$");
   if (v !== "v1" || !pid || !s || !h) return "wrong";
-  if (pid !== PEPPER_ID) return "stale";
+  if (pid !== pepperId()) return "stale";
   const want = Buffer.from(h, "base64");
   const got = derive(pin, Buffer.from(s, "base64"));
   return want.length === got.length && timingSafeEqual(want, got) ? "ok" : "wrong";
 }
 export function pinIsStale(stored: string): boolean {
   const [v, pid] = stored.split("$");
-  return v === "v1" && !!pid && pid !== PEPPER_ID;
+  return v === "v1" && !!pid && pid !== pepperId();
 }
 
 export interface PinRow { pin_hash: string; locked_until: string | null }
@@ -109,6 +121,7 @@ export async function guardedAttempt(admin: Admin, userId: string, check: () => 
     await admin.rpc("parent_pin_success", { p_user: userId });
     return { ok: true };
   }
+  await admin.rpc("parent_pin_fail", { p_user: userId });
   const lockedUntil = rows[0].locked_until;
   if (lockedUntil && new Date(lockedUntil).getTime() > Date.now()) {
     return { ok: false, status: 429, error: "locked", retryAfterSec: Math.ceil((new Date(lockedUntil).getTime() - Date.now()) / 1000) };
@@ -133,7 +146,14 @@ export async function setPinWithPassword(
   const res = await guardedAttempt(admin, user.id, async () => {
     const probe = createAnonClient(url, anon, { auth: { persistSession: false, autoRefreshToken: false } });
     const { error } = await probe.auth.signInWithPassword({ email, password });
-    if (!error) await probe.auth.signOut({ scope: "local" }).catch(() => {});
+    if (!error) {
+      try {
+        const out = await probe.auth.signOut({ scope: "local" });
+        if (out.error) console.error("[parent-pin] probe signOut failed:", out.error.message);
+      } catch (e) {
+        console.error("[parent-pin] probe signOut threw:", e instanceof Error ? e.message : "unknown");
+      }
+    }
     return !error;
   }, true);
   if (!res.ok) return res.error === "wrong_pin" ? { ...res, error: "wrong_password" } : res;
