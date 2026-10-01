@@ -1,4 +1,5 @@
--- PROPOSED game_order values, for MATT TO CONFIRM.  NOT APPLIED.
+-- game_order values.  FINAL per Chris (2026-09-30): no Matt review needed.  NOT APPLIED.
+-- (File name kept from when this was a proposal.)
 -- Needs supabase/migrations/20260930180000_game_mode_phase2.sql applied first.
 --
 -- Method: start from today's sort_order within each band, then move only the
@@ -6,7 +7,7 @@
 -- marked "MOVED". This is an editorial guess, not a curriculum: sort_order was
 -- never designed as a learning order (polite-words is band K but sort 27;
 -- family-members/weather/clothing were appended at 35-37).
--- Matt: reorder freely; only the numbers matter, gaps are fine, lowest = first.
+-- To reorder later: only the numbers matter, gaps are fine, lowest = first.
 -- Subjects not listed keep game_order NULL (falls back to sort_order).
 -- Interview Practice (band 'all') is deliberately not on any map.
 -- Only writes game_order on subjects. No rows are deleted.

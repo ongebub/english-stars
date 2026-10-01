@@ -5,11 +5,13 @@ import { getProgressIdServer } from "@/lib/progress-id.server";
 import { loadBandCastles } from "@/lib/game/load";
 import { CASTLES_PER_PAGE, MAP_BANDS, isMapBand } from "@/lib/game/rules";
 import { GameMapStage } from "@/components/game/GameMapStage";
-import { LearnContextMarker } from "@/components/game/LearnContextMarker";
+import { MapBandMarker } from "@/components/game/MapBandMarker";
+import { getLearnMode, getMapBandServer } from "@/lib/game/mode.server";
 import { CastleSync } from "@/components/game/CastleSync";
 
 export const dynamic = "force-dynamic";
 
+const READER_LEVEL: Record<string, number> = { K: 1, "1": 2, "2": 3, "3": 3 };
 const BAND_LABEL: Record<string, { en: string; th: string }> = {
   K: { en: "Kindergarten", th: "อนุบาล" },
   "1": { en: "Grade 1", th: "ป.1" },
@@ -29,11 +31,12 @@ export default async function MapPage({
   searchParams: Promise<{ band?: string; p?: string; replay?: string }>;
 }) {
   const sp = await searchParams;
-  const band = isMapBand(sp.band) ? sp.band : "K";
-
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
+  if ((await getLearnMode(supabase, user.id)).mode === "tutor") redirect("/learn");
+  const remembered = await getMapBandServer();
+  const band = isMapBand(sp.band) ? sp.band : isMapBand(remembered) ? remembered : "K";
 
   const progressId = await getProgressIdServer(supabase, user.id);
   const { data: sub } = await supabase.from("subscriptions").select("status").eq("user_id", user.id).maybeSingle();
@@ -56,7 +59,7 @@ export default async function MapPage({
 
   return (
     <section>
-      <LearnContextMarker mode="game" band={band} />
+      <MapBandMarker band={band} />
       <CastleSync subjectIds={needSync} />
       <h1 className="font-nunito text-center text-3xl font-extrabold text-text-dark dark:text-gray-100">Castle Map</h1>
       <p className="font-sarabun mt-1 text-center text-lg text-text-mid dark:text-gray-400">แผนที่ปราสาท</p>
@@ -102,9 +105,11 @@ export default async function MapPage({
         ) : <span />}
       </div>
 
-      <p className="mt-6 text-center text-sm">
-        <Link href="/learn" className="text-sky-dark underline">Tutor view: all subjects</Link>
-      </p>
+      <div className="mt-8 flex flex-wrap justify-center gap-2">
+        <Link href={`/learn/read-along?level=${READER_LEVEL[band]}`} className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 font-nunito text-sm font-bold text-text-dark shadow dark:bg-gray-800 dark:text-gray-100">📖 Read-Along Stories</Link>
+        <Link href="/learn/practice" className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 font-nunito text-sm font-bold text-text-dark shadow dark:bg-gray-800 dark:text-gray-100">🎯 Practice Quizzes</Link>
+        <Link href="/learn/final-test" className="inline-flex min-h-[48px] items-center rounded-full bg-white px-5 font-nunito text-sm font-bold text-text-dark shadow dark:bg-gray-800 dark:text-gray-100">🏆 Final Test</Link>
+      </div>
     </section>
   );
 }

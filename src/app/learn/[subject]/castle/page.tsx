@@ -5,6 +5,7 @@ import { loadBandCastles } from "@/lib/game/load";
 import { isMapBand } from "@/lib/game/rules";
 import { CastleScreen, STEP_INFO } from "@/components/game/CastleScreen";
 import { mapHref } from "@/lib/game/context";
+import { getLearnMode } from "@/lib/game/mode.server";
 import type { Subject } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -22,6 +23,8 @@ export default async function CastlePage({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect(`/login?redirectTo=/learn/${slug}/castle`);
+
+  if ((await getLearnMode(supabase, user.id)).mode === "tutor") redirect(`/learn/${slug}`);
 
   const { data } = await supabase.from("subjects").select("*").eq("slug", slug).eq("is_published", true).maybeSingle();
   if (!data) notFound();

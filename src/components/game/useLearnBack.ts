@@ -1,23 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { castleHref, getLearnContextClient, mapHref } from "@/lib/game/context";
+import { castleHref, getMapBandClient, mapHref } from "@/lib/game/context";
+import { useLearnMode } from "@/components/game/LearnModeProvider";
 
 /**
- * Where "back" goes from inside an activity. Game context: the castle screen (the map is one tap further).
- * Otherwise (tutor / no flag): the subject page, exactly as before.
- * First render is the subject page so server and client markup match.
+ * Where "back" goes from inside an activity. Game mode: the castle screen (the map is
+ * one tap further). Tutor mode: the subject page, exactly as before.
+ * The mode comes from the server (LearnModeProvider); the band is a UI hint only.
  */
 export function useLearnBack(subjectSlug: string) {
-  const [state, setState] = useState<{ isGame: boolean; band: string | null }>({ isGame: false, band: null });
-  useEffect(() => {
-    const c = getLearnContextClient();
-    setState({ isGame: c.mode === "game", band: c.band });
-  }, []);
+  const isGame = useLearnMode() === "game";
+  const [band, setBand] = useState<string | null>(null);
+  useEffect(() => { setBand(getMapBandClient()); }, []);
   return {
-    isGame: state.isGame,
-    band: state.band,
-    href: state.isGame ? castleHref(subjectSlug) : `/learn/${subjectSlug}`,
-    mapHref: mapHref(state.band),
+    isGame,
+    band,
+    href: isGame ? castleHref(subjectSlug) : `/learn/${subjectSlug}`,
+    mapHref: mapHref(band),
   };
 }

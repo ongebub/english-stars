@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getProgressId } from "@/lib/progress-id.client";
-import { castleHref, getLearnContextClient, mapHref, ollieKey } from "@/lib/game/context";
+import { castleHref, getMapBandClient, mapHref, ollieKey } from "@/lib/game/context";
+import { useLearnMode } from "@/components/game/LearnModeProvider";
 
 const COUNTDOWN = 6;
 
@@ -21,6 +22,7 @@ export function CastleReturn({ subjectSlug, subjectId, ready, delayMs = 0, stepD
   stepDone?: boolean;
 }) {
   const router = useRouter();
+  const isGame = useLearnMode() === "game";
   const [href, setHref] = useState<string | null>(null);
   const [kind, setKind] = useState<"map" | "next">("map");
   const [left, setLeft] = useState(COUNTDOWN);
@@ -28,8 +30,8 @@ export function CastleReturn({ subjectSlug, subjectId, ready, delayMs = 0, stepD
 
   useEffect(() => {
     if (!ready) return;
-    const ctx = getLearnContextClient();
-    if (ctx.mode !== "game" || !ctx.band) return;
+    if (!isGame) return;
+    const ctx = { band: getMapBandClient() };
     let dead = false;
     const t = window.setTimeout(async () => {
       try {
@@ -45,14 +47,14 @@ export function CastleReturn({ subjectSlug, subjectId, ready, delayMs = 0, stepD
         if (!user) return;
         const pid = await getProgressId(supabase, user.id);
         let last: string | null = null;
-        try { last = localStorage.getItem(ollieKey(pid, ctx.band!)); } catch { /* private mode */ }
+        try { last = localStorage.getItem(ollieKey(pid, ctx.band ?? "K")); } catch { /* private mode */ }
         if (dead) return;
         if (last === subjectSlug) { setKind("map"); setHref(mapHref(ctx.band)); }
         else if (stepDone) { setKind("next"); setHref(`${castleHref(subjectSlug)}?go=next`); }
       } catch { /* silent */ }
     }, delayMs);
     return () => { dead = true; clearTimeout(t); };
-  }, [ready, subjectId, subjectSlug, delayMs, stepDone]);
+  }, [ready, subjectId, subjectSlug, delayMs, stepDone, isGame]);
 
   useEffect(() => {
     if (!href || stopped) return;

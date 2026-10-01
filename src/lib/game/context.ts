@@ -1,33 +1,28 @@
 /**
- * Which way a child arrived in a subject: from the castle map ("game") or from the
- * plain subject grid ("tutor"). Stored in a session cookie so both server pages
- * and client engines can read it.
+ * Game/Tutor mode helpers shared by client and server code.
  *
- * Phase 4 replaces this with the child's real learn_mode (profiles.learn_mode,
- * default 'game' except tier='tutor'). Only the get/set functions and
- * the cookie name need to change; callers use these functions, not the cookie.
+ * The mode itself is per child profile (profiles.learn_mode, set only through the
+ * PIN-protected /api/learn-mode route) and defaults to Game unless the subscription
+ * tier is 'tutor'. It is resolved on the server (mode.server.ts) and handed to client
+ * components through LearnModeProvider; nothing here reads or writes it.
+ *
+ * What remains here is a UI convenience: remembering which grade band's map the
+ * child was last on, so "Back to Map" lands on the right map. It carries no
+ * authority and is just a cookie.
  */
-export const LEARN_CTX_COOKIE = "eas_learn_ctx";
-
-export interface LearnContext { mode: "game" | "tutor"; band: string | null }
-
-export function parseLearnContext(raw: string | null | undefined): LearnContext {
-  if (!raw) return { mode: "tutor", band: null };
-  const [m, band] = decodeURIComponent(raw).split(":");
-  return m === "game" ? { mode: "game", band: band || null } : { mode: "tutor", band: null };
-}
+export const MAP_BAND_COOKIE = "eas_map_band";
 
 /** Browser only. */
-export function setLearnContext(mode: "game" | "tutor", band?: string): void {
+export function setMapBand(band: string): void {
   if (typeof document === "undefined") return;
-  document.cookie = `${LEARN_CTX_COOKIE}=${encodeURIComponent(mode === "game" ? `game:${band ?? ""}` : "tutor")}; path=/; SameSite=Lax`;
+  document.cookie = `${MAP_BAND_COOKIE}=${encodeURIComponent(band)}; path=/; SameSite=Lax; max-age=31536000`;
 }
 
 /** Browser only. */
-export function getLearnContextClient(): LearnContext {
-  if (typeof document === "undefined") return { mode: "tutor", band: null };
-  const m = document.cookie.split("; ").find((c) => c.startsWith(`${LEARN_CTX_COOKIE}=`));
-  return parseLearnContext(m ? m.slice(LEARN_CTX_COOKIE.length + 1) : null);
+export function getMapBandClient(): string | null {
+  if (typeof document === "undefined") return null;
+  const m = document.cookie.split("; ").find((c) => c.startsWith(`${MAP_BAND_COOKIE}=`));
+  return m ? decodeURIComponent(m.slice(MAP_BAND_COOKIE.length + 1)) || null : null;
 }
 
 export function mapHref(band: string | null): string {
@@ -39,7 +34,7 @@ export function ollieKey(progressId: string, band: string): string {
   return `eas_ollie_at:${progressId}:${band}`;
 }
 
-/** The guided castle screen for a subject (game context). */
+/** The guided castle screen for a subject (game mode). */
 export function castleHref(subjectSlug: string): string {
   return `/learn/${subjectSlug}/castle`;
 }

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getLearnContextServer } from "@/lib/game/context.server";
-import { mapHref } from "@/lib/game/context";
+import { getLearnMode, getMapBandServer } from "@/lib/game/mode.server";
+import { castleHref, mapHref } from "@/lib/game/context";
+import { isMapBand } from "@/lib/game/rules";
+import { redirect } from "next/navigation";
 import { getProgressIdServer } from "@/lib/progress-id.server";
 import type { Subject } from "@/lib/types";
 
@@ -14,7 +16,6 @@ export default async function SubjectPage({
   params: Promise<{ subject: string }>;
 }) {
   const { subject: slug } = await params;
-  const ctx = await getLearnContextServer();
   const supabase = await createClient();
 
   const { data } = await supabase
@@ -26,6 +27,12 @@ export default async function SubjectPage({
 
   if (!data) notFound();
   const subject = data as Subject;
+
+  // Game mode plays subjects through the guided castle screen; Tutor mode is unchanged.
+  const { data: { user: modeUser } } = await supabase.auth.getUser();
+  const mode = modeUser ? (await getLearnMode(supabase, modeUser.id)).mode : "tutor";
+  if (mode === "game" && isMapBand(subject.grade_band)) redirect(castleHref(slug));
+  const ctx = { mode, band: await getMapBandServer() };
 
   // Content counts (not user-specific) — used to hide empty tiles
   const [
