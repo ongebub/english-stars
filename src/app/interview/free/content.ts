@@ -6,12 +6,14 @@
  * is new.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- *  ⚠  UNAPPROVED THAI. NEEDS NAPARAT'S REVIEW BEFORE THIS PAGE GOES LIVE.
+ *  ⚠  THAI NOT REVIEWED BY A NATIVE SPEAKER.
  *
- *  Every string in FREE_NEW is a placeholder written by Jinx, not reviewed by
- *  Naparat or Chris. The page carries robots noindex (see page.tsx) until it is
- *  approved. Do not reword heroH1 or the trial terms; those come from
- *  ../content.ts and are already approved.
+ *  Every string in FREE_NEW was written by Jinx. Chris, 2026-10-05: no native
+ *  reviewer is available, so do not wait on one. The strings had one
+ *  independent second read that day (not a native speaker) and three were
+ *  reworded from it. The page carries robots noindex (see page.tsx). Do not
+ *  reword heroH1 or the trial terms; those come from ../content.ts and are
+ *  already approved.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { TH, EN } from "../content";
@@ -25,12 +27,12 @@ export const FREE_NEW = {
     // The one button.
     cta: "รับ 5 คำถามฟรี",
     // Heading over the questions once revealed.
-    resultH2: "นี่คือ 5 คำถามของคุณ",
+    resultH2: "นี่คือคำถามทั้ง 5 ข้อ",
     // Shown when the email request failed but the questions are shown anyway.
-    emailFailed: "ส่งอีเมลไม่สำเร็จ แต่คุณอ่านคำถามด้านล่างได้เลย",
-    // LINE block under the questions (unapproved, needs Naparat).
+    emailFailed: "ส่งอีเมลไม่สำเร็จ แต่อ่านคำถามด้านล่างได้เลย",
+    // LINE block under the questions.
     lineLead: "รับเคล็ดลับเตรียมสอบสัมภาษณ์ฟรีทาง LINE",
-    lineCta: "เพิ่มเพื่อนใน LINE",
+    lineCta: "เพิ่มเพื่อนทาง LINE",
   },
   en: {
     sub: "Enter your email to get all 5 questions, with model answers and how to practise at home. Free.",

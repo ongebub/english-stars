@@ -193,7 +193,8 @@ export default function FreeContent() {
           {" · "}
           <Link href="/terms">{t.footerTerms}</Link>
         </p>
-        <SocialLinks />
+        {/* Before the email goes in there is one thing to do on this page. */}
+        {state === "unlocked" && <SocialLinks />}
       </footer>
     </div>
   );
