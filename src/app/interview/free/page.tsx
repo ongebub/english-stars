@@ -5,9 +5,8 @@ const TITLE = "5 คำถามที่เด็กมักเจอในก
 
 export const metadata: Metadata = {
   title: TITLE,
-  // Same reasoning as ../page.tsx: the Thai here is unapproved (see ./content.ts),
-  // so keep it out of Google until Naparat has signed it off. Ad traffic is
-  // unaffected. Remove this line when the copy is approved.
+  // The Thai here has had no native-speaker review (see ./content.ts), so keep
+  // it out of Google. Ad traffic is unaffected.
   robots: { index: false, follow: true },
 };
 
