@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { email, locale } = (body ?? {}) as Record<string, unknown>;
+  const { email, locale, source } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string") {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
@@ -193,6 +193,10 @@ export async function POST(req: NextRequest) {
   }
 
   const lang: "th" | "en" = locale === "en" ? "en" : "th";
+
+  // Which page asked. Allow-listed, never stored verbatim: the column is free
+  // text with no CHECK, and this endpoint is public.
+  const sourceTag: "interview" | "free_pack" = source === "free_pack" ? "free_pack" : "interview";
 
   // Every exit below this point answers 200 and is padded to the same duration,
   // so neither the status nor the latency reveals anything about the address.
@@ -315,7 +319,7 @@ export async function POST(req: NextRequest) {
     if (!row) {
       const { data: inserted, error: insertErr } = await supabase
         .from("printable_requests")
-        .insert({ email: normalised, locale: lang, source: "interview", ip_hash: hashIp(req) })
+        .insert({ email: normalised, locale: lang, source: sourceTag, ip_hash: hashIp(req) })
         .select(COLS)
         .single();
 
