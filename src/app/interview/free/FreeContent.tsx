@@ -1,5 +1,6 @@
 "use client";
 
+import { SocialLinks } from "@/components/SocialLinks";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -192,6 +193,7 @@ export default function FreeContent() {
           {" · "}
           <Link href="/terms">{t.footerTerms}</Link>
         </p>
+        <SocialLinks />
       </footer>
     </div>
   );

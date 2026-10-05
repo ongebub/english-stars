@@ -16,8 +16,7 @@
  */
 import { TH, EN } from "../content";
 
-/** English Allstars LINE Official Account (@209khnuv). Single source for the URL. */
-export const LINE_ADD_FRIEND_URL = "https://line.me/R/ti/p/@209khnuv";
+export { LINE_ADD_FRIEND_URL } from "@/lib/social";
 
 export const FREE_NEW = {
   th: {
