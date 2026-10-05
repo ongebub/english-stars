@@ -16,6 +16,9 @@
  */
 import { TH, EN } from "../content";
 
+/** English Allstars LINE Official Account (@209khnuv). Single source for the URL. */
+export const LINE_ADD_FRIEND_URL = "https://line.me/R/ti/p/@209khnuv";
+
 export const FREE_NEW = {
   th: {
     // One line of what they get, under the H1.
@@ -26,12 +29,17 @@ export const FREE_NEW = {
     resultH2: "นี่คือ 5 คำถามของคุณ",
     // Shown when the email request failed but the questions are shown anyway.
     emailFailed: "ส่งอีเมลไม่สำเร็จ แต่คุณอ่านคำถามด้านล่างได้เลย",
+    // LINE block under the questions (unapproved, needs Naparat).
+    lineLead: "รับเคล็ดลับเตรียมสอบสัมภาษณ์ฟรีทาง LINE",
+    lineCta: "เพิ่มเพื่อนใน LINE",
   },
   en: {
     sub: "Enter your email to get all 5 questions, with model answers and how to practise at home. Free.",
     cta: "Get the 5 questions free",
     resultH2: "Here are your 5 questions",
     emailFailed: "The email did not send, but you can read the questions below.",
+    lineLead: "Get free interview-prep tips on LINE",
+    lineCta: "Add friend on LINE",
   },
 };
 

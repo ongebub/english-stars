@@ -17,6 +17,7 @@ export type FunnelEvent =
   | "interview_cta_clicked"
   | "free_pack_viewed"
   | "free_pack_requested"
+  | "free_pack_line_clicked"
   | "teacher_page_viewed"
   | "teacher_cta_clicked"
   | "signup_started"
@@ -107,6 +108,8 @@ const META_EVENT_MAP: Record<FunnelEvent, string | null> = {
   // /interview. Compare pages in signup_events, not in Meta.
   free_pack_viewed: "ViewContent",
   free_pack_requested: "Lead",
+  // LINE add-friend click: a funnel step, not a Lead (would triple-count).
+  free_pack_line_clicked: null,
 
   teacher_page_viewed: "ViewContent",
   // Same reasoning as interview_cta_clicked above: this click lands on /signup,
@@ -148,6 +151,7 @@ const TIKTOK_EVENT_MAP: Record<FunnelEvent, string | null> = {
   interview_email_submitted: null,
   free_pack_viewed: "ViewContent",
   free_pack_requested: "SubmitForm",
+  free_pack_line_clicked: null,
   teacher_page_viewed: "ViewContent",
   teacher_cta_clicked: null,
   signup_started: "SubmitForm",

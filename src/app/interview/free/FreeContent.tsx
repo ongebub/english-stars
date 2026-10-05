@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { getFreeCopy } from "./content";
+import { getFreeCopy, LINE_ADD_FRIEND_URL } from "./content";
 import { trackEvent } from "@/lib/track";
 
 /**
@@ -146,6 +146,18 @@ export default function FreeContent() {
                   <p className={`${bodyFont} text-sm text-text-mid`} style={leading}>{q.practise}</p>
                 </article>
               ))}
+            </div>
+            <div className="mt-8 text-center">
+              <p className={`${bodyFont} font-bold text-text-dark mb-3`} style={leading}>{t.lineLead}</p>
+              <a
+                href={LINE_ADD_FRIEND_URL}
+                target="_blank"
+                rel="noopener"
+                onClick={() => trackEvent("free_pack_line_clicked")}
+                className={`${bodyFont} inline-flex items-center justify-center w-full min-h-[56px] rounded-2xl bg-[#06C755] text-white font-extrabold text-lg px-6 py-4`}
+              >
+                {t.lineCta}
+              </a>
             </div>
           </section>
 
