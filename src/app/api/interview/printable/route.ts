@@ -304,13 +304,24 @@ export async function POST(req: NextRequest) {
 
     // Anti-abuse, per address. Always answer 200 regardless, so this endpoint
     // cannot be used to test whether an address is already on the list.
+    // Each silent skip logs WHY (never the address), so "no email arrived" is
+    // diagnosable from the runtime logs. Found 2026-10-06: a tester whose
+    // address had already used its allowance got a 200 and no mail, with no
+    // log line and no row to show for it.
     if (existing) {
-      if (existing.unsubscribed_at) return ok();
-      if (existing.send_count >= MAX_SENDS) return ok();
+      if (existing.unsubscribed_at) {
+        console.info("printable: skipped send, address unsubscribed");
+        return ok();
+      }
+      if (existing.send_count >= MAX_SENDS) {
+        console.info(`printable: skipped send, address at lifetime cap (${existing.send_count}/${MAX_SENDS})`);
+        return ok();
+      }
       if (
         existing.last_sent_at &&
         Date.now() - new Date(existing.last_sent_at).getTime() < COOLDOWN_MINUTES * 60_000
       ) {
+        console.info("printable: skipped send, address inside cooldown");
         return ok();
       }
     }
@@ -337,6 +348,7 @@ export async function POST(req: NextRequest) {
             .maybeSingle();
           if (raced) {
             // The winning request is sending right now; do not send twice.
+            console.info("printable: skipped send, lost insert race");
             return ok();
           }
         }

@@ -122,7 +122,7 @@ export default function FreeContent() {
             </form>
           ) : (
             <p className={`${bodyFont} rounded-xl bg-[#FFFFFF] text-[#01579B] font-bold px-4 py-3`} style={leading}>
-              {emailSent ? t.printableSuccess : notice}
+              {emailSent ? t.emailSent : notice}
             </p>
           )}
         </div>

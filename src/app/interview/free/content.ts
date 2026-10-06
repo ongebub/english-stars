@@ -30,6 +30,10 @@ export const FREE_NEW = {
     resultH2: "นี่คือคำถามทั้ง 5 ข้อ",
     // Shown when the email request failed but the questions are shown anyway.
     emailFailed: "ส่งอีเมลไม่สำเร็จ แต่อ่านคำถามด้านล่างได้เลย",
+    // The server answers 200 even when it skips a send (address already used its
+    // allowance, or asked a moment ago), so the page cannot say "sent". Second-read
+    // wording, not reviewed by a native speaker.
+    emailSent: "รับคำขอแล้ว เราจะส่งใบงานไปที่อีเมลของคุณ หากไม่พบ ลองดูในโฟลเดอร์จดหมายขยะ หรือลองหาอีเมลที่เราเคยส่งให้ก่อนหน้านี้",
     // LINE block under the questions.
     lineLead: "รับเคล็ดลับเตรียมสอบสัมภาษณ์ฟรีทาง LINE",
     lineCta: "เพิ่มเพื่อนทาง LINE",
@@ -39,6 +43,7 @@ export const FREE_NEW = {
     cta: "Get the 5 questions free",
     resultH2: "Here are your 5 questions",
     emailFailed: "The email did not send, but you can read the questions below.",
+    emailSent: "Request received. We will email the worksheet to you. If it is not there, check your spam folder, or look for an email we sent you earlier.",
     lineLead: "Get free interview-prep tips on LINE",
     lineCta: "Add friend on LINE",
   },
