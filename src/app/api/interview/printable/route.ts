@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { email, locale } = (body ?? {}) as Record<string, unknown>;
+  const { email, locale, source } = (body ?? {}) as Record<string, unknown>;
 
   if (typeof email !== "string") {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
@@ -193,6 +193,10 @@ export async function POST(req: NextRequest) {
   }
 
   const lang: "th" | "en" = locale === "en" ? "en" : "th";
+
+  // Which page asked. Allow-listed, never stored verbatim: the column is free
+  // text with no CHECK, and this endpoint is public.
+  const sourceTag: "interview" | "free_pack" = source === "free_pack" ? "free_pack" : "interview";
 
   // Every exit below this point answers 200 and is padded to the same duration,
   // so neither the status nor the latency reveals anything about the address.
@@ -300,13 +304,24 @@ export async function POST(req: NextRequest) {
 
     // Anti-abuse, per address. Always answer 200 regardless, so this endpoint
     // cannot be used to test whether an address is already on the list.
+    // Each silent skip logs WHY (never the address), so "no email arrived" is
+    // diagnosable from the runtime logs. Found 2026-10-06: a tester whose
+    // address had already used its allowance got a 200 and no mail, with no
+    // log line and no row to show for it.
     if (existing) {
-      if (existing.unsubscribed_at) return ok();
-      if (existing.send_count >= MAX_SENDS) return ok();
+      if (existing.unsubscribed_at) {
+        console.info("printable: skipped send, address unsubscribed");
+        return ok();
+      }
+      if (existing.send_count >= MAX_SENDS) {
+        console.info(`printable: skipped send, address at lifetime cap (${existing.send_count}/${MAX_SENDS})`);
+        return ok();
+      }
       if (
         existing.last_sent_at &&
         Date.now() - new Date(existing.last_sent_at).getTime() < COOLDOWN_MINUTES * 60_000
       ) {
+        console.info("printable: skipped send, address inside cooldown");
         return ok();
       }
     }
@@ -315,7 +330,7 @@ export async function POST(req: NextRequest) {
     if (!row) {
       const { data: inserted, error: insertErr } = await supabase
         .from("printable_requests")
-        .insert({ email: normalised, locale: lang, source: "interview", ip_hash: hashIp(req) })
+        .insert({ email: normalised, locale: lang, source: sourceTag, ip_hash: hashIp(req) })
         .select(COLS)
         .single();
 
@@ -333,6 +348,7 @@ export async function POST(req: NextRequest) {
             .maybeSingle();
           if (raced) {
             // The winning request is sending right now; do not send twice.
+            console.info("printable: skipped send, lost insert race");
             return ok();
           }
         }

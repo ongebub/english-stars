@@ -15,6 +15,9 @@ export type FunnelEvent =
   | "interview_page_viewed"
   | "interview_email_submitted"
   | "interview_cta_clicked"
+  | "free_pack_viewed"
+  | "free_pack_requested"
+  | "free_pack_line_clicked"
   | "teacher_page_viewed"
   | "teacher_cta_clicked"
   | "signup_started"
@@ -94,6 +97,20 @@ const META_EVENT_MAP: Record<FunnelEvent, string | null> = {
   // against. Give it its own custom Meta event if he wants it counted.
   interview_email_submitted: null,
 
+  // /interview/free. The page view is a ViewContent like the other landing
+  // pages. free_pack_requested is the Lead the page exists to produce: the
+  // visitor handed over an email for the five questions.
+  //
+  // CAUTION, double counting: signup_started also maps to Lead (below). A
+  // parent who requests the pack and later starts the trial is reported to Meta
+  // as two Leads. That is arguably right (two different asks), but Meta Lead
+  // counts from this page are not comparable with Lead counts from / and
+  // /interview. Compare pages in signup_events, not in Meta.
+  free_pack_viewed: "ViewContent",
+  free_pack_requested: "Lead",
+  // LINE add-friend click: a funnel step, not a Lead (would triple-count).
+  free_pack_line_clicked: null,
+
   teacher_page_viewed: "ViewContent",
   // Same reasoning as interview_cta_clicked above: this click lands on /signup,
   // which fires signup_started -> Lead moments later. Counting both would report
@@ -132,6 +149,9 @@ const TIKTOK_EVENT_MAP: Record<FunnelEvent, string | null> = {
   interview_page_viewed: "ViewContent",
   interview_cta_clicked: null, // see the note in META_EVENT_MAP
   interview_email_submitted: null,
+  free_pack_viewed: "ViewContent",
+  free_pack_requested: "SubmitForm",
+  free_pack_line_clicked: null,
   teacher_page_viewed: "ViewContent",
   teacher_cta_clicked: null,
   signup_started: "SubmitForm",

@@ -1,5 +1,6 @@
 "use client";
 
+import { SocialLinks } from "@/components/SocialLinks";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -819,6 +820,7 @@ export default function LandingContent({ stats }: { stats: Stats }) {
           {" · "}
           <Link href="/terms" className="hover:text-white transition-colors">{t.footerTerms}</Link>
         </p>
+        <SocialLinks />
       </footer>
     </div>
   );

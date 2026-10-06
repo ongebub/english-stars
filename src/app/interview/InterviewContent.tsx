@@ -1,5 +1,6 @@
 "use client";
 
+import { SocialLinks } from "@/components/SocialLinks";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -402,6 +403,7 @@ export default function InterviewContent() {
             {t.footerTerms}
           </Link>
         </p>
+        <SocialLinks />
       </footer>
 
       {/* ── THE STICKY OFFER BAR ─────────────────────────────────────────────
