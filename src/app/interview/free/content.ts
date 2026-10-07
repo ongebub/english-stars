@@ -11,7 +11,8 @@
  *  Every string in FREE_NEW was written by Jinx. Chris, 2026-10-05: no native
  *  reviewer is available, so do not wait on one. The strings had one
  *  independent second read that day (not a native speaker) and three were
- *  reworded from it. The page carries robots noindex (see page.tsx). Do not
+ *  reworded from it. The page is indexable (opened 2026-10-06 on Chris's
+ *  decision, still no native review). Do not
  *  reword heroH1 or the trial terms; those come from ../content.ts and are
  *  already approved.
  * ─────────────────────────────────────────────────────────────────────────────

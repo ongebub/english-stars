@@ -5,9 +5,8 @@ const TITLE = "5 คำถามที่เด็กมักเจอในก
 
 export const metadata: Metadata = {
   title: TITLE,
-  // The Thai here has had no native-speaker review (see ./content.ts), so keep
-  // it out of Google. Ad traffic is unaffected.
-  robots: { index: false, follow: true },
+  // Opened to indexing on 2026-10-06 on Chris's decision. The Thai here has
+  // still not been reviewed by a native speaker (see ./content.ts).
 };
 
 /** No logged-in redirect, for the same reason as /interview: this is an ad destination. */
