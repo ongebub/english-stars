@@ -9,16 +9,8 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
 
-  // ── REMOVE THIS ONCE THE THAI COPY IS APPROVED ─────────────────────────────
-  // The copy in content.ts is PLACEHOLDER and has not been through Chris or
-  // Naparat (see the banner at the top of that file, and task 3745fb43). Paid ad
-  // traffic reaches this page by URL and is entirely unaffected by noindex, so
-  // this costs the page's actual job nothing — but it stops Google indexing
-  // unapproved Thai, which would be awkward to walk back.
-  //
-  // This page has genuine organic potential for "คำถามสัมภาษณ์เข้าโรงเรียน", so
-  // deleting these two lines is worth doing as soon as the real copy lands.
-  robots: { index: false, follow: true },
+  // Opened to indexing on 2026-10-06 on Chris's decision. The Thai body copy
+  // has still not been reviewed by a native speaker.
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,

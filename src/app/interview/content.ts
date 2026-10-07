@@ -2,25 +2,27 @@
  * Copy for the /interview ad landing page.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- *  ⚠  PLACEHOLDER COPY — NOT APPROVED. DO NOT PUT THIS IN FRONT OF NAPARAT.
+ *  NOT NATIVE-REVIEWED. The page is indexable (opened 2026-10-06 on Chris's
+ *  decision, no native Thai speaker being available), but the body copy below
+ *  has not been through a native speaker, Chris or Naparat.
  *
  *  The task spec (agent_tasks 26752f36) says the full Thai copy lives in
  *  /mnt/user-data/outputs/interview-landing-page.md and must be used VERBATIM.
  *  That path is Claude-chat's sandbox and is not reachable from this repo, so
- *  the Thai below was written here instead. It has NOT been through Chris or
- *  Naparat. Task 3745fb43 asks for the real file.
+ *  the Thai below was written here instead. Task 3745fb43 asks for the real file.
  *
  *  Everything user-facing on the page reads from this one module precisely so
  *  that swapping in the approved copy is a single-file edit with no layout
  *  work. Keep it that way — do not inline strings into the page component.
  *
- *  TWO EXCEPTIONS, both genuinely approved and already shipped in the ad:
+ *  APPROVED, do not reword:
  *    - heroH1 is the ad's own hook, lifted verbatim from
- *      scripts/build-interview-video.mjs (THAI_HOOK). The visitor read that
- *      exact sentence seconds ago; matching it is the whole point of the page.
+ *      scripts/build-interview-video.mjs (THAI_HOOK).
  *    - The trial terms are copied verbatim from LandingContent.tsx, where they
- *      are already live. Do not reword them here — they are a legal statement
- *      and the two pages must not disagree.
+ *      are already live. They are a legal statement and the two pages must not
+ *      disagree.
+ *    - Naparat's six offer strings (stickyOffer, stickyCta, topOfferHeadline,
+ *      topOfferTerms, topOfferCta, questionMore).
  * ─────────────────────────────────────────────────────────────────────────────
  *
  * Shape is identical for TH and EN so the page can switch locale with one
@@ -173,7 +175,7 @@ export const TH = {
   // ── Email capture (worksheet)
   printableH2: "รับใบงานฝึก 20 คำถาม ไปพิมพ์ที่บ้าน",
   printableBody:
-    "ไฟล์ PDF สำหรับพิมพ์ A4 2 หน้า รวม 5 คำถามข้างบน และอีก 20 ข้อ พร้อมช่องเขียนคำตอบและช่องติ๊กเวลาฝึกแต่ละครั้ง ออกแบบให้พิมพ์ขาวดำที่บ้านได้ ไม่เปลืองหมึกสี",
+    "ไฟล์ PDF สำหรับพิมพ์ A4 2 หน้า รวม 5 คำถามข้างบน และอีก 15 ข้อ พร้อมช่องเขียนคำตอบและช่องติ๊กเวลาฝึกแต่ละครั้ง ออกแบบให้พิมพ์ขาวดำที่บ้านได้ ไม่เปลืองหมึกสี",
   printablePlaceholder: "อีเมลของคุณ",
   printableCta: "ส่งใบงานให้ฉัน",
   printableSending: "กำลังส่ง...",
