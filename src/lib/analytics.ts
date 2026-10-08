@@ -18,6 +18,9 @@ export type FunnelEvent =
   | "free_pack_viewed"
   | "free_pack_requested"
   | "free_pack_line_clicked"
+  | "pack_scan_viewed"
+  | "pack_scan_cta_clicked"
+  | "pack_scan_line_clicked"
   | "teacher_page_viewed"
   | "teacher_cta_clicked"
   | "signup_started"
@@ -111,6 +114,14 @@ const META_EVENT_MAP: Record<FunnelEvent, string | null> = {
   // LINE add-friend click: a funnel step, not a Lead (would triple-count).
   free_pack_line_clicked: null,
 
+  // /pack/[id] (QR landing page for paid worksheet packs). Not sent to ad
+  // pixels: these visitors already paid for a PDF and are not ad traffic, so
+  // a ViewContent or Lead from them would flatter the ad numbers. The click
+  // lands on /signup, which fires signup_started -> Lead once, as everywhere.
+  pack_scan_viewed: null,
+  pack_scan_cta_clicked: null,
+  pack_scan_line_clicked: null,
+
   teacher_page_viewed: "ViewContent",
   // Same reasoning as interview_cta_clicked above: this click lands on /signup,
   // which fires signup_started -> Lead moments later. Counting both would report
@@ -152,6 +163,9 @@ const TIKTOK_EVENT_MAP: Record<FunnelEvent, string | null> = {
   free_pack_viewed: "ViewContent",
   free_pack_requested: "SubmitForm",
   free_pack_line_clicked: null,
+  pack_scan_viewed: null,
+  pack_scan_cta_clicked: null,
+  pack_scan_line_clicked: null,
   teacher_page_viewed: "ViewContent",
   teacher_cta_clicked: null,
   signup_started: "SubmitForm",

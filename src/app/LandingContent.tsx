@@ -11,7 +11,7 @@ const CONTACT_LABEL = "info@englishallstars.com";
 
 // ─── copy ──────────────────────────────────────────────────────────────────────
 
-const TH = {
+export const TH = {
   lang: "th" as const,
   toggle: "EN",
   login: "เข้าสู่ระบบ",
@@ -151,7 +151,7 @@ const TH = {
   finalContactLink: "ติดต่อเรา",
 };
 
-const EN = {
+export const EN = {
   lang: "en" as const,
   toggle: "TH",
   login: "Log In",
