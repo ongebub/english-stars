@@ -64,6 +64,12 @@ try {
       assert.ok(shop.saleBlockers(shop.OFFERS[id]).length > 0);
     }
     ok("every offer ships onSale:false and has blockers");
+    const price = Object.fromEntries(ids.map((i) => [i, shop.OFFERS[i].priceThb]));
+    assert.deepStrictEqual(price, { 1: 89, 2: 59, 3: 59, 4: 59, 5: 89, 6: 59, bundle: 299 });
+    const pg = Object.fromEntries(ids.map((i) => [i, shop.OFFERS[i].pages]));
+    assert.deepStrictEqual(pg, { 1: 26, 2: 25, 3: 25, 4: 24, 5: 22, 6: 26, bundle: 148 });
+    assert.ok(shop.OFFERS["5"].description.en.includes("color printing") && shop.OFFERS["5"].description.th.includes("พิมพ์สี"));
+    ok("prices, page counts and the pack 5 color-printing note");
 
     let calls = 0;
     const stub = { checkout: { sessions: { create: async () => { calls++; return { url: "https://stub" }; } } } };
@@ -96,11 +102,13 @@ try {
     const { shop, co, ord } = load();
 
     const p1 = shop.OFFERS["1"];
-    p1.onSale = true;
-    assert.deepStrictEqual(shop.saleBlockers(p1), []); ok("pack 1 sellable when switch + onSale are both on");
-    shop.OFFERS["2"].onSale = true; // still has pages:null and copyConfirmed:false
-    assert.ok(shop.saleBlockers(shop.OFFERS["2"]).length >= 2); ok("onSale alone does not sell an unfinished pack");
-    shop.OFFERS["3"].onSale = true; shop.OFFERS["3"].pages = 10; shop.OFFERS["3"].copyConfirmed = true; shop.OFFERS["3"].priceThb = 5;
+    assert.strictEqual(p1.onSale, true);
+    assert.deepStrictEqual(shop.saleBlockers(p1), []); ok("flipping the one SHOP_ENABLED line makes pack 1 sellable");
+    for (const id of Object.keys(shop.OFFERS)) assert.deepStrictEqual(shop.saleBlockers(shop.OFFERS[id]), [], id);
+    ok("and every other pack and the bundle");
+    shop.OFFERS["2"].pages = null; shop.OFFERS["2"].copyConfirmed = false;
+    assert.ok(shop.saleBlockers(shop.OFFERS["2"]).length >= 2); ok("an unfinished pack stays blocked even with switch and onSale on");
+    shop.OFFERS["3"].priceThb = 5;
     assert.ok(shop.saleBlockers(shop.OFFERS["3"]).some((b) => b.includes("price"))); ok("price below Stripe minimum blocks sale");
     shop.OFFERS["3"].priceThb = 59.5;
     assert.ok(shop.saleBlockers(shop.OFFERS["3"]).some((b) => b.includes("price"))); ok("fractional baht blocks sale");
@@ -113,7 +121,7 @@ try {
     assert.deepStrictEqual(params.payment_method_types, ["card"]);
     assert.strictEqual(params.line_items.length, 1);
     assert.strictEqual(params.line_items[0].price_data.currency, "thb");
-    assert.strictEqual(params.line_items[0].price_data.unit_amount, 5900);
+    assert.strictEqual(params.line_items[0].price_data.unit_amount, 8900);
     assert.strictEqual(params.line_items[0].price, undefined);
     assert.strictEqual(params.metadata.kind, "worksheet"); assert.strictEqual(params.metadata.offer, "1");
     assert.strictEqual(params.metadata.supabase_user_id, undefined);

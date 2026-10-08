@@ -1,15 +1,17 @@
 /**
  * The worksheet shop: ONE config file for every pack on /worksheets.
  *
- * ┌─ HOW TO PUT A PACK ON SALE ───────────────────────────────────────────────┐
- * │ 1. Chris decides the price and sets `priceThb` (whole baht).              │
- * │ 2. The PDF is uploaded to the private bucket at `fileKey`.                │
- * │ 3. The migration in supabase/pending/ has been applied.                   │
- * │ 4. Flip that pack's `onSale` to true AND SHOP_ENABLED to true.            │
+ * ┌─ HOW TO GO ON SALE ───────────────────────────────────────────────────────┐
+ * │ Before: the migration in supabase/pending/ is applied, the six PDFs are   │
+ * │ in the private bucket at the `fileKeys` below, and the Stripe webhook +   │
+ * │ STRIPE_WORKSHEETS_WEBHOOK_SECRET are set in Vercel Production.            │
+ * │ Then change ONE line: `export const SHOP_ENABLED = false` -> true.        │
+ * │ Every offer's `onSale` follows that line. To hold one pack back, write    │
+ * │ `onSale: false` on that pack instead of the shared default.               │
  * └───────────────────────────────────────────────────────────────────────────┘
  *
- * Nothing here is on sale. Every price below is a PLACEHOLDER and nothing may
- * be charged until Chris has set a real one. The gate is enforced on the
+ * Prices are the real ones Chris set on 2026-10-08. With SHOP_ENABLED false
+ * nothing is for sale and no price is shown. The gate is enforced on the
  * server (see `saleBlockers`, used by /api/worksheets/checkout); hiding the
  * button in the page is not the control.
  *
@@ -22,7 +24,10 @@ import { PACKS, type PackId } from "@/lib/packs";
 /** Master switch. false = the whole shop is off, whatever the packs say. */
 export const SHOP_ENABLED = false;
 
-/** Private Supabase bucket the PDFs live in. Not created yet. */
+/** Default for every offer's `onSale`. Follows the master switch on purpose. */
+const ON_SALE_DEFAULT = SHOP_ENABLED;
+
+/** Private Supabase bucket the PDFs live in (created by the pending migration). */
 export const WORKSHEET_BUCKET = "worksheet-packs";
 
 /** Stripe's smallest THB charge. A price under this can never be on sale. */
@@ -39,7 +44,7 @@ export type Offer = {
   description: { th: string; en: string };
   /** Pages in the PDF, or null until the PDF is final. */
   pages: number | null;
-  /** Whole baht. PLACEHOLDER until Chris decides. */
+  /** Whole baht. */
   priceThb: number;
   /** Object key(s) in WORKSHEET_BUCKET. The bundle lists all six. */
   fileKeys: string[];
@@ -54,10 +59,10 @@ export type Offer = {
 const key = (n: number) => `packs/pack-0${n}.pdf`;
 
 /*
- * NEW THAI, written 2026-10-08, not reviewed by anyone (no reviewer exists).
- * Pack 1's Thai is the line printed on the PDF cover, reused as is. Packs 2-6
- * are written from the titles alone because those PDFs were still being built;
- * `copyConfirmed: false` keeps them off sale until checked against the files.
+ * THAI COPY below was written 2026-10-08 and given a careful second read by
+ * Jinx (the AI agent), not by a native speaker. Pack 1's Thai is the line
+ * printed on its PDF cover, reused as is. Page counts were checked against the
+ * finished PDFs; the contents lines were checked against each cover.
  */
 const PACK_OFFERS: Record<PackId, Offer> = {
   "1": {
@@ -69,10 +74,10 @@ const PACK_OFFERS: Record<PackId, Offer> = {
       en: "20 interview questions with model answers, plus matching, tracing, counting, reading and a certificate. Print at home.",
     },
     pages: 26,
-    priceThb: 59, // PLACEHOLDER
+    priceThb: 89,
     fileKeys: [key(1)],
     cover: "/worksheets/covers/pack-01.jpg",
-    onSale: false,
+    onSale: ON_SALE_DEFAULT,
     copyConfirmed: true,
   },
   "2": {
@@ -80,75 +85,75 @@ const PACK_OFFERS: Record<PackId, Offer> = {
     plan: PACKS["2"].plan,
     title: PACKS["2"].title,
     description: {
-      th: "ตัวอักษร เสียง และคำแรก ให้ลาก จับคู่ และระบายสี", // NEW
-      en: "Letters, sounds and first words to trace, match and color.",
+      th: "ฝึกเขียนตัวอักษร ABC เสียงแรกของคำ จับคู่ และโฟนิกส์ พร้อมเกียรติบัตร สำหรับเด็กอนุบาล พิมพ์ที่บ้านได้", // second read: Jinx
+      en: "Letter tracing, beginning sounds, matching and phonics, plus a certificate. For K1 to K3. Print at home.",
     },
-    pages: null,
-    priceThb: 59, // PLACEHOLDER
+    pages: 25,
+    priceThb: 59,
     fileKeys: [key(2)],
-    cover: null,
-    onSale: false,
-    copyConfirmed: false,
+    cover: "/worksheets/covers/pack-02.jpg",
+    onSale: ON_SALE_DEFAULT,
+    copyConfirmed: true,
   },
   "3": {
     id: "3",
     plan: PACKS["3"].plan,
     title: PACKS["3"].title,
     description: {
-      th: "คำศัพท์ 100 คำในชีวิตประจำวัน พร้อมภาพ ให้อ่านและเขียนตาม", // NEW
-      en: "100 everyday words with pictures to read, trace and practice.",
+      th: "คำศัพท์ภาษาอังกฤษ 100 คำ ใน 9 หัวข้อ ฝึกเขียนตาม จับคู่ วงกลมคำที่ถูก พร้อมบัตรภาพและเกียรติบัตร", // second read: Jinx
+      en: "100 first words in 9 themes: tracing, matching, circle the word, picture cards and a certificate.",
     },
-    pages: null,
-    priceThb: 59, // PLACEHOLDER
+    pages: 25,
+    priceThb: 59,
     fileKeys: [key(3)],
-    cover: null,
-    onSale: false,
-    copyConfirmed: false,
+    cover: "/worksheets/covers/pack-03.jpg",
+    onSale: ON_SALE_DEFAULT,
+    copyConfirmed: true,
   },
   "4": {
     id: "4",
     plan: PACKS["4"].plan,
     title: PACKS["4"].title,
     description: {
-      th: "นิทานสั้น ๆ กับ Nong-Fah พร้อมคำถามเช็กความเข้าใจ", // NEW
-      en: "Short, simple stories with Nong-Fah, and questions to check understanding.",
+      th: "นิทานภาพสั้น ๆ 8 เรื่องกับ Nong-Fah พร้อมแบบฝึกหัดเช็กความเข้าใจ สมุดบันทึกการอ่าน เฉลย และเกียรติบัตร", // second read: Jinx
+      en: "8 short picture stories with Nong-Fah, comprehension exercises, a reading log, answer key and certificate.",
     },
-    pages: null,
-    priceThb: 59, // PLACEHOLDER
+    pages: 24,
+    priceThb: 59,
     fileKeys: [key(4)],
-    cover: null,
-    onSale: false,
-    copyConfirmed: false,
+    cover: "/worksheets/covers/pack-04.jpg",
+    onSale: ON_SALE_DEFAULT,
+    copyConfirmed: true,
   },
   "5": {
     id: "5",
     plan: PACKS["5"].plan,
     title: PACKS["5"].title,
     description: {
-      th: "แบบทดสอบฝึกทำ เหมือนข้อสอบเข้า ป.1", // NEW
-      en: "Practice tests in the style of Grade 1 entrance exams.",
+      th: "แบบทดสอบฝึกทำ 3 ชุด รวม 60 ข้อ เหมือนข้อสอบเข้า ป.1 พร้อมเฉลยและบทพูดสำหรับผู้ปกครอง ต้องพิมพ์สีเท่านั้น", // second read: Jinx
+      en: "3 practice tests, 60 questions, in the style of Grade 1 entrance exams, with a parent script and answer key. Needs color printing.",
     },
-    pages: null,
-    priceThb: 59, // PLACEHOLDER
+    pages: 22,
+    priceThb: 89,
     fileKeys: [key(5)],
-    cover: null,
-    onSale: false,
-    copyConfirmed: false,
+    cover: "/worksheets/covers/pack-05.jpg",
+    onSale: ON_SALE_DEFAULT,
+    copyConfirmed: true,
   },
   "6": {
     id: "6",
     plan: PACKS["6"].plan,
     title: PACKS["6"].title,
     description: {
-      th: "ฝึกนับ ระบายสี และจับคู่ ตัวเลข สี และรูปทรง", // NEW
-      en: "Count, color and match numbers, colors and shapes.",
+      th: "ฝึกลากเส้น นับ ระบายสี จับคู่ และหารูปทรง เรื่องตัวเลข สี และรูปทรง พร้อมเฉลยและเกียรติบัตร", // second read: Jinx
+      en: "Trace, count, color, match and find the shapes: numbers, colors and shapes, with answer key and certificate.",
     },
-    pages: null,
-    priceThb: 59, // PLACEHOLDER
+    pages: 26,
+    priceThb: 59,
     fileKeys: [key(6)],
-    cover: null,
-    onSale: false,
-    copyConfirmed: false,
+    cover: "/worksheets/covers/pack-06.jpg",
+    onSale: ON_SALE_DEFAULT,
+    copyConfirmed: true,
   },
 };
 
@@ -159,15 +164,15 @@ const BUNDLE_OFFER: Offer = {
   plan: "pack-bundle",
   title: "All 6 Worksheet Packs",
   description: {
-    th: "ใบงานครบทั้ง 6 ชุด", // NEW
-    en: "All six printable packs in one purchase.",
+    th: "ใบงานครบทั้ง 6 ชุด รวม 148 หน้า ประหยัดกว่าซื้อแยก 115 บาท (ชุดที่ 5 ต้องพิมพ์สี)", // second read: Jinx
+    en: "All six printable packs, 148 pages, in one purchase. Saves 115 baht against buying them separately. Pack 5 needs color printing.",
   },
-  pages: null, // sum is shown by the page once every pack has a count
-  priceThb: 299, // PLACEHOLDER
+  pages: 148, // 26+25+25+24+22+26
+  priceThb: 299,
   fileKeys: PACK_IDS.flatMap((id) => PACK_OFFERS[id].fileKeys),
-  cover: null,
-  onSale: false,
-  copyConfirmed: false,
+  cover: "/worksheets/covers/bundle.jpg",
+  onSale: ON_SALE_DEFAULT,
+  copyConfirmed: true,
 };
 
 export const OFFERS: Record<OfferId, Offer> = { ...PACK_OFFERS, bundle: BUNDLE_OFFER };

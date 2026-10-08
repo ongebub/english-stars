@@ -17,14 +17,6 @@ export type ShopOffer = Pick<Offer, "id" | "plan" | "title" | "description" | "p
   sellable: boolean;
 };
 
-// Stand-ins until a pack has a real cover: crops of the existing group picture
-// and of Ollie from the pack 1 cover. Replace by setting `cover` in the config.
-const PLACEHOLDERS = [
-  "/worksheets/covers/placeholder-c.jpg",
-  "/worksheets/covers/placeholder-a.jpg",
-  "/worksheets/covers/placeholder-b.jpg",
-];
-
 const TINTS = ["bg-sky/20", "bg-leaf/20", "bg-sun/30", "bg-coral/20", "bg-purple/20", "bg-sky/20"];
 
 export default function WorksheetShop({ packs, bundle }: { packs: ShopOffer[]; bundle: ShopOffer }) {
@@ -63,7 +55,7 @@ export default function WorksheetShop({ packs, bundle }: { packs: ShopOffer[]; b
     }
   }
 
-  function renderCard(o: ShopOffer, tint: string, featured?: boolean, placeholderIndex = 0) {
+  function renderCard(o: ShopOffer, tint: string, featured?: boolean) {
     const pagesNum = o.pages;
     return (
       <li
@@ -74,18 +66,9 @@ export default function WorksheetShop({ packs, bundle }: { packs: ShopOffer[]; b
           {o.cover ? (
             <Image src={o.cover} alt={o.title} fill sizes="220px" className="object-cover" />
           ) : (
-            <>
-              <Image
-                src={PLACEHOLDERS[placeholderIndex % PLACEHOLDERS.length]}
-                alt=""
-                fill
-                sizes="220px"
-                className="object-cover"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-white/85 px-2 py-2 text-center font-fredoka text-text-dark text-base leading-tight">
-                {o.title}
-              </div>
-            </>
+            <div className="absolute inset-0 flex items-center justify-center bg-cream p-3 text-center font-fredoka text-text-dark text-lg leading-tight">
+              {o.title}
+            </div>
           )}
           {featured && (
             <span className={`${bodyFont} absolute top-2 left-2 bg-coral text-white text-xs font-extrabold rounded-full px-3 py-1`}>
@@ -161,8 +144,8 @@ export default function WorksheetShop({ packs, bundle }: { packs: ShopOffer[]; b
           </p>
         )}
         <ul className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {packs.map((p, i) => renderCard(p, TINTS[i % TINTS.length], false, i))}
-          {renderCard(bundle, "", true, 3)}
+          {packs.map((p, i) => renderCard(p, TINTS[i % TINTS.length], false))}
+          {renderCard(bundle, "", true)}
         </ul>
         <p className={`${bodyFont} mt-5 text-xs text-text-mid text-center`} style={leading}>
           {t.delivery}
