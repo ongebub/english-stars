@@ -14,13 +14,12 @@
  * The price of the pack itself is not on this page at all.
  *
  * ─────────────────────────────────────────────────────────────────────────────
- *  ⚠  THAI NOT REVIEWED BY A NATIVE SPEAKER.
+ *  THAI: no native reviewer exists or is planned (Chris, 2026-10-05).
  *
- *  Every string in PACK_NEW was written by Jinx on 2026-10-08. Chris
- *  (2026-10-05): no native reviewer is available, do not wait on one. The four
- *  Thai strings are short on purpose. They have had a careful re-read by the
- *  same agent that wrote them, which is NOT an independent second read; one is
- *  still owed. Character names stay in Latin script, as they are in the PDF.
+ *  Every string in PACK_NEW was written by Jinx on 2026-10-08. The four Thai
+ *  strings are short on purpose and had an independent second read by a
+ *  separate model pass on 2026-10-08, which found them fine as written.
+ *  Character names stay in Latin script, as they are in the PDF.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 import { TH as LANDING_TH, EN as LANDING_EN } from "../../LandingContent";
