@@ -22,7 +22,7 @@
 import { PACKS, type PackId } from "@/lib/packs";
 
 /** Master switch. false = the whole shop is off, whatever the packs say. */
-export const SHOP_ENABLED = false;
+export const SHOP_ENABLED = true;
 
 /** Default for every offer's `onSale`. Follows the master switch on purpose. */
 const ON_SALE_DEFAULT = SHOP_ENABLED;
