@@ -53,10 +53,18 @@ try {
     };
   };
 
-  /* ── pass 1: as committed ─────────────────────────────────────────────── */
+  /* ── pass 1: master switch OFF ────────────────────────────────────────────
+     The shop went on sale 2026-10-08, so the committed value is now true.
+     Force it off in the temp copy only, so the off-state guarantees below are
+     still tested whichever way the committed switch points. */
   {
+    const f0 = join(js, "worksheet-shop.js");
+    const src0 = readFileSync(f0, "utf8");
+    assert.ok(/exports\.SHOP_ENABLED = (true|false)/.test(src0));
+    ok("committed SHOP_ENABLED is " + /exports\.SHOP_ENABLED = true/.test(src0));
+    writeFileSync(f0, src0.replace("exports.SHOP_ENABLED = true", "exports.SHOP_ENABLED = false"));
     const { shop, co } = load();
-    assert.strictEqual(shop.SHOP_ENABLED, false); ok("SHOP_ENABLED is false as committed");
+    assert.strictEqual(shop.SHOP_ENABLED, false); ok("SHOP_ENABLED forced false for the off-state pass");
     const ids = Object.keys(shop.OFFERS);
     assert.deepStrictEqual(ids, ["1", "2", "3", "4", "5", "6", "bundle"]); ok("six packs plus bundle");
     for (const id of ids) {
