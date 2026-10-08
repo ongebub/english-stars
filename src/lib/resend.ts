@@ -220,6 +220,72 @@ export async function sendPrintableEmail(
   }
 }
 
+/**
+ * Delivery email for a paid worksheet pack. Transactional, so no unsubscribe
+ * link: it is sent once, to the address the buyer gave Stripe, because they
+ * bought something.
+ *
+ * It carries LINKS, not attachments: a pack is several MB and the bundle is six
+ * of them. Each link goes to our own /api/worksheets/download, which mints a
+ * fresh short-lived Supabase signed URL when clicked.
+ *
+ * Throws on a Resend {error} (it resolves, it does not reject). The webhook
+ * relies on that throw to answer 500 so Stripe retries the delivery.
+ *
+ * THAI: three strings here are NEW (2026-10-08, unreviewed); the button text
+ * "ดาวน์โหลดใบงาน (PDF)" is reused from sendPrintableEmail above.
+ */
+export async function sendWorksheetPurchaseEmail(
+  to: string,
+  opts: { title: string; links: { label: string; url: string }[] }
+): Promise<void> {
+  const from = process.env.RESEND_FROM_EMAIL || "English Allstars <onboarding@resend.dev>";
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  const buttons = opts.links
+    .map(
+      (l) => `
+          <p style="margin: 0 0 6px 0; color: #37474F; font-size: 14px; font-weight: 700;">${esc(l.label)}</p>
+          <a href="${l.url}"
+             style="display: inline-block; background: linear-gradient(135deg, #0288D1 0%, #43A047 100%);
+                    color: #ffffff; font-weight: 900; font-size: 15px; padding: 12px 28px;
+                    border-radius: 12px; text-decoration: none; margin-bottom: 20px;
+                    font-family: 'Sarabun', sans-serif;">
+            ดาวน์โหลดใบงาน (PDF)
+          </a>`
+    )
+    .join("");
+
+  const { error } = await resend.emails.send({
+    from,
+    to,
+    subject: "ใบงานของคุณพร้อมให้ดาวน์โหลดแล้ว / Your worksheets are ready",
+    html: `
+      <div style="${WRAPPER_STYLE}">
+        <div style="${HEADER_STYLE}">
+          <h1 style="color: #ffffff; font-size: 22px; margin: 0; font-weight: 900;">English Allstars</h1>
+        </div>
+        <div style="${BODY_STYLE}">
+          <h2 style="color: #1A237E; font-size: 20px; font-weight: 900; margin-bottom: 4px; font-family: 'Sarabun', sans-serif;">
+            ขอบคุณที่ซื้อใบงาน
+          </h2>
+          <p style="color: #78909C; font-size: 13px; margin-bottom: 24px;">Thank you for your purchase.</p>
+          ${buttons}
+          <p style="color: #90A4AE; font-size: 12px; margin: 8px 0 0 0;">
+            <span style="font-family: 'Sarabun', sans-serif;">ลิงก์นี้เป็นของคุณ กรุณาอย่าแชร์ต่อ</span><br />
+            This link is yours. Please do not share it.
+          </p>
+        </div>
+      </div>
+    `,
+  });
+
+  if (error) {
+    // Message only; the error object can carry request details.
+    throw new Error(`Resend refused the worksheet purchase email: ${error.message}`);
+  }
+}
+
 export async function sendTrialReminderEmail(
   to: string,
   chargeDate: string,

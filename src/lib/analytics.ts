@@ -25,7 +25,10 @@ export type FunnelEvent =
   | "checkout_opened"
   | "card_entered"
   | "trial_active"
-  | "subscribed";
+  | "subscribed"
+  | "worksheets_viewed"
+  | "worksheet_buy_clicked"
+  | "worksheet_purchased";
 
 export type TrackOptions = {
   /** "family" | "tutor" — a plan label, never anything identifying. */
@@ -125,6 +128,17 @@ const META_EVENT_MAP: Record<FunnelEvent, string | null> = {
   card_entered: "AddPaymentInfo",
   trial_active: "StartTrial",
   subscribed: "Subscribe",
+
+  // Worksheet shop (/worksheets). All null on purpose, for Meta and TikTok
+  // alike. These are a different product (a one-off PDF, not the trial the ad
+  // account is optimising for), so a ViewContent or Purchase here would mix
+  // worksheet buyers into the subscription audiences and numbers. And
+  // worksheet_purchased is only ever written SERVER-SIDE to signup_events by
+  // the webhook, never from the browser. Mapping it later (a CAPI Purchase with
+  // the price as value) is Chris's call about ad optimisation, not a default.
+  worksheets_viewed: null,
+  worksheet_buy_clicked: null,
+  worksheet_purchased: null,
 };
 
 const meta: Provider = {
@@ -160,6 +174,9 @@ const TIKTOK_EVENT_MAP: Record<FunnelEvent, string | null> = {
   card_entered: "AddPaymentInfo",
   trial_active: "Subscribe",
   subscribed: "CompletePayment",
+  worksheets_viewed: null, // see the note in META_EVENT_MAP
+  worksheet_buy_clicked: null,
+  worksheet_purchased: null,
 };
 
 const tiktok: Provider = {
