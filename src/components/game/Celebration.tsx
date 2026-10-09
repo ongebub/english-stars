@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import type { FlagLevel } from "@/lib/game/rules";
 
 /** Total time the fanfare runs before Ollie takes off (a tap skips it). */
-export const CELEBRATE_MS = 3500;
+export const CELEBRATE_MS = 2200;
 export const CELEBRATE_REDUCED_MS = 2200;
 
 const FLAG_COLORS: Record<FlagLevel, [string, string]> = {

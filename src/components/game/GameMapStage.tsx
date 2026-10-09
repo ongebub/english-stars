@@ -12,6 +12,7 @@ import type { MapBand } from "@/lib/game/rules";
 import {
   CELEBRATE_MS, CELEBRATE_REDUCED_MS, CastleFireworks, CelebrationBanner, CelebrationStyles, RisingFlag,
 } from "@/components/game/Celebration";
+import { markCelebrated, wasCelebrated } from "@/lib/game/celebrated";
 
 const OLLIE_W = 5.6; // % of map width
 
@@ -32,8 +33,12 @@ function sprite(c: StageCastle): string {
  * it opens scrolled to Ollie. On wider screens it simply fills the column.
  */
 export function GameMapStage({
-  band, castles, storageKey, allDone, replay = false,
-}: { band: MapBand; castles: StageCastle[]; storageKey: string; allDone: boolean; replay?: boolean }) {
+  band, castles, storageKey, allDone, replay = false, justCompletedSlug = null, celebratedPrefix = "",
+}: {
+  band: MapBand; castles: StageCastle[]; storageKey: string; allDone: boolean; replay?: boolean;
+  /** Server: the castle completed in the last few minutes, if any. Drives the fanfare when this browser has no memory of Ollie. */
+  justCompletedSlug?: string | null; celebratedPrefix?: string;
+}) {
   const spots = MAP_SPOTS[band];
   const scroller = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -70,11 +75,24 @@ export function GameMapStage({
     // arrived (or no move is needed), so a cancelled/re-run effect still animates.
     let prevSlug: string | null = null;
     try { prevSlug = localStorage.getItem(storageKey); } catch { /* private mode */ }
-    const remember = () => { try { localStorage.setItem(storageKey, slug); } catch { /* private mode */ } };
+    let markKey: string | null = null; // set once a fanfare is going to play for the server-recorded castle
+    const remember = () => {
+      try { localStorage.setItem(storageKey, slug); } catch { /* private mode */ }
+      if (markKey) markCelebrated(markKey);
+    };
     let prevIdx = prevSlug ? castles.findIndex((c) => c.slug === prevSlug) : -1;
     // ?replay=1 re-runs the fanfare for the castle before the current one. Cosmetic only
     // (it just changes this browser's "last seen" marker), and off on the live domain.
     if (replay && !/(^|\.)englishallstars\.com$/i.test(window.location.hostname) && homeIdx > 0) prevIdx = homeIdx - 1;
+    // Server says a castle was just completed and this browser has not celebrated it: use it
+    // as the castle Ollie leaves, whatever this browser remembers.
+    if (justCompletedSlug && !replay) {
+      const key = celebratedPrefix + justCompletedSlug;
+      const hi = castles.findIndex((c) => c.slug === justCompletedSlug);
+      if (hi >= 0 && hi !== homeIdx && castles[hi].status === "complete" && !wasCelebrated(key)) { prevIdx = hi; markKey = key; }
+    }
+    // A fanfare for that same castle from the old memory-based path also counts as shown.
+    if (!markKey && justCompletedSlug && prevIdx >= 0 && castles[prevIdx].slug === justCompletedSlug) markKey = celebratedPrefix + justCompletedSlug;
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const st = stage.current;
     const celebrated = prevIdx >= 0 && castles[prevIdx].status === "complete";
@@ -138,26 +156,32 @@ export function GameMapStage({
       }
       raf = requestAnimationFrame(tick);
     };
-    // Preload every frame so nothing pops in mid-flight, then go.
+    // Preload every frame so nothing pops in mid-flight. The fanfare starts at once and runs
+    // alongside the preload; Ollie takes off when BOTH have finished (a tap skips the fanfare).
     const frames = [OLLIE_TAKEOFF, OLLIE_LANDING, ...OLLIE_FLY_FRAMES, ...OLLIE_WALKSIDE_FRAMES];
-    let started = false;
-    const go = () => {
-      if (started || cancelled) return;
-      started = true;
-      setPos(from); centreOn(from.x);
-      const fly = () => { setCel(null); skipRef.current = null; window.setTimeout(() => { if (!cancelled) raf = requestAnimationFrame(tick); }, 450); };
-      if (!celebrated) { fly(); return; }
+    let loadedAll = false, fanfareDone = false, flying = false;
+    const fly = () => {
+      if (flying || cancelled || !loadedAll || !fanfareDone) return;
+      flying = true;
+      setCel(null); skipRef.current = null;
+      window.setTimeout(() => { if (!cancelled) raf = requestAnimationFrame(tick); }, 200);
+    };
+    setPos(from); centreOn(from.x);
+    let fanfareTimer = 0;
+    if (!celebrated) { fanfareDone = true; }
+    else {
       // Fanfare on the castle just completed, then Ollie takes off. A tap skips it.
       setCel({ idx: prevIdx, reduced: false });
-      const t = window.setTimeout(fly, CELEBRATE_MS);
-      skipRef.current = () => { clearTimeout(t); fly(); };
-    };
+      fanfareTimer = window.setTimeout(() => { fanfareDone = true; fly(); }, CELEBRATE_MS);
+      skipRef.current = () => { clearTimeout(fanfareTimer); fanfareDone = true; fly(); };
+    }
+    const loaded = () => { loadedAll = true; fly(); };
     let left = frames.length;
-    frames.forEach((fr) => { const im = new window.Image(); im.onload = im.onerror = () => { if (--left === 0) go(); }; im.src = fr.src; });
-    const guard = window.setTimeout(go, 2500);
-    return () => { cancelled = true; clearTimeout(guard); cancelAnimationFrame(raf); skipRef.current = null; setCel(null); };
+    frames.forEach((fr) => { const im = new window.Image(); im.onload = im.onerror = () => { if (--left === 0) loaded(); }; im.src = fr.src; });
+    const guard = window.setTimeout(loaded, 1500);
+    return () => { cancelled = true; clearTimeout(guard); clearTimeout(fanfareTimer); cancelAnimationFrame(raf); skipRef.current = null; setCel(null); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [band, homeIdx, storageKey]);
+  }, [band, homeIdx, storageKey, justCompletedSlug]);
 
   const idleSrc = allDone && curIdx < 0 ? OLLIE_WAVE : OLLIE_STAND;
 
