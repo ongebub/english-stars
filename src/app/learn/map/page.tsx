@@ -8,6 +8,7 @@ import { GameMapStage } from "@/components/game/GameMapStage";
 import { MapBandMarker } from "@/components/game/MapBandMarker";
 import { getLearnMode, getMapBandServer } from "@/lib/game/mode.server";
 import { CastleSync } from "@/components/game/CastleSync";
+import { MapRefresh } from "@/components/game/MapRefresh";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,7 @@ export default async function MapPage({
   return (
     <section>
       <MapBandMarker band={band} />
+      <MapRefresh />
       <CastleSync subjectIds={needSync} />
       <h1 className="font-nunito text-center text-3xl font-extrabold text-text-dark dark:text-gray-100">Castle Map</h1>
       <p className="font-sarabun mt-1 text-center text-lg text-text-mid dark:text-gray-400">แผนที่ปราสาท</p>
