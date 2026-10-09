@@ -9,6 +9,7 @@ import { MapBandMarker } from "@/components/game/MapBandMarker";
 import { getLearnMode, getMapBandServer } from "@/lib/game/mode.server";
 import { CastleSync } from "@/components/game/CastleSync";
 import { MapRefresh } from "@/components/game/MapRefresh";
+import { RECENT_MS, celebratedKey } from "@/lib/game/celebrated";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,17 @@ export default async function MapPage({
   const { data: rows, error: gpErr } = await supabase
     .from("game_progress").select("subject_id, completed_at").eq("child_id", progressId);
   const recorded = new Set((rows ?? []).filter((r) => r.completed_at).map((r) => r.subject_id as string));
+  // A castle the server recorded as completed in the last few minutes gets its fanfare even if
+  // this browser never saw Ollie at it (new device, other child profile, private mode).
+  const doneAt = new Map((rows ?? []).filter((r) => r.completed_at).map((r) => [r.subject_id as string, Date.parse(r.completed_at as string)]));
+  let justCompleted: { slug: string; at: number } | null = null;
+  for (const c of castles) {
+    const at = doneAt.get(c.id);
+    if (c.status !== "complete" || !at || Number.isNaN(at)) continue;
+    const age = Date.now() - at;
+    if (age < -60_000 || age > RECENT_MS) continue;
+    if (!justCompleted || at > justCompleted.at) justCompleted = { slug: c.slug, at };
+  }
   const needSync = gpErr ? [] : castles.filter((c) => c.status === "complete" && !recorded.has(c.id)).map((c) => c.id);
 
   const pages = Math.max(1, Math.ceil(castles.length / CASTLES_PER_PAGE));
@@ -62,7 +74,10 @@ export default async function MapPage({
     <section>
       <MapBandMarker band={band} />
       <MapRefresh />
-      <CastleSync subjectIds={needSync} />
+      <CastleSync
+        subjectIds={needSync}
+        silentKeys={castles.filter((c) => needSync.includes(c.id)).map((c) => celebratedKey(progressId, c.slug))}
+      />
       <h1 className="font-nunito text-center text-3xl font-extrabold text-text-dark dark:text-gray-100">Castle Map</h1>
       <p className="font-sarabun mt-1 text-center text-lg text-text-mid dark:text-gray-400">แผนที่ปราสาท</p>
       <p className="mt-1 text-center text-xs text-text-light">Preview build.</p>
@@ -89,6 +104,8 @@ export default async function MapPage({
             storageKey={`eas_ollie_at:${progressId}:${band}`}
             allDone={done === castles.length}
             replay={sp.replay === "1"}
+            justCompletedSlug={justCompleted?.slug ?? null}
+            celebratedPrefix={celebratedKey(progressId, "")}
             castles={visible.map((c, i) => ({
               id: c.id, slug: c.slug, title_en: c.title_en, title_th: c.title_th, status: c.status,
               flag: c.flag, paywalled: c.paywalled, steps: c.steps, number: start + i + 1,
