@@ -35,11 +35,21 @@ export function CastleReturn({ subjectSlug, subjectId, ready, delayMs = 0, stepD
     let dead = false;
     const t = window.setTimeout(async () => {
       try {
-        const res = await fetch("/api/game/complete-check", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ subject_id: subjectId }),
-        });
-        const data = await res.json();
+        // One retry: a dropped request or a cold server must not leave the castle unrecognised.
+        let data: { complete?: boolean } | null = null;
+        for (let attempt = 0; attempt < 2 && !data; attempt++) {
+          try {
+            const res = await fetch("/api/game/complete-check", {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ subject_id: subjectId }),
+            });
+            if (res.ok) data = await res.json();
+            else console.error("[castle] complete-check returned", res.status);
+          } catch (e) { console.error("[castle] complete-check failed", e); }
+          if (!data && attempt === 0) await new Promise((r) => setTimeout(r, 1500));
+          if (dead) return;
+        }
+        if (!data) { console.error("[castle] complete-check gave up for", subjectSlug); return; }
         if (dead) return;
         if (!data.complete) { if (stepDone) { setKind("next"); setHref(`${castleHref(subjectSlug)}?go=next`); } return; }
         const supabase = createClient();

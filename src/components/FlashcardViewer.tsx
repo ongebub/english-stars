@@ -69,24 +69,38 @@ export function FlashcardViewer({
     }
   }, [currentIndex, shuffledOrder, flashcards, total]);
 
-  // Track card view
-  useEffect(() => {
-    if (!card) return;
-    setViewedIds((prev) => { const n = new Set(prev); n.add(card.id); return n; });
-    async function recordView() {
+  // Track card view. Each save is confirmed: Supabase reports a failed write in `error`
+  // rather than throwing, so it is checked, retried, and shown to the child if it still fails.
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [failedIds, setFailedIds] = useState<Set<string>>(new Set());
+  const saveCard = useCallback(async (cardId: string) => {
+    for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const progressId = await getProgressId(supabase, user.id);
-        await supabase.from("flashcard_progress").upsert(
-          { child_id: progressId, subject_id: subjectId, flashcard_id: card.id },
+        const { error } = await supabase.from("flashcard_progress").upsert(
+          { child_id: progressId, subject_id: subjectId, flashcard_id: cardId },
           { onConflict: "child_id,flashcard_id" }
         );
-      } catch { /* silent */ }
+        if (!error) {
+          setSavedIds((p) => new Set(p).add(cardId));
+          setFailedIds((p) => { if (!p.has(cardId)) return p; const n = new Set(p); n.delete(cardId); return n; });
+          return;
+        }
+        console.error("[flashcards] progress save failed", error.message);
+      } catch (e) { console.error("[flashcards] progress save threw", e); }
+      await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
     }
-    recordView();
-  }, [card, subjectId]);
+    setFailedIds((p) => new Set(p).add(cardId));
+  }, [subjectId]);
+
+  useEffect(() => {
+    if (!card) return;
+    setViewedIds((prev) => { const n = new Set(prev); n.add(card.id); return n; });
+    saveCard(card.id);
+  }, [card, saveCard]);
 
   useEffect(() => {
     if (viewedIds.size >= total && total > 0 && !showComplete) setShowComplete(true);
@@ -189,7 +203,18 @@ export function FlashcardViewer({
       </div>
 
       {/* ── Completion banner ── */}
-      <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={showComplete} delayMs={1500} stepDone />
+      <CastleReturn subjectSlug={subjectSlug} subjectId={subjectId} ready={showComplete && savedIds.size >= total} delayMs={300} stepDone />
+      {failedIds.size > 0 && (
+        <div className="flex-shrink-0 bg-amber-100 px-4 py-2 text-center">
+          <p className="font-nunito text-sm font-bold text-text-dark">
+            Progress could not be saved / ไม่สามารถบันทึกความคืบหน้าได้
+          </p>
+          <button onClick={() => failedIds.forEach((id) => saveCard(id))}
+            className="mt-1 min-h-[44px] rounded-xl bg-sky-dark px-4 font-nunito text-sm font-bold text-white">
+            Try again / ลองอีกครั้ง
+          </button>
+        </div>
+      )}
       {showComplete && (
         <div className="flex-shrink-0 bg-leaf/20 px-4 py-2 text-center">
           <p className="font-nunito text-sm font-bold text-leaf-dark">
