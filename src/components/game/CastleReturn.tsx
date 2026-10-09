@@ -8,7 +8,7 @@ import { getProgressId } from "@/lib/progress-id.client";
 import { castleHref, getMapBandClient, mapHref, ollieKey } from "@/lib/game/context";
 import { useLearnMode } from "@/components/game/LearnModeProvider";
 
-const COUNTDOWN = 6;
+const COUNTDOWN = 2;
 
 /**
  * Game context only. After an activity ends, ask the server whether this castle is
