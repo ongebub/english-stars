@@ -160,6 +160,16 @@ export default function FreeContent() {
                 {t.lineCta}
               </a>
             </div>
+            <div className="mt-8 text-center">
+              <p className={`${bodyFont} font-bold text-text-dark mb-3`} style={leading}>{t.packsLead}</p>
+              <Link
+                href="/worksheets"
+                onClick={() => trackEvent("free_pack_shop_clicked")}
+                className={`${bodyFont} inline-flex items-center justify-center w-full min-h-[56px] rounded-2xl bg-sky text-white font-extrabold text-lg px-6 py-4`}
+              >
+                {t.packsCta}
+              </Link>
+            </div>
           </section>
 
           {/* Soft CTA, after the value. Terms are TH/EN.trialTerms from

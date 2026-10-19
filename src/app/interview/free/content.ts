@@ -38,6 +38,9 @@ export const FREE_NEW = {
     // LINE block under the questions.
     lineLead: "รับเคล็ดลับเตรียมสอบสัมภาษณ์ฟรีทาง LINE",
     lineCta: "เพิ่มเพื่อนทาง LINE",
+    // Packs block, after the LINE block. NEW 2026-10-19, no second read.
+    packsLead: "อยากได้ใบงานเพิ่มสำหรับพิมพ์ฝึกที่บ้าน? ดูชุดใบงาน PDF กับ Ollie และ Nong-Fah",
+    packsCta: "ดูชุดใบงาน",
   },
   en: {
     sub: "Enter your email to get all 5 questions, with model answers and how to practise at home. Free.",
@@ -47,6 +50,8 @@ export const FREE_NEW = {
     emailSent: "Request received. We will email the worksheet to you. If it is not there, check your spam folder, or look for an email we sent you earlier.",
     lineLead: "Get free interview-prep tips on LINE",
     lineCta: "Add friend on LINE",
+    packsLead: "Want more worksheets to print and practise at home? See our PDF packs with Ollie and Nong-Fah.",
+    packsCta: "See the printable packs",
   },
 };
 

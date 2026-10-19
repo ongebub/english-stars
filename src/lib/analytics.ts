@@ -30,6 +30,7 @@ export type FunnelEvent =
   | "trial_active"
   | "subscribed"
   | "worksheets_viewed"
+  | "free_pack_shop_clicked"
   | "worksheet_buy_clicked"
   | "worksheet_purchased";
 
@@ -148,6 +149,7 @@ const META_EVENT_MAP: Record<FunnelEvent, string | null> = {
   // the webhook, never from the browser. Mapping it later (a CAPI Purchase with
   // the price as value) is Chris's call about ad optimisation, not a default.
   worksheets_viewed: null,
+  free_pack_shop_clicked: null,
   worksheet_buy_clicked: null,
   worksheet_purchased: null,
 };
@@ -189,6 +191,7 @@ const TIKTOK_EVENT_MAP: Record<FunnelEvent, string | null> = {
   trial_active: "Subscribe",
   subscribed: "CompletePayment",
   worksheets_viewed: null, // see the note in META_EVENT_MAP
+  free_pack_shop_clicked: null,
   worksheet_buy_clicked: null,
   worksheet_purchased: null,
 };

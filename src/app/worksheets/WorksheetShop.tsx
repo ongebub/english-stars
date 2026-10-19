@@ -150,6 +150,10 @@ export default function WorksheetShop({ packs, bundle }: { packs: ShopOffer[]; b
         <p className={`${bodyFont} mt-5 text-xs text-text-mid text-center`} style={leading}>
           {t.delivery}
         </p>
+        <p className={`${bodyFont} mt-2 text-xs text-text-mid text-center`} style={leading}>
+          {t.refund}{" "}
+          <a href="mailto:info@englishallstars.com" className="underline">info@englishallstars.com</a>
+        </p>
 
         <section className="mt-8 rounded-3xl bg-white p-5 text-center shadow-sm">
           <Link

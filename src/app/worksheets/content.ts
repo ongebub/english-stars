@@ -24,6 +24,8 @@ export const SHOP_NEW = {
     error: "ขออภัย เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง", // NEW
     delivery: "หลังชำระเงิน เราจะส่งลิงก์ดาวน์โหลดไปที่อีเมลของคุณ ชำระด้วยบัตร", // NEW
     bundleBadge: "รวมทุกชุด", // NEW
+    refund: "สินค้าดิจิทัล หากไม่ได้รับไฟล์หรือเปิดไฟล์ไม่ได้ กรุณาติดต่อเรา เราจะส่งไฟล์ให้ใหม่หรือคืนเงิน ไม่รับคืนเงินกรณีเปลี่ยนใจ", // NEW 2026-10-19
+    contact: "ติดต่อเรา", // NEW
     thanksH1: "ขอบคุณที่ซื้อใบงาน!", // NEW
     thanksSub: "ดาวน์โหลดใบงานของคุณได้เลย และเราส่งลิงก์ไปที่อีเมลของคุณด้วย", // NEW
     pendingH1: "กำลังรอการยืนยันการชำระเงิน", // NEW
@@ -41,6 +43,8 @@ export const SHOP_NEW = {
     error: "Sorry, something went wrong. Please try again.",
     delivery: "After you pay, we email you the download link. Card payment.",
     bundleBadge: "All packs",
+    refund: "Digital download. If your file does not arrive or will not open, contact us and we will resend it or refund you. We do not offer refunds for change of mind.",
+    contact: "Contact us",
     thanksH1: "Thank you for your purchase!",
     thanksSub: "Download your worksheets below. We have also emailed you the link.",
     pendingH1: "Waiting for your payment to be confirmed",

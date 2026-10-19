@@ -139,6 +139,8 @@ export async function sendPrintableEmail(
         offer:
           "อยากให้ลูกฝึกภาษาอังกฤษต่อทุกวัน? ทดลองใช้ English Allstars ฟรี 7 วัน",
         offerCta: "ดูรายละเอียด",
+        packs: "อยากได้ใบงานเพิ่ม? ดูชุดใบงาน PDF สำหรับพิมพ์ฝึกที่บ้าน",
+        packsCta: "ดูชุดใบงาน",
         unsub: "ยกเลิกรับอีเมลจากเรา",
       }
     : {
@@ -150,6 +152,8 @@ export async function sendPrintableEmail(
         offer:
           "Want your child practising English every day? Try English Allstars free for 7 days.",
         offerCta: "See details",
+        packs: "Want more worksheets? See our printable PDF packs for practice at home.",
+        packsCta: "See the printable packs",
         unsub: "Unsubscribe",
       };
 
@@ -202,6 +206,16 @@ export async function sendPrintableEmail(
             <a href="https://englishallstars.com/interview"
                style="color: #0288D1; font-size: 13px; text-decoration: underline; font-family: 'Sarabun', sans-serif;">
               ${body.offerCta}
+            </a>
+          </div>
+
+          <div style="border-top: 1px solid #ECEFF1; padding-top: 20px; margin-top: 20px;">
+            <p style="color: #546E7A; font-size: 13px; margin: 0 0 10px 0; font-family: 'Sarabun', sans-serif; line-height: 1.7;">
+              ${body.packs}
+            </p>
+            <a href="https://www.englishallstars.com/worksheets"
+               style="color: #0288D1; font-size: 13px; text-decoration: underline; font-family: 'Sarabun', sans-serif;">
+              ${body.packsCta}
             </a>
           </div>
 
