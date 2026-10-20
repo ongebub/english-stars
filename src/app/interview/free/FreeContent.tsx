@@ -89,6 +89,21 @@ export default function FreeContent() {
             {t.sub}
           </p>
 
+          {state !== "unlocked" && (
+            <>
+              <a
+                href={LINE_ADD_FRIEND_URL}
+                target="_blank"
+                rel="noopener"
+                onClick={() => trackEvent("free_pack_line_clicked", "hero")}
+                className={`${bodyFont} flex items-center justify-center w-full min-h-[60px] rounded-2xl bg-[#06C755] text-white font-extrabold text-xl px-6 py-4 mb-4 shadow-lg`}
+              >
+                {t.heroLineCta}
+              </a>
+              <p className={`${bodyFont} text-sm opacity-90 mb-3`}>{t.orEmail}</p>
+            </>
+          )}
+
           {state !== "unlocked" ? (
             <form onSubmit={onSubmit} noValidate className="space-y-3">
               <label htmlFor="free-email" className="sr-only">
@@ -125,6 +140,14 @@ export default function FreeContent() {
               {emailSent ? t.emailSent : notice}
             </p>
           )}
+
+          <Link
+            href="/worksheets"
+            onClick={() => trackEvent("free_pack_shop_clicked", "hero")}
+            className={`${bodyFont} mt-5 inline-block text-sm font-bold underline underline-offset-4`}
+          >
+            {t.shopLink}
+          </Link>
         </div>
       </header>
 

@@ -24,7 +24,12 @@ export { LINE_ADD_FRIEND_URL } from "@/lib/social";
 export const FREE_NEW = {
   th: {
     // One line of what they get, under the H1.
-    sub: "กรอกอีเมลเพื่อรับคำถามทั้ง 5 ข้อ พร้อมคำตอบตัวอย่างและวิธีฝึกที่บ้าน ฟรี",
+    sub: "รับใบงานฝึกสัมภาษณ์ฟรีทาง LINE แตะครั้งเดียว หรือกรอกอีเมลเพื่อรับคำถามทั้ง 5 ข้อ พร้อมคำตอบตัวอย่างและวิธีฝึกที่บ้าน",
+    // Primary button above the fold (NEW 2026-10-20, second model read only).
+    heroLineCta: "รับใบงานฟรีทาง LINE",
+    orEmail: "หรือรับทางอีเมล",
+    // Always-visible shop link under the form (NEW 2026-10-20).
+    shopLink: "ดูชุดใบงาน PDF ราคาเริ่มต้น ฿59",
     // The one button.
     cta: "รับ 5 คำถามฟรี",
     // Heading over the questions once revealed.
@@ -43,7 +48,10 @@ export const FREE_NEW = {
     packsCta: "ดูชุดใบงาน",
   },
   en: {
-    sub: "Enter your email to get all 5 questions, with model answers and how to practise at home. Free.",
+    sub: "Get the free interview worksheet on LINE in one tap, or enter your email for all 5 questions with model answers and how to practise at home.",
+    heroLineCta: "Get the free worksheet on LINE",
+    orEmail: "or get it by email",
+    shopLink: "See our PDF worksheet packs, from \u0E3F59",
     cta: "Get the 5 questions free",
     resultH2: "Here are your 5 questions",
     emailFailed: "The email did not send, but you can read the questions below.",

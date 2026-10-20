@@ -149,6 +149,7 @@ export const TH = {
     "ต้องใช้บัตรเครดิตหรือบัตรเดบิตเพื่อเริ่มทดลองใช้ ทดลองฟรี 7 วัน หลังจากนั้นระบบจะเรียกเก็บเงิน 750 บาทต่อเดือนโดยอัตโนมัติ ยกเลิกได้ตลอดเวลาก่อนครบ 7 วัน โดยไม่มีค่าใช้จ่าย",
   finalContact: "มีคำถาม?",
   finalContactLink: "ติดต่อเรา",
+  worksheetsLink: "อยากได้ใบงานเพิ่มเติม? ดูชุดใบงาน PDF ราคาเริ่มต้น ฿59",
 };
 
 export const EN = {
@@ -289,6 +290,7 @@ export const EN = {
     "A credit or debit card is required to start. Free for 7 days, then 750 THB/month automatically. Cancel any time before day 7 at no charge.",
   finalContact: "Questions?",
   finalContactLink: CONTACT_LABEL,
+  worksheetsLink: "Want more worksheets? See our PDF worksheet packs, from \u0E3F59",
 };
 
 // ─── sub-components ────────────────────────────────────────────────────────────
@@ -798,6 +800,14 @@ export default function LandingContent({ stats }: { stats: Stats }) {
             {t.finalDisclosure}
           </p>
 
+          <Link
+            href="/worksheets"
+            className={`${bodyFont} inline-block text-sm sm:text-base font-bold underline underline-offset-4 mb-5`}
+            style={isThai ? thaiLeading : undefined}
+          >
+            {t.worksheetsLink}
+          </Link>
+
           <p className={`${bodyFont} text-sm opacity-70`}>
             {t.finalContact}{" "}
             <a href={CONTACT_LINK} className="underline hover:opacity-100 transition-opacity">
@@ -819,6 +829,8 @@ export default function LandingContent({ stats }: { stats: Stats }) {
           <Link href="/privacy" className="hover:text-white transition-colors">{t.footerPrivacy}</Link>
           {" · "}
           <Link href="/terms" className="hover:text-white transition-colors">{t.footerTerms}</Link>
+          {" · "}
+          <Link href="/worksheets" className="hover:text-white transition-colors">{isThai ? "ชุดใบงาน" : "Worksheets"}</Link>
         </p>
         <SocialLinks />
       </footer>
